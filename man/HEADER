@@ -1,0 +1,16 @@
+
+ _____ ____   ___  ____   ___  ____                    _     ____  
+|  ___|  _ \ / _ \|  _ \ / _ \/ ___| _ __   ___  ___  | |   |___ \ 
+| |_  | |_) | | | | | | | | | \___ \| '_ \ / _ \/ __| | |     __) |
+|  _| |  _ <| |_| | |_| | |_| |___) | |_) |  __/ (__  | |___ / __/ 
+|_|   |_| \_\\___/|____/ \___/|____/| .__/ \___|\___| |_____|_____|
+                                    |_|                            
+
+A fully autonomous data reduction pipeline for FRODOSpec.
+
+Authors:	Rob Barnsley	(LJMU)
+	 	Rob Smith	(LJMU)
+	 	Iain Steele	(LJMU)
+
+Email:  	rmb@astro.livjm.ac.uk
+

@@ -1,0 +1,25 @@
+################################# frodo_red_correct_throughput ####################################
+
+Usage:	frcorrect target_file_ext_cc
+		  continuum_file_ext_cc
+		  start_wav
+		  end_wav
+		  target_file_ext_cc_cor
+		  
+Synopsis:
+
+Routine to correct for fibre-to-fibre throughput differences.
+
+Description:
+
+Using the [FRARCFIT_OUTPUTF_WAVFITS_FILE] dispersion solutions file, the total fluxes for each
+fibre between the wavelengths [start_wav] and [end_wav] are found using the continuum
+[continuum_file_ext_cc] file. The median of these totals is then calculated and used to determine
+normalisation coefficients for each fibre. These coefficients are then applied to the target
+[target_file_ext_cc] file to produce a throughput corrected target [target_file_ext_cc_cor] file.
+
+Example:
+
+frcorrect target_ext_cc.fits continuum_ext_cc.fits 5800 9400 target_ext_cc_cor.fits
+
+###################################################################################################
