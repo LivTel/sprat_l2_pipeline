@@ -725,15 +725,15 @@ int interpolate(char interpolation_type [], double x_wav [], double x_val [], in
 /************************************************************************
 
  Function:		iterative_sigma_clip
- Last Modified Date:    11/09/14	
+ Last Modified Date:    18/09/14	
  Purpose:		Perform iterative sigma clipping on a dataset of 
 			n values
- Required By:		sprat_red_subsky
+ Required By:		sprat_red_find
  Additional Notes:	
 
  Before each iteration, a ceiling value is worked out which is found by:
 
-  ceiling = [mean] + [clip_sigma] * [sd]
+  ceiling = [median] + [clip_sigma] * [sd]
 
  The elements in the dataset [values] are then cycled and any value that
  is greater than the ceiling value for this iteration are flagged FALSE
@@ -747,7 +747,7 @@ int interpolate(char interpolation_type [], double x_wav [], double x_val [], in
 
 ************************************************************************/
 
-int iterative_sigma_clip(double values [], int n, int clip_sigma, int retain_indexes [], double * final_mean, double * final_sd, int * final_num_retained_indexes) {
+int iterative_sigma_clip(double values [], int n, float clip_sigma, int retain_indexes [], double * final_mean, double * final_sd, int * final_num_retained_indexes) {
 
 	int ii;
 
@@ -765,11 +765,15 @@ int iterative_sigma_clip(double values [], int n, int clip_sigma, int retain_ind
 
 	}
 
-	double mean = gsl_stats_mean(values, 1, n);
-	double sd = gsl_stats_sd(values, 1, n);
-
-	double ceiling = mean + (double) clip_sigma*sd;
-
+	double values_sorted [n];
+	memcpy(values_sorted, values, sizeof(double)*n);		
+	gsl_sort(values_sorted, 1, n);
+	
+	double mean = gsl_stats_mean(values_sorted, 1, n);
+	double median = gsl_stats_median_from_sorted_data(values_sorted, 1, n);
+	double sd = gsl_stats_sd(values_sorted, 1, n);
+	
+	double ceiling = median + (double) clip_sigma*sd;
 	while (continue_iterations == TRUE) {
 
 		this_iteration_num_retained_indexes = n;
@@ -788,7 +792,7 @@ int iterative_sigma_clip(double values [], int n, int clip_sigma, int retain_ind
 
 		}
 
-		//	printf("%f\t%f\t%f\n", mean, sd, ceiling);	// DEBUG
+		//	printf("%f\t%f\t%f\n", median, sd, ceiling);	// DEBUG
 
 		// ***********************************************************************
 		// Check to see if the number of retained indexes is the same as the
@@ -816,7 +820,8 @@ int iterative_sigma_clip(double values [], int n, int clip_sigma, int retain_ind
 
 			if (retain_indexes[ii] == TRUE) {
 
-				this_iteration_values[this_iteration_values_index] = values[ii];
+				this_iteration_values[this_iteration_values_index] = values[ii];		
+
 				this_iteration_values_index++;
 
 			}
@@ -826,18 +831,22 @@ int iterative_sigma_clip(double values [], int n, int clip_sigma, int retain_ind
 		printf("\nIteration:\t\t\t%d\n", iteration_count);
 		printf("Ceiling:\t\t\t%.3e\n", ceiling);
 		printf("Number of indexes retained:\t%d\n", this_iteration_num_retained_indexes);
+		
+		double this_iteration_values_sorted [this_iteration_num_retained_indexes];
+		memcpy(this_iteration_values_sorted, this_iteration_values, sizeof(double)*this_iteration_num_retained_indexes);		
+		gsl_sort(this_iteration_values_sorted, 1, this_iteration_num_retained_indexes);
+	
+		mean = gsl_stats_mean(this_iteration_values_sorted, 1, this_iteration_num_retained_indexes);
+		median = gsl_stats_median_from_sorted_data(this_iteration_values_sorted, 1, this_iteration_num_retained_indexes);
+		sd = gsl_stats_sd(this_iteration_values_sorted, 1, this_iteration_num_retained_indexes);
 
-		mean = gsl_stats_mean(this_iteration_values, 1, this_iteration_values_index);
-		sd = gsl_stats_sd(this_iteration_values, 1, this_iteration_values_index);
-
-		ceiling = mean + (double) clip_sigma*sd;
+		ceiling = median + (double) clip_sigma*sd;
 
 		last_iteration_num_retained_indexes = this_iteration_num_retained_indexes;
 	
 		free(this_iteration_values);
-			
 	}
-
+	
 	*final_mean = mean;
 	*final_sd = sd;
 

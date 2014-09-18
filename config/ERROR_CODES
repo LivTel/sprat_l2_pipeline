@@ -6,6 +6,7 @@
 
 # key		code	comment	
 
+L2STATTR	2	No significant difference between calculated background mean level and frame mean
 L2STATTR	1	Failed to get L2_SPT_BLURB_FILE environment variable
 L2STATTR	0	No errors encountered
 L2STATTR	-1	Failed on command line
@@ -24,8 +25,8 @@ L2STATTR	-13	Failed to read row of input frame
 L2STATTR	-14	Spectum width is less than that defined by [min_spectrum_width] (ARG 7)
 L2STATTR	-15	Failed to write output img
 L2STATTR	-16	Failed to create output img
-L2STATTR	-17	Failed to create output FITS file (ARG 8)
+L2STATTR	-17	Failed to create output FITS file (ARG 9)
 L2STATTR	-18	Failed to close continuum FITS file (ARG 1)
 L2STATTR	-19	Failed to close input FITS file (ARG 2)
-L2STATTR	-20	Failed to close input FITS file (ARG 8)
+L2STATTR	-20	Failed to close input FITS file (ARG 9)
 

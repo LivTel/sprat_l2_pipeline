@@ -29,7 +29,7 @@ int main(int argc, char *argv []) {
 
 	}
 
-	if (argc != 9) {
+	if (argc != 10) {
 
 		if(populate_env_variable(SPT_BLURB_FILE, "L2_SPT_BLURB_FILE")) {
 
@@ -60,11 +60,12 @@ int main(int argc, char *argv []) {
 		char *cont_f			= strdup(argv[1]);
 		char *in_f			= strdup(argv[2]);		
 		int bin_size			= strtol(argv[3], NULL, 0);
-		double bg_level_quantile	= strtod(argv[4], NULL);
-		int scan_window_size_px		= strtol(argv[5], NULL, 0);
-		int scan_window_trig_nsigma	= strtol(argv[6], NULL, 0);
-		int min_spectrum_width		= strtol(argv[7], NULL, 0);
-		char *out_f			= strdup(argv[8]);
+		double clip_sigma		= strtod(argv[4], NULL);
+		double thresh_sigma		= strtod(argv[5], NULL);		
+		int scan_window_size_px		= strtol(argv[6], NULL, 0);
+		int scan_window_nsigma		= strtol(argv[7], NULL, 0);
+		int min_spectrum_width		= strtol(argv[8], NULL, 0);
+		char *out_f			= strdup(argv[9]);
 		
 		// ***********************************************************************
 		// Open cont file (ARG 1), get parameters and perform any data format 
@@ -370,18 +371,15 @@ int main(int argc, char *argv []) {
 		// ***********************************************************************		
 		// 1.	Bin array according to bin width given by [bin_size]
 			
-		int disp_nelements, spat_nelements;
-		disp_nelements = nxelements;
-		spat_nelements = nyelements;
+		int disp_nelements = nxelements, spat_nelements = nyelements;
 		
-
 		int disp_nelements_binned = (int)floor(disp_nelements/bin_size);			
 		double this_frame_values_binned[spat_nelements][disp_nelements_binned];
 		memset(this_frame_values_binned, 0, sizeof(double)*spat_nelements*disp_nelements_binned);
 		
-		int jj;
 		double this_bin_values;
 		int bin_number = 0;
+		int jj;
 		for (jj=0; jj<spat_nelements; jj++) {
 			this_bin_values = 0;
 			bin_number = 0;
@@ -406,111 +404,128 @@ int main(int argc, char *argv []) {
 				idx++;
 			}
 		}
-			
-		// 2.	Sort values and get [bg_level_quantile]th pixel value
-		double this_frame_values_binned_1D_sorted [disp_nelements_binned*spat_nelements];
-		memcpy(this_frame_values_binned_1D_sorted, this_frame_values_binned_1D, sizeof(double)*disp_nelements_binned*spat_nelements);		
-		gsl_sort(this_frame_values_binned_1D_sorted, 1, disp_nelements_binned*spat_nelements);
 		
-		// 3.	Get background value
-		double this_bg_values_mean = gsl_stats_mean(this_frame_values_binned_1D_sorted, 1, round(disp_nelements_binned*spat_nelements*bg_level_quantile));
-		double this_bg_values_sd = gsl_stats_sd(this_frame_values_binned_1D_sorted, 1, round(disp_nelements_binned*spat_nelements*bg_level_quantile));
+		// 3.	Perform iterative sigma clip of frame to ascertain background level
+		double this_frame_values_binned_mean = gsl_stats_mean(this_frame_values_binned_1D, 1, disp_nelements_binned*spat_nelements);
+		double this_bg_values_mean, this_bg_values_sd;
+		int final_num_retained_indexes;
+		int retain_indexes[spat_nelements*disp_nelements_binned]; 
+		
+		iterative_sigma_clip(this_frame_values_binned_1D, spat_nelements*disp_nelements_binned, clip_sigma, retain_indexes, &this_bg_values_mean, &this_bg_values_sd, &final_num_retained_indexes);
 		
 		printf("\nBinned background level determination");
 		printf("\n-------------------------------------\n");
-		printf("\nMean (counts):\t\t%.2f", this_bg_values_mean);
-		printf("\nSD  (counts):\t\t%.2f", this_bg_values_sd);
-		printf("\nTrig thresh (counts):\t> %.2f\n", this_bg_values_mean + scan_window_trig_nsigma*this_bg_values_sd);
+		printf("\nFrame Mean (counts):\t%.2f", this_frame_values_binned_mean);		
+		printf("\nBG Mean (counts):\t%.2f", this_bg_values_mean);
+		printf("\nBG SD  (counts):\t%.2f", this_bg_values_sd);
+		printf("\nWindow thresh (counts):\t> %.2f\n", this_bg_values_mean + scan_window_nsigma*this_bg_values_sd);
 		
+		// 4.	Check that there's a significant difference between BG and frame means.
+		if (this_bg_values_mean + this_bg_values_sd*thresh_sigma > this_frame_values_binned_mean) {
+			RETURN_FLAG = 2;	
+		}
+		
+
 		// FIND EDGES OF SPECTRUM
 		// ***********************************************************************
 		// 1.	Cycle through pixel value array
 		
 		double this_spat_values[spat_nelements];
-		int this_el_disp, this_el_spat;
+		double this_spat_values_der[spat_nelements-1];
+		int next_el_spat, this_el_disp, this_el_spat;
 		
 		double edges_t[disp_nelements_binned];
-		int nedges_t = 0;
 		double edges_b[disp_nelements_binned];
-		int nedges_b = 0;	
+		int nedges_t = 0, nedges_b = 0;
 		int kk;
 		for (jj=0; jj<disp_nelements_binned; jj++) {
 		
 			memset(this_spat_values, 0, sizeof(double)*spat_nelements);
-		
-			// 2.	Accumulate values for this bin
+			memset(this_spat_values_der, 0, sizeof(double)*spat_nelements-1);						
+			
+			// 2.	Accumulate values and derivatives for this bin
 			for (ii=0; ii<spat_nelements; ii++) {
 				this_el_disp = jj;
 				this_el_spat = ii;
+				next_el_spat = ii+1;
 				this_spat_values[ii] = this_frame_values_binned[this_el_spat][this_el_disp];
+				if (ii != spat_nelements-1)
+					this_spat_values_der[ii] = this_frame_values_binned[next_el_spat][this_el_disp] - this_frame_values_binned[this_el_spat][this_el_disp];
 			}
 			
-			// 3.	FORWARD DIRECTION: Cycle through [this_spat_values] and for each pixel, check that all pixels within 
-			// 	[scan_window_size_px] are succesively higher than [this_spat_values_sd] * 
-			// 	[scan_window_trig_nsigma]. If true, flag as edge.
-			int is_true_trigger;
-			for (ii=0; ii<spat_nelements; ii++) {
-				if (fabs(this_spat_values[ii] - this_bg_values_mean) > this_bg_values_sd*scan_window_trig_nsigma) {	// fire trigger
-					is_true_trigger = true;					// assume it is a trigger pixel
-					if (ii + scan_window_size_px >= spat_nelements) {	// check to make sure window doesn't fall off edge of frame
-						is_true_trigger = false;
-						break;
-					} else {
-						for (kk=ii; kk<ii+scan_window_size_px; kk++) {	// check pixels in window are greater than background
-							if (fabs(this_spat_values[kk] - this_bg_values_mean) <= this_bg_values_sd*scan_window_trig_nsigma) {
-								is_true_trigger = false;
-								break;
-							}
-						}	
-					}
-					// store if true trigger
-					if (is_true_trigger) {
-						edges_b[nedges_b] = (double)ii;
+			// 3.	Get index of sorted derivatives (in ascending order)
+			size_t this_spat_values_der_idx [spat_nelements-1];	
+			gsl_sort_index(this_spat_values_der_idx, this_spat_values_der, 1, spat_nelements-1);	
+			
+			// 4.	FORWARD DIRECTION
+			//	Starting with the highest valued derivative, check that all succesive pixels values within 
+			// 	[scan_window_size_px] are higher than [this_spat_values_sd] * [scan_window_nsigma]. 
+			//	If true, flag as edge and break. If false, proceed to next highest derivative.
+			for (ii=spat_nelements-2; ii>=0; ii--) {
+				int this_pk_idx = this_spat_values_der_idx[ii] + 1;		// +1 as we want the pixel at the higher end of the derivative calculation	
+				if (this_pk_idx + scan_window_size_px >= spat_nelements) {	// check to make sure window doesn't fall off edge of CCD
+					continue;
+				} else {
+					int is_false_trigger = false;
+					for (kk=this_pk_idx; kk<this_pk_idx+scan_window_size_px; kk++) {		// check pixels in window are greater than background
+						if (fabs(this_spat_values[kk] - this_bg_values_mean) <= this_bg_values_sd*scan_window_nsigma) {
+							is_false_trigger = true;
+							break;
+						}
+					}	
+					if (!is_false_trigger) {
+						edges_b[nedges_b] = (double)this_pk_idx;
 						nedges_b++;
 						break;
 					}
-				}						
-			}
-				
-			// 4.	REVERSE DIRECTION: Cycle through [this_spat_values] and for each pixel, check that all pixels within 
-			// 	[scan_window_size_px] are succesively higher than [this_spat_values_sd] * 
-			// 	[scan_window_trig_nsigma]. If true, flag as edge.
-			for (ii=spat_nelements-1; ii!=0; ii--) {
-				if (fabs(this_spat_values[ii] - this_bg_values_mean) > this_bg_values_sd*scan_window_trig_nsigma) {	// fire trigger
-					is_true_trigger = true;				// assume it is a trigger pixel
-					if (ii - scan_window_size_px < 0) {		// check to make sure window doesn't fall off edge of frame
-						is_true_trigger = false;
-						break;
-					} else {
-						for (kk=ii; kk>ii-scan_window_size_px; kk--) {	// check pixels in window are greater than background
-							if (fabs(this_spat_values[kk] - this_bg_values_mean) <= this_bg_values_sd*scan_window_trig_nsigma) {
-								is_true_trigger = false;
-								break;
-							}
-						}	
-					}
-					// store if true trigger
-					if (is_true_trigger) {
-						edges_t[nedges_t] = (double)ii;
-						nedges_t++;						
+				}			
+			}	
+			
+			// 5.	REVERSE DIRECTION
+			//	Starting with the lowest valued derivative, check that all succesive pixels values within 
+			// 	[scan_window_size_px] are higher than [this_spat_values_sd] * [scan_window_nsigma]. 
+			//	If true, flag as edge and break. If false, proceed to next lowest derivative.
+			for (ii=0; ii<spat_nelements-1; ii++) {
+				int this_pk_idx = this_spat_values_der_idx[ii] + 1;		// +1 as we want the pixel at the higher end of the derivative calculation	
+				if (this_pk_idx - scan_window_size_px < 0) {			// check to make sure window doesn't fall off edge of CCD
+					continue;
+				} else {
+					int is_false_trigger = false;
+					for (kk=this_pk_idx; kk>this_pk_idx+scan_window_size_px; kk--) {	// check pixels in window are greater than background
+						if (fabs(this_spat_values[kk] - this_bg_values_mean) <= this_bg_values_sd*scan_window_nsigma) {
+							is_false_trigger = true;
+							break;
+						}
+					}	
+					if (!is_false_trigger) {
+						edges_t[nedges_t] = (double)this_pk_idx;
+						nedges_t++;
 						break;
 					}
-				}						
-			}
-		
+				}			
+			}				
+			
 		}
 		
-		int mean_edges_b = floor(gsl_stats_mean(edges_b, 1, nedges_b));
-		int mean_edges_t = ceil(gsl_stats_mean(edges_t, 1, nedges_t));
-		int mean_width = (int)fabs(mean_edges_t - mean_edges_b);
+		// 6.	Take median of both edge arrays
+		double edges_b_sorted [nedges_b];
+		double edges_t_sorted [nedges_t];
+		memcpy(edges_b_sorted, edges_b, sizeof(double)*nedges_b);		
+		memcpy(edges_t_sorted, edges_t, sizeof(double)*nedges_t);	
+		gsl_sort(edges_b_sorted, 1, nedges_b);
+		gsl_sort(edges_t_sorted, 1, nedges_t);
+				
+		int median_edges_b = floor(gsl_stats_median_from_sorted_data(edges_b_sorted, 1, nedges_b));
+		int median_edges_t = ceil(gsl_stats_median_from_sorted_data(edges_t_sorted, 1, nedges_t));
+		int spectrum_width = (int)fabs(median_edges_t - median_edges_b);
 		
 		printf("\nEdges detected");
 		printf("\n--------------\n");
-		printf("\nMean bottom position (px):\t%d", mean_edges_b);
-		printf("\nMean top position (px):\t\t%d", mean_edges_t);	
-		printf("\nAv width (px):\t\t\t%d\n", mean_width);
+		printf("\nMedian bottom position (px):\t%d", median_edges_b);
+		printf("\nMedian top position (px):\t%d", median_edges_t);	
+		printf("\nWidth (px):\t\t\t%d\n", spectrum_width);
 		
-		if (mean_width < min_spectrum_width) {
+		if (spectrum_width < min_spectrum_width) {
 
 			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -14, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
@@ -524,18 +539,17 @@ int main(int argc, char *argv []) {
 		}
 		
 		// ***********************************************************************
-		// Create [out_frame-values] array to hold the output data in the correct 
+		// Create [out_frame_values] array to hold the output data in the correct 
 		// format
-
-		double out_frame_values [disp_nelements * mean_width];
-		memset(out_frame_values, 0, sizeof(double)*disp_nelements * mean_width);
-		for (jj=mean_edges_b; jj<mean_width; jj++) {
+		double out_frame_values [(disp_nelements * (spectrum_width + median_edges_b)) + 1];
+		memset(out_frame_values, 0, sizeof(double)*(disp_nelements *  (spectrum_width + median_edges_b)) + 1);
+		for (jj=median_edges_b; jj<=spectrum_width+median_edges_b; jj++) {
 	
-			ii = jj * disp_nelements;
+			ii = (jj-median_edges_b) * disp_nelements;
 	
 			for (kk=0; kk<disp_nelements; kk++) {
 	
-				out_frame_values[ii] = cont_frame_values[jj][kk];
+				out_frame_values[ii] = in_frame_values[jj][kk];
 				ii++;
 	
 			}
@@ -543,22 +557,22 @@ int main(int argc, char *argv []) {
 		}	
 		
 		// ***********************************************************************
-		// Set output frame (ARG 8) parameters
+		// Set output frame (ARG 9) parameters
 
 		fitsfile *out_f_ptr;
 
 		int out_f_status = 0;
-		long out_f_naxes [2] = {disp_nelements, mean_width};
+		long out_f_naxes [2] = {disp_nelements, spectrum_width};
 		long out_f_fpixel = 1;		
 		
 		// ***********************************************************************
-		// Create and write trimmed file to output file (ARG 8)
+		// Create and write trimmed file to output file (ARG 9)
 	
 		if (!fits_create_file(&out_f_ptr, out_f, &out_f_status)) {
 	
 			if (!fits_create_img(out_f_ptr, INTERMEDIATE_IMG_ACCURACY[0], 2, out_f_naxes, &out_f_status)) {
 
-				if (!fits_write_img(out_f_ptr, INTERMEDIATE_IMG_ACCURACY[1], out_f_fpixel, disp_nelements * mean_width, out_frame_values, &out_f_status)) {
+				if (!fits_write_img(out_f_ptr, INTERMEDIATE_IMG_ACCURACY[1], out_f_fpixel, (disp_nelements * (spectrum_width + median_edges_b)) + 1, out_frame_values, &out_f_status)) {
 
 				} else { 
 
@@ -610,7 +624,7 @@ int main(int argc, char *argv []) {
 
 		// ***********************************************************************
 		// Close continuum file (ARG 1), input file (ARG 2) and output file 
-		// (ARG 8)
+		// (ARG 9)
 
 		if(fits_close_file(cont_f_ptr, &cont_f_status)) { 
 
