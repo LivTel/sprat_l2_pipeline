@@ -1,0 +1,35 @@
+################################### sprat_red_findedges ###########################################
+
+Usage:	spfind continuum_file 
+	       target_file
+	       input_file
+	       axis_scan_dir	       
+	       bin_size
+	       bg_level_quantile
+	       scan_window_size_px
+	       scan_window_trig_nsigma
+	       min_spectrum_width
+	       output_file
+Synopsis:
+
+An automatic trimming routine to extract long-slit spectra.
+
+Description:
+
+The data is first binned along the dispersion axis (defined by setting [axis_scan_dir], where 0 
+means the dispersion axis is along the x, and 1 means the dispersion axis is along the y) with 
+a bin size of [bin_size]. the background level of resulting array is then obtained by finding the 
+mean of the [bg_level_quantile]th lowest valued pixels.
+
+Edges are found in the data by progressing through each side of the spatial axis and ascertaining 
+if the current considered pixel and a window of size [scan_window_size_px] consecutive pixels all 
+have values lying above [scan_window_trig_nsigma] * the background level standard deviation. This 
+is done for every bin along the dispersion axis.
+
+Finally, the automatically deduced width is checked to be greater than [min_spectrum_width].
+
+Example: 
+
+sptrim continuum.fits target.fits 0 200 0.1 100 5 215 out.fits
+
+###################################################################################################
