@@ -1,207 +1,31 @@
 # DO NOT MODIFY FORMAT
 #
 # File:				ERROR_CODES
-# Last Modified Date:     	08/05/11
+# Last Modified Date:     	11/09/14
 #
 
 # key		code	comment	
 
-L2STATFI	1	Failed to get L2_FRFS_BLURB_FILE environment variable
-L2STATFI	0	No errors encountered
-L2STATFI	-1	Failed on command line
-L2STATFI	-2	Continuum frame must have 2 axes
-L2STATFI	-3	Failed to get image parameters of continuum frame
-L2STATFI	-4	Failed to open continuum FITS file (ARG 1)
-L2STATFI	-5	Failed to read row of continuum frame
-L2STATFI	-6	Failed data quality criteria - unable to find sufficient number of rows [min_rows] with correct number of peaks
-L2STATFI	-7	Failed to create [FRFIND_OUTPUTF_PEAKS_FILE] output file
-L2STATFI	-8	Failed to find centroid
-L2STATFI	-9	Failed to close [FRFIND_OUTPUTF_PEAKS_FILE] output file
-L2STATFI	-10	Failed to close continuum FITS file (ARG 1)
-
-L2STATCL	1	Failed to get L2_FRFSC_BLURB_FILE environment variable
-L2STATCL	0	No errors encountered
-L2STATCL	-1	Failed on command line
-L2STATCL	-2	[FRFIND_OUTPUTF_PEAKS_FILE] input file doesn't exist
-L2STATCL	-3	Failed data quality criteria - too many bad rows
-L2STATCL	-4	Failed to create [FRCLEAN_OUTPUTF_PEAKSCLEANED_FILE] output file
-L2STATCL	-5	Failed to close [FRFIND_OUTPUTF_PEAKS_FILE] input file
-L2STATCL	-6	Failed to close [FRCLEAN_OUTPUTF_PEAKSCLEANED_FILE] output file
-
-L2STATTR	2	Possible poor fit, χ² not within [FRTRACE_VAR_CHISQUARED_MIN] and [FRTRACE_VAR_CHISQUARED_MAX]
-L2STATTR	1	Failed to get L2_FRT_BLURB_FILE environment variable
+L2STATTR	1	Failed to get L2_SPT_BLURB_FILE environment variable
 L2STATTR	0	No errors encountered
 L2STATTR	-1	Failed on command line
-L2STATTR	-2	[FRCLEAN_OUTPUTF_PEAKSCLEANED_FILE] input file doesn't exist
-L2STATTR	-3	Failed to assign [y_min] var, is it present in the [FRCLEAN_OUTPUTF_PEAKSCLEANED_FILE] file?
-L2STATTR	-4	Failed to assign [y_max] var, is it present in the [FRCLEAN_OUTPUTF_PEAKSCLEANED_FILE] file?
-L2STATTR	-5	Failed to assign [y_bad] var, is it present in the [FRCLEAN_OUTPUTF_PEAKSCLEANED_FILE] file?
-L2STATTR	-6	Polynomial tracing order not between [FRTRACE_VAR_POLYORDER_{LO/HI}] limits
-L2STATTR	-7	More bins than rows available ([bins] >= [rows_comment])
-L2STATTR	-8	[min_rows_per_bin] must be > 0 and <= [bins]
-L2STATTR	-9	Failed to create [FRTRACE_OUTPUTF_TRACES_FILE] output file
-L2STATTR	-10	Failed to find fit
-L2STATTR	-11	Failed to close [FRCLEAN_OUTPUTF_PEAKSCLEANED_FILE] input file
-L2STATTR	-12	Failed to close [FRTRACE_OUTPUTF_TRACES_FILE] output file
-
-L2STATEX	2	Extraction aperture width > average fibre width, cross contamination will occur
-L2STATEX	1	Failed to get L2_FRES_BLURB_FILE environment variable
-L2STATEX	0	No errors encountered
-L2STATEX	-1	Failed on command line
-L2STATEX	-2	Input frame must have 2 axes
-L2STATEX	-3	Failed to get image parameters of input frame
-L2STATEX	-4	Failed to open input FITS file (ARG 1)
-L2STATEX	-5	[FRTRACE_OUTPUTF_TRACES_FILE] file doesn't exist
-L2STATEX	-6	Failed to assign [polynomial_order] var, is it present in the [FRTRACE_OUTPUTF_TRACES_FILE] file?
-L2STATEX	-7	x coordinate of fit violates img boundary condition
-L2STATEX	-8	Failed to read row of input frame
-L2STATEX	-9	Failed to write output img
-L2STATEX	-10	Failed to create output img
-L2STATEX	-11	Failed to create output FITS file (ARG 4)
-L2STATEX	-12	Failed to close [FRTRACE_OUTPUTF_TRACES_FILE] file
-L2STATEX	-13	Failed to close input FITS file (ARG 1)
-L2STATEX	-14	Failed to close output FITS file (ARG 4)
-
-L2STATAR	3	Possible poor fit, χ² not within [FRARCFIT_VAR_CHISQUARED_MIN] and [FRARCFIT_VAR_CHISQUARED_MAX]
-L2STATAR	2	Distribution of matched arc lines may not be well sampled over the wavelength range
-L2STATAR	1	Failed to get L2_FRA_BLURB_FILE environment variable
-L2STATAR	0	No errors encountered
-L2STATAR	-1	Failed on command line
-L2STATAR	-2	Arc frame must have 2 axes
-L2STATAR	-3	Failed to get image parameters of arc frame
-L2STATAR	-4	Failed to open arc FITS file (ARG 1)
-L2STATAR	-5	Target frame must have 2 axes
-L2STATAR	-6	Failed to get image parameters of target frame
-L2STATAR	-7	Failed to open target FITS file (ARG 2)
-L2STATAR	-8	Continuum frame must have 2 axes
-L2STATAR	-9	Failed to get image parameters of continuum frame
-L2STATAR	-10	Failed to open continuum FITS file (ARG 3)
-L2STATAR	-11	File consistency failure (Bits per pixel)
-L2STATAR	-12	File consistency failure (Number of axes)
-L2STATAR	-13	File consistency failure (Dimension of first axis)
-L2STATAR	-14	File consistency failure (Dimension of second axis)
-L2STATAR	-15	Failed to read row of arc frame
-L2STATAR	-16	Failed to read row of target frame
-L2STATAR	-17	Failed to read row of continuum frame
-L2STATAR	-18	Failed data quality criteria - insufficient spatially contiguous peaks found ([num_peaks] < [min_contiguous_lines])
-L2STATAR	-19	Reference arc line list (ARG 11) file doesn't exist
-L2STATAR	-20	Failed data quality criteria - failed to match sufficient lines ([matched_line_count] < [min_matched_lines])
-L2STATAR	-21	Polynomial tracing order not between [FRARCFIT_VAR_POLYORDER_{LO/HI}] limits
-L2STATAR	-22	Failed to create [FRARCFIT_OUTPUTF_WAVFITS_FILE] output file
-L2STATAR	-23	Failed to find fit
-L2STATAR	-24	Failed to write output arc img
-L2STATAR	-25	Failed to create output arc img
-L2STATAR	-26	Failed to create output arc FITS file (ARG 15)
-L2STATAR	-27	Failed to write output target img
-L2STATAR	-28	Failed to create output target img
-L2STATAR	-29	Failed to create output target FITS file (ARG 16)
-L2STATAR	-30	Failed to write output continuum img
-L2STATAR	-31	Failed to create output continuum img
-L2STATAR	-32	Failed to create output continuum FITS file (ARG 17)
-L2STATAR	-33	Failed to close arc line list reference file (ARG 11)
-L2STATAR	-34	Failed to close [FRARCFIT_OUTPUTF_WAVFITS_FILE] output file
-L2STATAR	-35	Failed to close input arc FITS file (ARG 1)
-L2STATAR	-36	Failed to close input target FITS file (ARG 2)
-L2STATAR	-37	Failed to close input continuum FITS file (ARG 3)
-L2STATAR	-38	Failed to close output arc FITS file (ARG 15)
-L2STATAR	-39	Failed to close output target FITS file (ARG 16)
-L2STATAR	-40	Failed to close output continuum FITS file (ARG 17)
-
-L2STATCO	1	Failed to get L2_FRCT_BLURB_FILE environment variable
-L2STATCO	0	No errors encountered
-L2STATCO	-1	Failed on command line
-L2STATCO	-2	Target frame must have 2 axes
-L2STATCO	-3	Failed to get image parameters of target frame
-L2STATCO	-4	Failed to open target FITS file (ARG 1)
-L2STATCO	-5	Continuum frame must have 2 axes
-L2STATCO	-6	Failed to get image parameters of continuum frame
-L2STATCO	-7	Failed to open continuum FITS file (ARG 2)
-L2STATCO	-8	File consistency failure (Bits per pixel)
-L2STATCO	-9	File consistency failure (Number of axes)
-L2STATCO	-10	File consistency failure (Dimension of first axis)
-L2STATCO	-11	File consistency failure (Dimension of second axis)
-L2STATCO	-12	Failed to read row of continuum frame
-L2STATCO	-13	[FRARCFIT_OUTPUTF_WAVFITS_FILE] file doesn't exist
-L2STATCO	-14	Failed to assign [polynomial_order] var, is it present in the [FRARCFIT_OUTPUTF_WAVFITS_FILE] file?
-L2STATCO	-15	Desired starting wavelength (ARG 3) is outside of inherent wavelength boundaries
-L2STATCO	-16	Desired ending wavelength (ARG 4) is outside of inherent wavelength boundaries
-L2STATCO	-17	Failed to read row of target frame
-L2STATCO	-18	Failed to write output target img
-L2STATCO	-19	Failed to create output target img
-L2STATCO	-20	Failed to create output target FITS file (ARG 5)
-L2STATCO	-21	Failed to close dispersion solutions file
-L2STATCO	-22	Failed to close input target FITS file (ARG 1)
-L2STATCO	-23	Failed to close input continuum FITS file (ARG 2)
-L2STATCO	-24	Failed to close output target FITS file (ARG 5)
-
-L2STATRE	1	Failed to get L2_FRR_BLURB_FILE environment variable
-L2STATRE	0	No errors encountered
-L2STATRE	-1	Failed on command line
-L2STATRE	-2	Target frame must have 2 axes
-L2STATRE	-3	Failed to get image parameters of target frame
-L2STATRE	-4	Failed to open target FITS file (ARG 1)
-L2STATRE	-5	[FRARCFIT_OUTPUTF_WAVFITS_FILE] file doesn't exist
-L2STATRE	-6	Failed to assign [polynomial_order] var, is it present in the [FRARCFIT_OUTPUTF_WAVFITS_FILE] file?
-L2STATRE	-7	Desired starting wavelength (ARG 2) is outside of inherent wavelength boundaries
-L2STATRE	-8	Desired ending wavelength (ARG 3) is outside of inherent wavelength boundaries
-L2STATRE	-9	Interpolation type [interpolation_type] not recognised
-L2STATRE	-10	Failed to read row of target frame
-L2STATRE	-11	Failed to create [FRREBIN_OUTPUTF_REBIN_WAVFITS_FILE] output file
-L2STATRE	-12	Failed to write output target img
-L2STATRE	-13	Failed to create output target img
-L2STATRE	-14	Failed to create output target FITS file (ARG 7)
-L2STATRE	-15	Failed to close dispersion solutions file
-L2STATRE	-16	Failed to close [FRREBIN_OUTPUTF_REBIN_WAVFITS_FILE] file
-L2STATRE	-17	Failed to close input target FITS file (ARG 1)
-L2STATRE	-18	Failed to close output target FITS file (ARG 7)
-
-L2STATSU	1	Failed to get L2_FRS_BLURB_FILE environment variable
-L2STATSU	0	No errors encountered
-L2STATSU	-1	Failed on command line
-L2STATSU	-2	Target frame must have 2 axes
-L2STATSU	-3	Failed to get image parameters of target frame
-L2STATSU	-4	Failed to open target FITS file (ARG 1)
-L2STATSU	-5	Failed to read row of target frame
-L2STATSU	-6	Failed data quality criteria - all fibres identified as sky given sky selection criteria, target frame could be blank or contain an extended source
-L2STATSU	-7	Failed data quality criteria - no fibres identified as sky given sky selection criteria
-L2STATSU	-8	Failed data quality criteria - [thresh_percentile]th percentile of initial sample not within [thresh_percentile_sigma] of final mean [final_mean]
-L2STATSU	-9	Failed to write output target img
-L2STATSU	-10	Failed to create output target img
-L2STATSU	-11	Failed to create output target FITS file (ARG 4)
-
-L2STATRF	6	Failed to write checksum for output file (ARG 4)
-L2STATRF	5	Failed to write error codes file to header of output file (ARG 4)
-L2STATRF	4	Failed to write STARTDATE additional key to header of output file (ARG 4)
-L2STATRF	3	Failed to write CALIBRATION additional key to header of output file (ARG 4)
-L2STATRF	2	Failed to get L2_FITS_KEYS_TO_ACTION_FILE environment variable, unable to write headers from headers file (ARG 2)
-L2STATRF	1	Failed to get L2_FRRF_BLURB_FILE environment variable
-L2STATRF	0	No errors encountered
-L2STATRF	-1	Failed on command line
-L2STATRF	-2	Operation not recognised (ARG 3)
-L2STATRF	-3	Failed to get image parameters of input frame
-L2STATRF	-4	Failed to open input FITS file (ARG 1)
-L2STATRF	-5	Failed to open headers FITS fits (ARG 2)
-L2STATRF	-6	Failed to create output FITS file (ARG 4)
-L2STATRF	-7	Failed to open output FITS fits (ARG 4)
-L2STATRF	-8	Failed to get number of HDUs in output FITS file (ARG 4)
-L2STATRF	-9	Failed to create output img (BLANK)
-L2STATRF	-10	Failed to create output img (COPY)
-L2STATRF	-11	Failed to copy data (COPY)
-L2STATRF	-12	Failed to read row of input frame (DATACUBE)
-L2STATRF	-13	Failed to create output img (DATACUBE)
-L2STATRF	-14	Failed to write output img (DATACUBE)
-L2STATRF	-15	Failed to read row of input frame (SPECTRUM)
-L2STATRF	-16	Failed to create output img (SPECTRUM)
-L2STATRF	-17	Failed to write output img (SPECTRUM)
-L2STATRF	-18	Failed to read row of input frame (IFU BUNDLE)
-L2STATRF	-19	Failed to create output img (IFU BUNDLE)
-L2STATRF	-20	Failed to write output img (IFU BUNDLE)
-L2STATRF	-21	Failed to write EXTNAME key to output frame
-L2STATRF	-22	Failed to get hdrspace from input file (ARG 1)
-L2STATRF	-23	Failed to read record from input file (ARG 1)
-L2STATRF	-24	Failed to get hdrspace from headers file (ARG 2)
-L2STATRF	-25	Failed to read record from headers file (ARG 2)
-L2STATRF	-26	Failed to close input FITS file (ARG 1)
-L2STATRF	-27	Failed to close headers FITS file (ARG 2)
-L2STATRF	-28	Failed to close output FITS file (ARG 4)
+L2STATTR	-2	Continuum frame must have 2 axes
+L2STATTR	-3	Failed to get image parameters of continuum frame
+L2STATTR	-4	Failed to open continuum FITS file (ARG 1)
+L2STATTR	-5	Input frame must have 2 axes
+L2STATTR	-6	Failed to get image parameters of input frame
+L2STATTR	-7	Failed to open input FITS file (ARG 2)
+L2STATTR	-8	File consistency failure (Bits per pixel)
+L2STATTR	-9	File consistency failure (Number of axes)
+L2STATTR	-10	File consistency failure (Dimension of first axis)
+L2STATTR	-11	File consistency failure (Dimension of second axis)
+L2STATTR	-12	Failed to read row of continuum frame
+L2STATTR	-13	Failed to read row of input frame
+L2STATTR	-14	Spectum width is less than that defined by [min_spectrum_width] (ARG 7)
+L2STATTR	-15	Failed to write output img
+L2STATTR	-16	Failed to create output img
+L2STATTR	-17	Failed to create output FITS file (ARG 8)
+L2STATTR	-18	Failed to close continuum FITS file (ARG 1)
+L2STATTR	-19	Failed to close input FITS file (ARG 2)
+L2STATTR	-20	Failed to close input FITS file (ARG 8)
 

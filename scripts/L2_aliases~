@@ -1,39 +1,18 @@
 
 ##################################
 # L2_aliases 			 #
-# Last Modified Date:   13/02/14 #
+# Last Modified Date:   11/09/14 #
 ##################################
 
 ################
 # Core aliases #
 ################
 
-alias frfind $L2_BIN_DIR/frfind
-alias frclean $L2_BIN_DIR/frclean
-alias frtrace $L2_BIN_DIR/frtrace
-alias frextract $L2_BIN_DIR/frextract
-alias frarcfit $L2_BIN_DIR/frarcfit
-alias frcorrect $L2_BIN_DIR/frcorrect
-alias frrebin $L2_BIN_DIR/frrebin
-alias frsubsky $L2_BIN_DIR/frsubsky
-alias frreformat $L2_BIN_DIR/frreformat
-
-alias modhead $L2_BIN_DIR/modhead
-alias imcopy $L2_BIN_DIR/imcopy
-alias liststruc $L2_BIN_DIR/liststruc
-
-alias frspec2tsv $L2_BIN_DIR/frspec2tsv
-alias frnumexts $L2_BIN_DIR/frnumexts
-alias frpeakfinder $L2_BIN_DIR/frpeakfinder
-
-alias FITS2jpeg $L2_BIN_DIR/FITS2jpeg
+alias spfind $L2_BIN_DIR/spfind
 
 ##################
 # Script aliases #
 ##################
 
-alias l2v cat $L2_MAN_DIR/VERSION
-
-alias l2exec $L2_SCRIPT_DIR/L2_exec
 
 
