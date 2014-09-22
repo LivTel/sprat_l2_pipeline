@@ -747,7 +747,7 @@ int interpolate(char interpolation_type [], double x_wav [], double x_val [], in
 
 ************************************************************************/
 
-int iterative_sigma_clip(double values [], int n, float clip_sigma, int retain_indexes [], double * final_mean, double * final_sd, int * final_num_retained_indexes) {
+int iterative_sigma_clip(double values [], int n, float clip_sigma, int retain_indexes [], double * final_mean, double * final_sd, int * final_num_retained_indexes, int use_median) {
 
 	int ii;
 
@@ -773,7 +773,13 @@ int iterative_sigma_clip(double values [], int n, float clip_sigma, int retain_i
 	double median = gsl_stats_median_from_sorted_data(values_sorted, 1, n);
 	double sd = gsl_stats_sd(values_sorted, 1, n);
 	
-	double ceiling = median + (double) clip_sigma*sd;
+	double ceiling;
+	if (!use_median) {
+		ceiling = mean + (double) clip_sigma*sd;
+	} else {
+		ceiling = median + (double) clip_sigma*sd;	
+	}
+	
 	while (continue_iterations == TRUE) {
 
 		this_iteration_num_retained_indexes = n;
@@ -840,7 +846,12 @@ int iterative_sigma_clip(double values [], int n, float clip_sigma, int retain_i
 		median = gsl_stats_median_from_sorted_data(this_iteration_values_sorted, 1, this_iteration_num_retained_indexes);
 		sd = gsl_stats_sd(this_iteration_values_sorted, 1, this_iteration_num_retained_indexes);
 
-		ceiling = median + (double) clip_sigma*sd;
+		double ceiling;
+		if (!use_median) {
+			ceiling = mean + (double) clip_sigma*sd;
+		} else {
+			ceiling = median + (double) clip_sigma*sd;	
+		}
 
 		last_iteration_num_retained_indexes = this_iteration_num_retained_indexes;
 	
@@ -909,20 +920,18 @@ int median_filter(double row_values [], double smoothed_row_values [], int nxele
 
 		for (jj=-median_half_filter_size; jj<median_half_filter_size; jj++) {
 
-			this_iteration_filter_values[jj] = row_values[ii+jj];
-
-		}
-
+			this_iteration_filter_values[jj+median_half_filter_size] = row_values[ii+jj];
+			
+		}	
 		double this_iteration_filter_values_sorted [median_half_filter_size*2];
-		memcpy(this_iteration_filter_values_sorted, this_iteration_filter_values, sizeof(double)*median_half_filter_size*2);	
+		memcpy(this_iteration_filter_values_sorted, this_iteration_filter_values, sizeof(double)*median_half_filter_size*2);
 
 		gsl_sort(this_iteration_filter_values_sorted, 1, median_half_filter_size*2);
-		double this_iteration_filter_median = gsl_stats_median_from_sorted_data(this_iteration_filter_values_sorted, 1, median_half_filter_size*2);
+		double this_iteration_filter_median = gsl_stats_median_from_sorted_data(this_iteration_filter_values_sorted, 1, median_half_filter_size*2);	
 
 		// printf("%f\n", this_iteration_filter_median);	// DEBUG
 
 		smoothed_row_values[ii] = this_iteration_filter_median;
-
 	}
 
 	return 0;

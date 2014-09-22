@@ -1,13 +1,14 @@
 
 ##################################
 # L2_aliases 			 #
-# Last Modified Date:   11/09/14 #
+# Last Modified Date:   18/09/14 #
 ##################################
 
 ################
 # Core aliases #
 ################
 
+alias sptrim $L2_BIN_DIR/sptrim
 alias spfind $L2_BIN_DIR/spfind
 
 ##################

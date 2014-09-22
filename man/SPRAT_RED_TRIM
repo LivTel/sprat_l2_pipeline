@@ -3,11 +3,12 @@
 Usage:	spfind continuum_file 
 	       target_file
 	       input_file       
-	       bin_size
+	       bin_size_px
 	       clip_sigma
+	       thresh_sigma
 	       scan_window_size_px
-	       scan_window_trig_nsigma
-	       min_spectrum_width
+	       scan_window_nsigma
+	       min_spectrum_width_px
 	       output_file
 Synopsis:
 
@@ -17,17 +18,22 @@ Description:
 
 The data is first binned along the dispersion axis (defined as x) with a bin size of [bin_size]. 
 The resulting array is then filtered through an iterative sigma clip with sigma [clip_sigma] 
-and a background level obtained.
+and a mean background level obtained. The mean of this background level is then compared with 
+the mean frame level, and a warning is given if the two are found to be of a similar magnitude, 
+i.e. 
 
-Edges are found in the data by progressing through each side of the spatial axis and ascertaining 
-if the current considered pixel and a window of size [scan_window_size_px] consecutive pixels all 
-have values lying above [scan_window_trig_nsigma] * the background level standard deviation. This 
-is done for every bin along the dispersion axis.
+ bg_mean + bg_sd*[thresh_sigma] >= frame_mean
+
+Edges are found in the data by progressing through each side of the spatial axis and finding the
+pixels with the maximum/minimum derivatives. These peaks are then further tested by ascertaining 
+if a window of size [scan_window_size_px] consecutive pixels all have values lying above 
+[scan_window_trig_nsigma] * the background level standard deviation. This is done for every bin 
+along the dispersion axis.
 
 Finally, the automatically deduced width is checked to be greater than [min_spectrum_width].
 
 Example: 
 
-sptrim continuum.fits target.fits 0 200 0.1 100 5 215 out.fits
+sptrim continuum.fits target.fits 20 1.0 3.0 100 1 100 out.fits
 
 ###################################################################################################

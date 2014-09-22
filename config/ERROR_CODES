@@ -30,3 +30,15 @@ L2STATTR	-18	Failed to close continuum FITS file (ARG 1)
 L2STATTR	-19	Failed to close input FITS file (ARG 2)
 L2STATTR	-20	Failed to close input FITS file (ARG 9)
 
+L2STATFI	1	Failed to get L2_SPF_BLURB_FILE environment variable
+L2STATFI	0	No errors encountered
+L2STATFI	-1	Failed on command line
+L2STATFI	-2	Target frame must have 2 axes
+L2STATFI	-3	Failed to get image parameters of target frame
+L2STATFI	-4	Failed to open target FITS file (ARG 1)
+L2STATFI	-5	Failed to read row of target frame
+L2STATFI	-6	Failed to find centroid
+L2STATFI	-7	Failed to create [SPFIND_OUTPUTF_PEAKS_FILE] output file
+L2STATFI	-8	Failed to close [SPFIND_OUTPUTF_PEAKS_FILE] output file
+L2STATFI	-9	Failed to close target FITS file (ARG 1)
+

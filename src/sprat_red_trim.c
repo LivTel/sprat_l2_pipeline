@@ -1,7 +1,7 @@
 /************************************************************************
 
- File:				sprat_red_findedges.c
- Last Modified Date:     	11/09/14
+ File:				sprat_red_trim.c
+ Last Modified Date:     	18/09/14
 
 ************************************************************************/
 
@@ -59,12 +59,12 @@ int main(int argc, char *argv []) {
 
 		char *cont_f			= strdup(argv[1]);
 		char *in_f			= strdup(argv[2]);		
-		int bin_size			= strtol(argv[3], NULL, 0);
+		int bin_size_px			= strtol(argv[3], NULL, 0);
 		double clip_sigma		= strtod(argv[4], NULL);
 		double thresh_sigma		= strtod(argv[5], NULL);		
 		int scan_window_size_px		= strtol(argv[6], NULL, 0);
 		int scan_window_nsigma		= strtol(argv[7], NULL, 0);
-		int min_spectrum_width		= strtol(argv[8], NULL, 0);
+		int min_spectrum_width_px	= strtol(argv[8], NULL, 0);
 		char *out_f			= strdup(argv[9]);
 		
 		// ***********************************************************************
@@ -369,27 +369,27 @@ int main(int argc, char *argv []) {
 		
 		// BIN ARRAY AND FIND BACKGROUND
 		// ***********************************************************************		
-		// 1.	Bin array according to bin width given by [bin_size]
+		// 1.	Bin array according to bin width given by [bin_size_px]
 			
 		int disp_nelements = nxelements, spat_nelements = nyelements;
 		
-		int disp_nelements_binned = (int)floor(disp_nelements/bin_size);			
+		int disp_nelements_binned = (int)floor(disp_nelements/bin_size_px);			
 		double this_frame_values_binned[spat_nelements][disp_nelements_binned];
 		memset(this_frame_values_binned, 0, sizeof(double)*spat_nelements*disp_nelements_binned);
 		
-		double this_bin_values;
+		double this_bin_value;
 		int bin_number = 0;
 		int jj;
 		for (jj=0; jj<spat_nelements; jj++) {
-			this_bin_values = 0;
+			this_bin_value = 0;
 			bin_number = 0;
 			for (ii=0; ii<disp_nelements; ii++) {
-				if (ii % bin_size == 0 && ii != 0) {
-					this_frame_values_binned[jj][bin_number] = this_bin_values;
+				if (ii % bin_size_px == 0 && ii != 0) {
+					this_frame_values_binned[jj][bin_number] = this_bin_value;
 					bin_number++;
-					this_bin_values = 0;
+					this_bin_value = 0;
 				}
-				this_bin_values += cont_frame_values[jj][ii];
+				this_bin_value += cont_frame_values[jj][ii];
 			}
 		}	
 		
@@ -405,13 +405,13 @@ int main(int argc, char *argv []) {
 			}
 		}
 		
-		// 3.	Perform iterative sigma clip of frame to ascertain background level
+		// 3.	Perform iterative sigma clip of frame to ascertain approximate background level of frame
 		double this_frame_values_binned_mean = gsl_stats_mean(this_frame_values_binned_1D, 1, disp_nelements_binned*spat_nelements);
 		double this_bg_values_mean, this_bg_values_sd;
 		int final_num_retained_indexes;
 		int retain_indexes[spat_nelements*disp_nelements_binned]; 
 		
-		iterative_sigma_clip(this_frame_values_binned_1D, spat_nelements*disp_nelements_binned, clip_sigma, retain_indexes, &this_bg_values_mean, &this_bg_values_sd, &final_num_retained_indexes);
+		iterative_sigma_clip(this_frame_values_binned_1D, spat_nelements*disp_nelements_binned, clip_sigma, retain_indexes, &this_bg_values_mean, &this_bg_values_sd, &final_num_retained_indexes, TRUE);
 		
 		printf("\nBinned background level determination");
 		printf("\n-------------------------------------\n");
@@ -421,7 +421,7 @@ int main(int argc, char *argv []) {
 		printf("\nWindow thresh (counts):\t> %.2f\n", this_bg_values_mean + scan_window_nsigma*this_bg_values_sd);
 		
 		// 4.	Check that there's a significant difference between BG and frame means.
-		if (this_bg_values_mean + this_bg_values_sd*thresh_sigma > this_frame_values_binned_mean) {
+		if (this_bg_values_mean + this_bg_values_sd*thresh_sigma >= this_frame_values_binned_mean) {
 			RETURN_FLAG = 2;	
 		}
 		
@@ -457,7 +457,7 @@ int main(int argc, char *argv []) {
 			size_t this_spat_values_der_idx [spat_nelements-1];	
 			gsl_sort_index(this_spat_values_der_idx, this_spat_values_der, 1, spat_nelements-1);	
 			
-			// 4.	FORWARD DIRECTION
+			// 4.	FORWARD DIRECTION (find start of spectrum)
 			//	Starting with the highest valued derivative, check that all succesive pixels values within 
 			// 	[scan_window_size_px] are higher than [this_spat_values_sd] * [scan_window_nsigma]. 
 			//	If true, flag as edge and break. If false, proceed to next highest derivative.
@@ -481,12 +481,12 @@ int main(int argc, char *argv []) {
 				}			
 			}	
 			
-			// 5.	REVERSE DIRECTION
+			// 5.	REVERSE DIRECTION (find end of spectrum)
 			//	Starting with the lowest valued derivative, check that all succesive pixels values within 
 			// 	[scan_window_size_px] are higher than [this_spat_values_sd] * [scan_window_nsigma]. 
 			//	If true, flag as edge and break. If false, proceed to next lowest derivative.
 			for (ii=0; ii<spat_nelements-1; ii++) {
-				int this_pk_idx = this_spat_values_der_idx[ii] + 1;		// +1 as we want the pixel at the higher end of the derivative calculation	
+				int this_pk_idx = this_spat_values_der_idx[ii] - 1;		// -1 as we want the pixel at the higher end of the derivative calculation	
 				if (this_pk_idx - scan_window_size_px < 0) {			// check to make sure window doesn't fall off edge of CCD
 					continue;
 				} else {
@@ -525,7 +525,7 @@ int main(int argc, char *argv []) {
 		printf("\nMedian top position (px):\t%d", median_edges_t);	
 		printf("\nWidth (px):\t\t\t%d\n", spectrum_width);
 		
-		if (spectrum_width < min_spectrum_width) {
+		if (spectrum_width < min_spectrum_width_px) {
 
 			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -14, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
@@ -572,7 +572,7 @@ int main(int argc, char *argv []) {
 	
 			if (!fits_create_img(out_f_ptr, INTERMEDIATE_IMG_ACCURACY[0], 2, out_f_naxes, &out_f_status)) {
 
-				if (!fits_write_img(out_f_ptr, INTERMEDIATE_IMG_ACCURACY[1], out_f_fpixel, (disp_nelements * (spectrum_width + median_edges_b)) + 1, out_frame_values, &out_f_status)) {
+				if (!fits_write_img(out_f_ptr, INTERMEDIATE_IMG_ACCURACY[1], out_f_fpixel, (disp_nelements * spectrum_width) + 1, out_frame_values, &out_f_status)) {
 
 				} else { 
 
