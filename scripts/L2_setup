@@ -71,3 +71,4 @@ if (! -e $L2_FAIL_LOG_PATH) then
 endif
 
 exit(0)
+

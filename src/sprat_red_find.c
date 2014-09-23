@@ -29,7 +29,7 @@ int main(int argc, char *argv []) {
 
 	}
 
-	if (argc != 5) {
+	if (argc != 11) {
 
 		if(populate_env_variable(SPF_BLURB_FILE, "L2_SPF_BLURB_FILE")) {
 
@@ -51,8 +51,14 @@ int main(int argc, char *argv []) {
 		
 		char *target_f				= strdup(argv[1]);	
 		int bin_size_px				= strtol(argv[2], NULL, 0);
-		int filter_width_px			= strtol(argv[3], NULL, 0);	
-		int centroid_half_window_size_px	= strtol(argv[4], NULL, 0);
+		double bg_percentile			= strtod(argv[3], NULL);
+		double clip_sigma			= strtod(argv[4], NULL);
+		int median_filter_width_px		= strtol(argv[5], NULL, 0);	
+		double min_SNR				= strtod(argv[6], NULL);
+		int min_spatial_width_px		= strtol(argv[7], NULL, 0);
+		int max_centering_num_px		= strtol(argv[8], NULL, 0);		
+		int centroid_half_window_size_px	= strtol(argv[9], NULL, 0);
+		int min_used_bins			= strtol(argv[10], NULL, 0);
 		
 		// ***********************************************************************
 		// Open target file (ARG 1), get parameters and perform any data format 
@@ -177,80 +183,139 @@ int main(int argc, char *argv []) {
 				this_bin_value += target_frame_values[jj][ii];
 			}
 		}
-	
-		double this_spat_values[spat_nelements];
-		double this_spat_values_smoothed[spat_nelements];
-		double this_spat_values_smoothed_der[spat_nelements-1];
-		
+
+		printf("\nFinding peaks");
+		printf("\n-------------------------------------\n");	
 		double peaks[disp_nelements_binned];
+		int num_bins_contain_target_flux = 0;
 		for (ii=0; ii<disp_nelements_binned; ii++) {
-			// 2.	Smooth array with median filter
-			for (jj=0; jj<spat_nelements-1; jj++) {
+
+			// 1a.	Establish if any target flux is in this bin
+			// 	First find the mean/sd of the [bg_percentile]th lowest valued pixels as an initial parameters for sigma clip			
+			double this_spat_values[spat_nelements];
+			double this_spat_values_sorted[spat_nelements];
+			for (jj=0; jj<spat_nelements; jj++) {
 				this_spat_values[jj] = this_frame_values_binned[jj][ii];
+			}			
+			memcpy(this_spat_values_sorted, this_spat_values, sizeof(double)*spat_nelements);	
+			gsl_sort(this_spat_values_sorted, 1, spat_nelements);
+			
+			int bg_nelements = (int)floor(spat_nelements*bg_percentile);
+			double bg_values [bg_nelements];
+			int idx = 0;
+			for (jj=0; jj<spat_nelements; jj++) {
+				if (this_spat_values_sorted[jj] != 0) {			// avoid 0s set from median filter edges
+					bg_values[idx] = this_spat_values_sorted[jj];
+					idx++;
+					if (idx == bg_nelements)
+						break;
+				}
+			}
+
+			if (idx != bg_nelements) {
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -6, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+
+				free(target_f);
+				if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
+
+				return 1;
 			}
 			
-			memset(this_spat_values_smoothed, 0, sizeof(double)*spat_nelements-1);
-			median_filter(this_spat_values, this_spat_values_smoothed, spat_nelements-1, filter_width_px);
-			
-			// 3.	Establish if any target flux is in this bin
-			int retain_indexes[spat_nelements-1];
+			double start_mean = gsl_stats_mean(bg_values, 1, bg_nelements);
+			double start_sd	  = gsl_stats_sd(bg_values, 1, bg_nelements);
+
+			// 1b.	Iterative sigma clip around dataset with the initial guess
+			int retain_indexes[spat_nelements];
 			double final_mean, final_sd;
 			int final_num_retained_indexes;
 			
-			iterative_sigma_clip(this_spat_values_smoothed, spat_nelements-1, 0.5, retain_indexes, &final_mean, &final_sd, &final_num_retained_indexes, FALSE);
-			if (final_num_retained_indexes == spat_nelements-1) {
-				peaks[ii] = -1;		// no clipping occurred, couldn't find a target
+			printf("\nBin:\t\t\t\t%d", ii);	
+			printf("\nStart mean:\t\t\t%f", start_mean);
+			printf("\nStart SD:\t\t\t%f", start_sd);
+			iterative_sigma_clip(this_spat_values, spat_nelements, clip_sigma, retain_indexes, start_mean, start_sd, &final_mean, &final_sd, &final_num_retained_indexes, FALSE);
+			printf("\nFinal mean:\t\t\t%f", final_mean);
+			printf("\nFinal SD:\t\t\t%f", final_sd);
+			
+			// 2.	Smooth array with median filter
+			double this_spat_values_smoothed[spat_nelements];			
+			memset(this_spat_values_smoothed, 0, sizeof(double)*spat_nelements);
+			median_filter(this_spat_values, this_spat_values_smoothed, spat_nelements, median_filter_width_px);
+			
+			// 3.	Ascertain if this bin contains target flux
+			int num_pixels_contain_target_flux = 0;
+			for (jj=0; jj<spat_nelements-1; jj++) {
+				if (this_spat_values_smoothed[jj] > final_mean + final_sd*min_SNR) {
+					num_pixels_contain_target_flux++;
+				}
+			}
+			printf("\nNum pixels (target):\t\t%d", num_pixels_contain_target_flux);
+			
+			printf("\nIs bin used:\t\t\t");
+			if (num_pixels_contain_target_flux >= min_spatial_width_px) {
+				printf("Yes\n");
+				num_bins_contain_target_flux++;
+			} else {
+				printf("No\n");
+				peaks[ii] = -1;
 				continue;
 			}
 			
 			// 3.	Take derivatives
-			memset(this_spat_values_smoothed_der, 0, sizeof(double)*spat_nelements);
-			for (jj=0; jj<spat_nelements-1; jj++) {
-				this_spat_values_smoothed_der[jj] = this_frame_values_binned[jj][ii] - this_frame_values_binned[jj-1][ii];
+			double this_spat_values_der[spat_nelements-1];
+			memset(this_spat_values_der, 0, sizeof(double)*spat_nelements-1);
+			for (jj=1; jj<spat_nelements; jj++) {
+				this_spat_values_der[jj-1] = this_frame_values_binned[jj][ii] - this_frame_values_binned[jj-1][ii];
 			}
 			
-			// 4.	Get index of sorted derivatives (in ascending order) and pick most negative gradient
-			size_t this_spat_values_smoothed_der_idx [spat_nelements-1];	
-			gsl_sort_index(this_spat_values_smoothed_der_idx, this_spat_values_smoothed_der, 1, spat_nelements-1);
-			double this_pk_idx = this_spat_values_smoothed_der_idx[spat_nelements-3] + 2;	// +2 as correction for taking derivative
-			peaks[ii] = this_pk_idx;
-		}	
-		
-		// 5.	Get the median value of peak array
-		double peaks_sorted[disp_nelements_binned];
-		memcpy(peaks_sorted, peaks, sizeof(double)*disp_nelements_binned);		
-		gsl_sort(peaks_sorted, 1, disp_nelements_binned);	
-
-		int pk_idx_median = (int)round(gsl_stats_median_from_sorted_data(peaks_sorted, 1, disp_nelements_binned));
-		
-		printf("\nPeak finding results");
-		printf("\n--------------------\n");
-		printf("\nMedian peak index (px):\t%d\n", pk_idx_median);
-
-		// 6.	Get parabolic centroid
-		double this_pk_window_idxs[1 + (2*centroid_half_window_size_px)];
-		double this_pk_window_vals[1 + (2*centroid_half_window_size_px)];
-		double peaks_fitted[disp_nelements_binned];
-		for (ii=0; ii<disp_nelements_binned; ii++) {
-			if (peaks[ii] == -1)
-				continue;
+			// 4.	Smooth derivatives
+			double this_spat_values_der_smoothed[spat_nelements-1];	
+			memcpy(this_spat_values_der_smoothed, this_spat_values_der, sizeof(double)*spat_nelements-1);
+			median_filter(this_spat_values_der, this_spat_values_der_smoothed, spat_nelements-1, median_filter_width_px);				
 			
-			memset(this_pk_window_idxs, 0, sizeof(double)*1 + (2*centroid_half_window_size_px));
-			memset(this_pk_window_vals, 0, sizeof(double)*1 + (2*centroid_half_window_size_px));
-			int idx = 0;
-			for (jj=pk_idx_median-centroid_half_window_size_px; jj<=pk_idx_median+centroid_half_window_size_px; jj++) {
+			// 5.	Pick most positive gradient
+			size_t this_pk_idx = gsl_stats_max_index(this_spat_values_der_smoothed, 1, spat_nelements-1);
+			printf("Start peak index:\t\t%d\n", this_pk_idx);	
+			
+			// 6.	Using this index, find derivative turnover point
+			printf("Found turnover:\t\t\t");			
+			bool found_turnover = FALSE;
+			for (jj=this_pk_idx; jj<this_pk_idx+max_centering_num_px; jj++) {
+				if (this_spat_values_der_smoothed[jj] < 0.) {
+					this_pk_idx = jj;
+					found_turnover = TRUE;
+					break;
+				}
+			}
+			
+			if (found_turnover) {
+				printf("Yes\n");
+				printf("End peak index:\t\t\t%d\n", this_pk_idx);	
+			} else {
+				printf("No\n");
+				peaks[ii] = -1;
+				continue;
+			}
+
+			// 7.	Get parabolic centroid
+			double this_pk_window_idxs[1 + (2*centroid_half_window_size_px)];
+			double this_pk_window_vals[1 + (2*centroid_half_window_size_px)];
+			
+			memset(this_pk_window_idxs, 0, sizeof(double)*(1 + (2*centroid_half_window_size_px)));
+			memset(this_pk_window_vals, 0, sizeof(double)*(1 + (2*centroid_half_window_size_px)));
+			idx = 0;
+			for (jj=this_pk_idx-centroid_half_window_size_px; jj<=this_pk_idx+centroid_half_window_size_px; jj++) {
 				this_pk_window_idxs[idx] = jj;
 				this_pk_window_vals[idx] = this_frame_values_binned[jj][ii];
 				idx++;
-			}
-
+			}	
+			
 			int order = 2;
 			double coeffs [order+1];  
 			memset(coeffs, 0, sizeof(double)*order+1);
 			double chi_squared;
 			if (calc_least_sq_fit(2, 1 + (2*centroid_half_window_size_px), this_pk_window_idxs, this_pk_window_vals, coeffs, &chi_squared)) {
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -6, "Status flag for L2 frfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -7, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 				free(target_f);
 				if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
@@ -258,11 +323,29 @@ int main(int argc, char *argv []) {
 				return 1; 		
 
 			}
+			
+			double fitted_peak_idx = -coeffs[1]/(2*coeffs[2]);
+			printf("Fitted peak index:\t\t%f\n", fitted_peak_idx);
 
-			peaks_fitted[ii] = -coeffs[1]/(2*coeffs[2]);
+			peaks[ii] = fitted_peak_idx;	
+			
+			/*for (jj=0; jj<spat_nelements-1; jj++) {
+				printf("%d\t%f\t%f\n", jj, this_spat_values_der_smoothed[jj], this_spat_values_der[jj]);
+			}*/ // DEBUG	
+			
+		}	
+		
+		printf("\nNum bins with target flux:\t%d\n", num_bins_contain_target_flux);		
+		
+		if (num_bins_contain_target_flux < min_used_bins) {
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -8, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
-		}
+			free(target_f);
+			if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
 
+			return 1;
+		}		
+		
 		// ***********************************************************************
 		// Create [FRFIND_OUTPUTF_PEAKS_FILE] output file and print a few 
 		// parameters
@@ -272,7 +355,7 @@ int main(int argc, char *argv []) {
 
 		if (!outputfile) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -7, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -9, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(target_f);
 			if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
@@ -296,7 +379,7 @@ int main(int argc, char *argv []) {
 			if (peaks[ii] == -1)
 				continue;
 			
-			fprintf(outputfile, "%f\t%f\n", ii*bin_size_px + (double)bin_size_px/2., peaks_fitted[ii]);
+			fprintf(outputfile, "%f\t%f\n", ii*bin_size_px + (double)bin_size_px/2., peaks[ii]);
 		}
 		
 		fprintf(outputfile, "%d", EOF);		
@@ -311,7 +394,7 @@ int main(int argc, char *argv []) {
 		
 		if (fclose(outputfile)) {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -8, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -10, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
 
@@ -321,7 +404,7 @@ int main(int argc, char *argv []) {
 
 		if(fits_close_file(target_f_ptr, &target_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -9, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -11, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, target_f_status); 
 
 			return 1; 

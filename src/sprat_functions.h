@@ -17,7 +17,7 @@ int find_peaks_contiguous (int, int, double **, int **, int *, int, int, int, in
 int find_time (char []);
 int flip_array_dbl (double [], int);
 int interpolate (char [], double [], double [], int, double, double, double, double []);
-int iterative_sigma_clip (double [], int, float, int [], double *, double *, int *, bool);
+int iterative_sigma_clip (double [], int, float, int [], double, double, double *, double *, int *, bool);
 int lsearch_int (int [], int, int);
 int median_filter (double [], double [], int, int);
 int populate_img_parameters (char [], fitsfile *, int, int *, int *, long [], int *, char []);

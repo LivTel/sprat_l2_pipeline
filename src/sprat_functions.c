@@ -747,10 +747,10 @@ int interpolate(char interpolation_type [], double x_wav [], double x_val [], in
 
 ************************************************************************/
 
-int iterative_sigma_clip(double values [], int n, float clip_sigma, int retain_indexes [], double * final_mean, double * final_sd, int * final_num_retained_indexes, int use_median) {
-
+int iterative_sigma_clip(double values [], int n, float clip_sigma, int retain_indexes [], double start_av, double start_sd, double * final_mean, double * final_sd, int * final_num_retained_indexes, int use_median) {
+	
 	int ii;
-
+		
 	int this_iteration_num_retained_indexes, last_iteration_num_retained_indexes = n;
 
 	int this_iteration_values_index;
@@ -764,14 +764,22 @@ int iterative_sigma_clip(double values [], int n, float clip_sigma, int retain_i
 		retain_indexes[ii] = TRUE;
 
 	}
-
-	double values_sorted [n];
-	memcpy(values_sorted, values, sizeof(double)*n);		
-	gsl_sort(values_sorted, 1, n);
 	
-	double mean = gsl_stats_mean(values_sorted, 1, n);
-	double median = gsl_stats_median_from_sorted_data(values_sorted, 1, n);
-	double sd = gsl_stats_sd(values_sorted, 1, n);
+	double mean, median, sd;
+	double values_sorted [n];
+	
+	if (start_av == 0 || start_sd == 0) {
+		memcpy(values_sorted, values, sizeof(double)*n);		
+		gsl_sort(values_sorted, 1, n);
+
+		mean = gsl_stats_mean(values_sorted, 1, n);
+		median = gsl_stats_median_from_sorted_data(values_sorted, 1, n);
+		sd = gsl_stats_sd(values_sorted, 1, n);		
+	} else {
+		mean	= start_av;
+		median	= start_av;
+		sd	= start_sd;
+	}
 	
 	double ceiling;
 	if (!use_median) {
@@ -836,7 +844,7 @@ int iterative_sigma_clip(double values [], int n, float clip_sigma, int retain_i
 
 		printf("\nIteration:\t\t\t%d\n", iteration_count);
 		printf("Ceiling:\t\t\t%.3e\n", ceiling);
-		printf("Number of indexes retained:\t%d\n", this_iteration_num_retained_indexes);
+		printf("Number of indexes retained:\t%d", this_iteration_num_retained_indexes);
 		
 		double this_iteration_values_sorted [this_iteration_num_retained_indexes];
 		memcpy(this_iteration_values_sorted, this_iteration_values, sizeof(double)*this_iteration_num_retained_indexes);		
@@ -857,7 +865,7 @@ int iterative_sigma_clip(double values [], int n, float clip_sigma, int retain_i
 	
 		free(this_iteration_values);
 	}
-	
+
 	*final_mean = mean;
 	*final_sd = sd;
 
