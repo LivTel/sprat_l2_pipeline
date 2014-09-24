@@ -35,6 +35,7 @@ int main(int argc, char *argv []) {
 
 			RETURN_FLAG = 1;
 
+
 		} else {
 
 			print_file(SPF_BLURB_FILE);
