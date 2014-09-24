@@ -403,49 +403,7 @@ int main(int argc, char *argv []) {
 				this_frame_values_binned_1D[idx] = this_frame_values_binned[jj][ii];
 				idx++;
 			}
-		}			// 1a.	Establish if any target flux is in this bin
-			// 	First find the mean/sd of the [bg_percentile]th lowest valued pixels as an initial parameters for sigma clip
-			for (jj=0; jj<spat_nelements; jj++) {
-				this_spat_values[jj] = this_frame_values_binned[jj][ii];
-			}			
-			memcpy(this_spat_values_sorted, this_spat_values, sizeof(double)*spat_nelements);	
-			gsl_sort(this_spat_values_sorted, 1, spat_nelements);
-			
-			int bg_nelements = (int)floor(spat_nelements*bg_percentile);
-			double bg_values [bg_nelements];
-			int idx = 0;
-			for (jj=0; jj<spat_nelements; jj++) {
-				if (this_spat_values_sorted[jj] != 0) {			// avoid 0s set from median filter edges
-					bg_values[idx] = this_spat_values_sorted[jj];
-					idx++;
-					if (idx == bg_nelements)
-						break;
-				}
-			}
-
-			if (idx != bg_nelements) {
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -6, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
-
-				free(target_f);
-				if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
-
-				return 1;
-			}
-			
-			double start_mean = gsl_stats_mean(bg_values, 1, bg_nelements);
-			double start_sd	  = gsl_stats_sd(bg_values, 1, bg_nelements);
-
-			// 1b.	Iterative sigma clip around unsmoothed dataset with the initial guesses
-			int retain_indexes[spat_nelements];
-			double final_mean, final_sd;
-			int final_num_retained_indexes;
-			
-			printf("\nBin:\t\t\t\t%d", ii);	
-			printf("\nStart mean:\t\t\t%f", start_mean);
-			printf("\nStart SD:\t\t\t%f", start_sd);
-			iterative_sigma_clip(this_spat_values, spat_nelements, clip_sigma, retain_indexes, start_mean, start_sd, &final_mean, &final_sd, &final_num_retained_indexes, FALSE);
-			printf("\nFinal mean:\t\t\t%f", final_mean);
-			printf("\nFinal SD:\t\t\t%f", final_sd);
+		}	
 		
 		// 3.	Perform iterative sigma clip of frame to ascertain approximate background level of frame
 		double this_frame_values_binned_mean = gsl_stats_mean(this_frame_values_binned_1D, 1, disp_nelements_binned*spat_nelements);

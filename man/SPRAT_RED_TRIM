@@ -12,7 +12,7 @@ Usage:	spfind continuum_file
 	       output_file
 Synopsis:
 
-An automatic trimming routine to extract long-slit spectra.
+An automatic trimming routine to extract the active region from a long-slit exposure.
 
 Description:
 
