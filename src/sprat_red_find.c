@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_findedges.c
- Last Modified Date:     	11/09/14
+ Last Modified Date:     	24/09/14
 
 ************************************************************************/
 
@@ -34,7 +34,6 @@ int main(int argc, char *argv []) {
 		if(populate_env_variable(SPF_BLURB_FILE, "L2_SPF_BLURB_FILE")) {
 
 			RETURN_FLAG = 1;
-
 
 		} else {
 

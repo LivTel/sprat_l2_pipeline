@@ -1,9 +1,9 @@
 ####################################### sprat_red_trim ############################################
 
 Usage:	spfind continuum_file 
-	       target_file
-	       input_file       
+	       input_file      
 	       bin_size_px
+	       bg_percentile
 	       clip_sigma
 	       thresh_sigma
 	       scan_window_size_px
@@ -17,7 +17,8 @@ An automatic trimming routine to extract the active region from a long-slit expo
 Description:
 
 The data is first binned along the dispersion axis (defined as x) with a bin size of [bin_size]. 
-The resulting array is then filtered through an iterative sigma clip with sigma [clip_sigma] 
+An initial estimate of the mean/sd is found using the [bg_percentile]th lowest
+valued pixels. This mean/sd is then used in an iterative sigma clip with sigma [clip_sigma]
 and a mean background level obtained. The mean of this background level is then compared with 
 the mean frame level, and a warning is given if the two are found to be of a similar magnitude, 
 i.e. 
@@ -34,6 +35,6 @@ Finally, the automatically deduced width is checked to be greater than [min_spec
 
 Example: 
 
-sptrim continuum.fits target.fits 20 1.0 3.0 100 1 100 out.fits
+sptrim continuum.fits target.fits 20 0.1 1.0 3.0 100 1 100 out.fits
 
 ###################################################################################################

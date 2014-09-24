@@ -1,7 +1,7 @@
 
 ##################################
 # L2_aliases 			 #
-# Last Modified Date:   18/09/14 #
+# Last Modified Date:   24/09/14 #
 ##################################
 
 ################
@@ -14,6 +14,8 @@ alias spfind $L2_BIN_DIR/spfind
 ##################
 # Script aliases #
 ##################
+
+alias l2pp python $L2_SCRIPT_DIR/L2_analyse_plotpeaks.py
 
 
 

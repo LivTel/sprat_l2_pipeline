@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_trim.c
- Last Modified Date:     	18/09/14
+ Last Modified Date:     	24/09/14
 
 ************************************************************************/
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv []) {
 
 	}
 
-	if (argc != 10) {
+	if (argc != 11) {
 
 		if(populate_env_variable(SPT_BLURB_FILE, "L2_SPT_BLURB_FILE")) {
 
@@ -60,12 +60,13 @@ int main(int argc, char *argv []) {
 		char *cont_f			= strdup(argv[1]);
 		char *in_f			= strdup(argv[2]);		
 		int bin_size_px			= strtol(argv[3], NULL, 0);
-		double clip_sigma		= strtod(argv[4], NULL);
-		double thresh_sigma		= strtod(argv[5], NULL);		
-		int scan_window_size_px		= strtol(argv[6], NULL, 0);
-		int scan_window_nsigma		= strtol(argv[7], NULL, 0);
-		int min_spectrum_width_px	= strtol(argv[8], NULL, 0);
-		char *out_f			= strdup(argv[9]);
+		double bg_percentile		= strtod(argv[4], NULL);		
+		double clip_sigma		= strtod(argv[5], NULL);
+		double thresh_sigma		= strtod(argv[6], NULL);		
+		int scan_window_size_px		= strtol(argv[7], NULL, 0);
+		int scan_window_nsigma		= strtol(argv[8], NULL, 0);
+		int min_spectrum_width_px	= strtol(argv[9], NULL, 0);
+		char *out_f			= strdup(argv[10]);
 		
 		// ***********************************************************************
 		// Open cont file (ARG 1), get parameters and perform any data format 
@@ -404,21 +405,54 @@ int main(int argc, char *argv []) {
 				idx++;
 			}
 		}	
+
+		double this_frame_values_binned_1D_sorted[spat_nelements*disp_nelements_binned];
+		memcpy(this_frame_values_binned_1D_sorted, this_frame_values_binned_1D, sizeof(double)*spat_nelements*disp_nelements_binned);	
+		gsl_sort(this_frame_values_binned_1D_sorted, 1, spat_nelements*disp_nelements_binned);
+			
+		int bg_nelements = (int)floor(spat_nelements*disp_nelements_binned*bg_percentile);
+		double bg_values [bg_nelements];
+		idx = 0;
+		for (jj=0; jj<spat_nelements*disp_nelements_binned; jj++) {
+			bg_values[idx] = this_frame_values_binned_1D_sorted[jj];
+			idx++;
+			if (idx == bg_nelements)
+					break;
+		}
 		
+		if (idx != bg_nelements) {
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -14, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+
+			free(cont_f);
+			free(in_f);					
+			free(out_f);				
+			if(fits_close_file(cont_f_ptr, &cont_f_status)) fits_report_error (stdout, cont_f_status); 
+
+			return 1;
+		}		
+		
+		double start_mean = gsl_stats_mean(bg_values, 1, bg_nelements);
+		double start_sd	  = gsl_stats_sd(bg_values, 1, bg_nelements);		
+	
 		// 3.	Perform iterative sigma clip of frame to ascertain approximate background level of frame
 		double this_frame_values_binned_mean = gsl_stats_mean(this_frame_values_binned_1D, 1, disp_nelements_binned*spat_nelements);
 		double this_bg_values_mean, this_bg_values_sd;
 		int final_num_retained_indexes;
 		int retain_indexes[spat_nelements*disp_nelements_binned]; 
 		
-		iterative_sigma_clip(this_frame_values_binned_1D, spat_nelements*disp_nelements_binned, clip_sigma, retain_indexes, &this_bg_values_mean, &this_bg_values_sd, &final_num_retained_indexes, TRUE);
-		
 		printf("\nBinned background level determination");
-		printf("\n-------------------------------------\n");
-		printf("\nFrame Mean (counts):\t%.2f", this_frame_values_binned_mean);		
-		printf("\nBG Mean (counts):\t%.2f", this_bg_values_mean);
-		printf("\nBG SD  (counts):\t%.2f", this_bg_values_sd);
-		printf("\nWindow thresh (counts):\t> %.2f\n", this_bg_values_mean + scan_window_nsigma*this_bg_values_sd);
+		printf("\n-------------------------------------\n\n");
+		
+		printf("\nStart mean:\t\t\t%f", start_mean);
+		printf("\nStart SD:\t\t\t%f", start_sd);
+		iterative_sigma_clip(this_frame_values_binned_1D, spat_nelements*disp_nelements_binned, clip_sigma, retain_indexes, start_mean, start_sd, &this_bg_values_mean, &this_bg_values_sd, &final_num_retained_indexes, TRUE);
+		printf("\nFinal mean:\t\t\t%f", this_bg_values_mean);
+		printf("\nFinal SD:\t\t\t%f\n", this_bg_values_sd);		
+		
+		printf("\nFrame Mean (counts):\t\t%.2f", this_frame_values_binned_mean);		
+		printf("\nBG Mean (counts):\t\t%.2f", this_bg_values_mean);
+		printf("\nBG SD  (counts):\t\t%.2f", this_bg_values_sd);
+		printf("\nWindow thresh (counts):\t\t> %.2f\n", this_bg_values_mean + scan_window_nsigma*this_bg_values_sd);
 		
 		// 4.	Check that there's a significant difference between BG and frame means.
 		if (this_bg_values_mean + this_bg_values_sd*thresh_sigma >= this_frame_values_binned_mean) {
@@ -527,7 +561,7 @@ int main(int argc, char *argv []) {
 		
 		if (spectrum_width < min_spectrum_width_px) {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -14, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -15, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -576,7 +610,7 @@ int main(int argc, char *argv []) {
 
 				} else { 
 
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -15, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -16, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 					free(cont_f);
 					free(in_f);					
@@ -590,7 +624,7 @@ int main(int argc, char *argv []) {
 
 			} else {
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -16, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -17, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 				free(cont_f);
 				free(in_f);					
@@ -604,7 +638,7 @@ int main(int argc, char *argv []) {
 
 		} else {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -17, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -18, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -628,7 +662,7 @@ int main(int argc, char *argv []) {
 
 		if(fits_close_file(cont_f_ptr, &cont_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -18, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -19, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, cont_f_status); 
 
 			return 1; 
@@ -637,7 +671,7 @@ int main(int argc, char *argv []) {
 	    	
 		if(fits_close_file(in_f_ptr, &in_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -19, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -20, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, in_f_status); 
 
 			return 1; 
@@ -646,7 +680,7 @@ int main(int argc, char *argv []) {
 	    	
 		if(fits_close_file(out_f_ptr, &out_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -20, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -21, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, out_f_status); 
 
 			return 1; 

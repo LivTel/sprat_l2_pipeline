@@ -13,7 +13,7 @@ Usage:	spfind target_file
 
 Synopsis:
 
-An automatic peak finding routine.
+An automatic peak finding and centroiding routine for long-slit spectra.
 
 Description:
 
@@ -38,6 +38,6 @@ Finally, the program will error if the number of usable bins is < [min_used_bins
 
 Example: 
 
-spfind target_trimmed.fits 50 0.1 3 3 100 4 7 3 5
+spfind input_trimmed.fits 50 0.1 3 3 100 4 7 3 5
 
 ###################################################################################################
