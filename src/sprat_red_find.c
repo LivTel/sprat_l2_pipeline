@@ -1,6 +1,6 @@
 /************************************************************************
 
- File:				sprat_red_findedges.c
+ File:				sprat_red_find.c
  Last Modified Date:     	24/09/14
 
 ************************************************************************/
@@ -41,7 +41,7 @@ int main(int argc, char *argv []) {
 
 		}
 
-		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -1, "Status flag for spfind L2 routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -1, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 		return 1;
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv []) {
 
 				if (target_f_naxis != 2) {	// any data format checks here
 
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -2, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -2, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 					free(target_f);
 					if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
@@ -86,7 +86,7 @@ int main(int argc, char *argv []) {
 
 			} else { 
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -3, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -3, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, target_f_status); 
 
 				free(target_f);
@@ -98,7 +98,7 @@ int main(int argc, char *argv []) {
 
 		} else { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -4, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -4, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fits_report_error(stdout, target_f_status); 
 
 			free(target_f);
@@ -146,7 +146,7 @@ int main(int argc, char *argv []) {
 
 			} else { 
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -5, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -5, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, target_f_status); 
 
 				free(target_f);									
@@ -213,7 +213,7 @@ int main(int argc, char *argv []) {
 			}
 
 			if (idx != bg_nelements) {
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -6, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -6, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 				free(target_f);
 				if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
@@ -315,7 +315,7 @@ int main(int argc, char *argv []) {
 			double chi_squared;
 			if (calc_least_sq_fit(2, 1 + (2*centroid_half_window_size_px), this_pk_window_idxs, this_pk_window_vals, coeffs, &chi_squared)) {
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -7, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -7, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 				free(target_f);
 				if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
@@ -338,7 +338,7 @@ int main(int argc, char *argv []) {
 		printf("\nNum bins with target flux:\t%d\n", num_bins_contain_target_flux);		
 		
 		if (num_bins_contain_target_flux < min_used_bins) {
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -8, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -8, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 			free(target_f);
 			if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
@@ -355,7 +355,7 @@ int main(int argc, char *argv []) {
 
 		if (!outputfile) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -9, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -9, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 			free(target_f);
 			if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
@@ -394,7 +394,7 @@ int main(int argc, char *argv []) {
 		
 		if (fclose(outputfile)) {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -10, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -10, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 			if(fits_close_file(target_f_ptr, &target_f_status)) fits_report_error (stdout, target_f_status); 
 
@@ -404,7 +404,7 @@ int main(int argc, char *argv []) {
 
 		if(fits_close_file(target_f_ptr, &target_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -11, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -11, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, target_f_status); 
 
 			return 1; 
@@ -414,7 +414,7 @@ int main(int argc, char *argv []) {
 		// ***********************************************************************
 		// Write success to [ERROR_CODES_FILE]
 
-		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", RETURN_FLAG, "Status flag for L2 spfind routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", RETURN_FLAG, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 		return 0;
 

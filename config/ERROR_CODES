@@ -44,3 +44,13 @@ L2STATFI	-9	Failed to create [SPFIND_OUTPUTF_PEAKS_FILE] output file
 L2STATFI	-10	Failed to close [SPFIND_OUTPUTF_PEAKS_FILE] output file
 L2STATFI	-11	Failed to close target FITS file (ARG 1)
 
+L2STATTC	2	Possible poor fit, χ² not within [SPTRACE_VAR_CHISQUARED_MIN] and [SPTRACE_VAR_CHISQUARED_MAX]
+L2STATTC	1	Failed to get L2_SPR_BLURB_FILE environment variable
+L2STATTC	0	No errors encountered
+L2STATTC	-1	Failed on command line
+L2STATTC	-2	[SPFIND_OUTPUTF_PEAKS_FILE] input file doesn't exist
+L2STATTC	-3	Polynomial tracing order not between [SPTRACE_VAR_POLYORDER_{LO/HI}] limits
+L2STATTC	-4	Failed to create [SPTRACE_OUTPUTF_TRACES_FILE] output file
+L2STATTC	-999	Failed to close [SPFIND_OUTPUTF_PEAKS_FILE] input file
+L2STATTC	-999	Failed to close [SPTRACE_OUTPUTF_TRACES_FILE] output file
+

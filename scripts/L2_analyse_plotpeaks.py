@@ -2,29 +2,45 @@ from matplotlib import pyplot as plt
 import pyfits
 import sys
 import numpy as np
+from optparse import OptionParser
 
-dat = sys.argv[1]
-hdulist = pyfits.open(sys.argv[2])
+parser = OptionParser()
+parser.add_option('--f', dest='f_in', action='store', default='out.fits')
+parser.add_option('--p', dest='dat_peaks', action='store', default='spfind_peaks.dat')
+parser.add_option('--t', dest='dat_traces', action='store', default='sptrace_traces.dat')
+(options, args) = parser.parse_args()
+
+f_in		= options.f_in
+dat_peaks  	= options.dat_peaks
+dat_traces 	= options.dat_traces
+
+hdulist = pyfits.open(f_in)
 data = hdulist[0].data
 
-plt.imshow(data, aspect='auto', vmin=np.min(data), vmax=800)
-plt.ylim([60,170])
+plt.imshow(data, aspect='auto', vmin=np.median(data), vmax=np.percentile(data, 99.5))
 
 x = []
 y = []
-with open(dat) as f:
+with open(dat_peaks) as f:
   for line in f:
     if not line.startswith('#') and line.strip() != "" and not line.startswith('-1'):
       x.append(float(line.split('\t')[0]))
       y.append(float(line.split('\t')[1]))
-
-fit_coeffs = np.polyfit(x, y, 2)
-y_fitted = np.polyval(fit_coeffs, x)
-
-print fit_coeffs
+      
+coeffs = []
+with open(dat_traces) as f:
+  for line in f:
+    if line.startswith('# Polynomial Order'):
+      ncoeffs = int(line.split('\t')[1]) + 1  
+    elif not line.startswith('#') and line.strip() != "" and not line.startswith('-1'):
+      for i in range(ncoeffs):
+        coeffs.append(float(line.split('\t')[i]))
+        
+x_fitted = range(0, len(data[0]))
+y_fitted = np.polyval(coeffs[::-1], x_fitted)
 
 plt.plot(x, y, 'ko')
-plt.plot(x, y_fitted, 'r-')
+plt.plot(x_fitted, y_fitted, 'r-')
 plt.colorbar()
 
 plt.show()

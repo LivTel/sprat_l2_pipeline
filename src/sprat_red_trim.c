@@ -188,7 +188,7 @@ int main(int argc, char *argv []) {
 
 			printf("FAIL\n"); 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -8, "Status flag for L2 sptrim routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -8, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -211,7 +211,7 @@ int main(int argc, char *argv []) {
 	
 			printf("FAIL\n"); 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -9, "Status flag for L2 sptrim routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -9, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -234,7 +234,7 @@ int main(int argc, char *argv []) {
 	
 			printf("FAIL\n"); 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -10, "Status flag for L2 sptrim routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -10, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -257,7 +257,7 @@ int main(int argc, char *argv []) {
 
 			printf("FAIL\n"); 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -11, "Status flag for L2 sptrim routinee", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -11, "Status flag for L2 sptrim routinee", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
