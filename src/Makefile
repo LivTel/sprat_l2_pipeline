@@ -43,7 +43,7 @@ INCLUDES	= -I/usr/include/cfitsio -I/usr/include/gsl#			rmb/laptop
 # make default #
 ################
 
-all: sprat_red_trim sprat_red_find sprat_red_trace
+all: sprat_red_trim sprat_red_find sprat_red_trace_sdist sprat_red_correct_sdist
 
 #################
 # make routines #
@@ -57,9 +57,13 @@ sprat_red_find: sprat_red_find.c libsprat
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) sprat_red_find.c -lsprat -lgsl -lgslcblas -lcfitsio -lm -o spfind
 	$(MV) spfind $(L2_BIN_DIR)
 	
-sprat_red_trace: sprat_red_trace.c libsprat
-	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) sprat_red_trace.c -lsprat -lgsl -lgslcblas -lcfitsio -lm -o sptrace
+sprat_red_trace_sdist: sprat_red_trace_sdist.c libsprat
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) sprat_red_trace_sdist.c -lsprat -lgsl -lgslcblas -lcfitsio -lm -o sptrace
 	$(MV) sptrace $(L2_BIN_DIR)	
+	
+sprat_red_correct_sdist: sprat_red_correct_sdist.c libsprat
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) sprat_red_correct_sdist.c -lsprat -lgsl -lgslcblas -lcfitsio -lm -o spcorrect
+	$(MV) spcorrect $(L2_BIN_DIR)	
 
 sprat_functions: sprat_functions.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c sprat_functions.c

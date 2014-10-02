@@ -1,9 +1,9 @@
 /************************************************************************
 
- File:				sprat_red_/*!TODO*/.h
- Last Modified Date:     	11/09/14
+ File:				sprat_red_correct_sdist.h
+ Last Modified Date:     	02/10/14
 
 ************************************************************************/
 
-char SP/*!TODO*/_BLURB_FILE [200];
+char SPC_BLURB_FILE [200];
 

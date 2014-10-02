@@ -1,7 +1,7 @@
 /************************************************************************
 
- File:				sprat_red_trace.c
- Last Modified Date:     	30/09/14
+ File:				sprat_red_trace_sdist.c
+ Last Modified Date:     	02/10/14
 
 ************************************************************************/
 
@@ -14,7 +14,7 @@
 #include "sprat_error_handling.h"
 #include "sprat_functions.h"
 #include "sprat_config.h"
-#include "sprat_red_trace.h"
+#include "sprat_red_trace_sdist.h"
 #include "sprat_red_find.h"
 
 // *********************************************************************
@@ -167,18 +167,18 @@ int main(int argc, char *argv []) {
 		if ((this_chi_squared < SPTRACE_VAR_CHISQUARED_MIN) || (this_chi_squared > SPTRACE_VAR_CHISQUARED_MAX)) {	// comparing doubles but accuracy isn't a necessity so don't need gsl_fcmp function
 			RETURN_FLAG = 2;
 		}		
-		
+
 		// ***********************************************************************
 		// Close [SPFIND_OUTPUTF_PEAKS_FILE] input file and 
 		// [SPTRACE_OUTPUTF_TRACES_FILE] output file
 
 		if (fclose(inputfile)) {
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", 999/*TODO*/, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", -6, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			return 1; 
 		}
 		
 		if (fclose(outputfile)) {
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", 999/*TODO*/, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", -7, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			return 1; 
 		}		
 		
