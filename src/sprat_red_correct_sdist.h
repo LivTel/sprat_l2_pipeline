@@ -1,9 +1,9 @@
 /************************************************************************
 
  File:				sprat_red_correct_sdist.h
- Last Modified Date:     	02/10/14
+ Last Modified Date:     	03/10/14
 
 ************************************************************************/
 
-char SPC_BLURB_FILE [200];
+char SPCS_BLURB_FILE [200];
 

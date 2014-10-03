@@ -1,11 +1,11 @@
 /************************************************************************
 
  File:				sprat_red_trace_sdist.h
- Last Modified Date:     	30/09/14
+ Last Modified Date:     	03/10/14
 
 ************************************************************************/
 
-char SPR_BLURB_FILE [200];
+char SPTS_BLURB_FILE [200];
 
 int SPTRACE_VAR_POLYORDER_LO			= 2;
 int SPTRACE_VAR_POLYORDER_HI			= 10;

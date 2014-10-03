@@ -1,14 +1,14 @@
 
 ##################################
 # L2_aliases 			 #
-# Last Modified Date:   02/10/14 #
+# Last Modified Date:   03/10/14 #
 ##################################
 
 ################
 # Core aliases #
 ################
 
-alias sptrim $L2_BIN_DIR/sptrim
+alias spclip $L2_BIN_DIR/spclip
 alias spfind $L2_BIN_DIR/spfind
 alias sptrace $L2_BIN_DIR/sptrace
 alias spcorrect $L2_BIN_DIR/spcorrect
@@ -18,6 +18,8 @@ alias spcorrect $L2_BIN_DIR/spcorrect
 ##################
 
 alias l2pp python $L2_SCRIPT_DIR/L2_analyse_plotpeaks.py
+
+alias l2exec python $L2_SCRIPT_DIR/L2_exec.py
 
 
 

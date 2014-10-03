@@ -1,7 +1,7 @@
 /************************************************************************
 
- File:				sprat_red_trim.c
- Last Modified Date:     	24/09/14
+ File:				sprat_red_clip.c
+ Last Modified Date:     	03/10/14
 
 ************************************************************************/
 
@@ -14,7 +14,7 @@
 #include "sprat_error_handling.h"
 #include "sprat_functions.h"
 #include "sprat_config.h"
-#include "sprat_red_trim.h"
+#include "sprat_red_clip.h"
 
 #include <gsl/gsl_sort_double.h>
 #include <gsl/gsl_statistics_double.h>
@@ -31,17 +31,17 @@ int main(int argc, char *argv []) {
 
 	if (argc != 11) {
 
-		if(populate_env_variable(SPT_BLURB_FILE, "L2_SPT_BLURB_FILE")) {
+		if(populate_env_variable(SPC_BLURB_FILE, "L2_SPC_BLURB_FILE")) {
 
 			RETURN_FLAG = 1;
 
 		} else {
 
-			print_file(SPT_BLURB_FILE);
+			print_file(SPC_BLURB_FILE);
 
 		}
 
-		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -1, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -1, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 		return 1;
 
@@ -83,7 +83,7 @@ int main(int argc, char *argv []) {
 
 				if (cont_f_naxis != 2) {	// any data format checks here
 
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -2, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -2, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 					free(cont_f);
 					free(in_f);					
@@ -96,7 +96,7 @@ int main(int argc, char *argv []) {
 
 			} else { 
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -3, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -3, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, cont_f_status); 
 
 				free(cont_f);
@@ -110,7 +110,7 @@ int main(int argc, char *argv []) {
 
 		} else { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -4, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -4, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error(stdout, cont_f_status); 
 
 			free(cont_f);
@@ -136,7 +136,7 @@ int main(int argc, char *argv []) {
 
 				if (in_f_naxis != 2) {	// any data format checks here
 
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -5, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -5, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 					free(cont_f);
 					free(in_f);					
@@ -150,7 +150,7 @@ int main(int argc, char *argv []) {
 
 			} else { 
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -6, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -6, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, in_f_status); 
 
 				free(cont_f);
@@ -165,7 +165,7 @@ int main(int argc, char *argv []) {
 
 		} else { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -7, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -7, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error(stdout, in_f_status); 
 
 			free(cont_f);
@@ -188,7 +188,7 @@ int main(int argc, char *argv []) {
 
 			printf("FAIL\n"); 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -8, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -8, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -211,7 +211,7 @@ int main(int argc, char *argv []) {
 	
 			printf("FAIL\n"); 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -9, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -9, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -234,7 +234,7 @@ int main(int argc, char *argv []) {
 	
 			printf("FAIL\n"); 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -10, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -10, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -257,7 +257,7 @@ int main(int argc, char *argv []) {
 
 			printf("FAIL\n"); 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATAR", -11, "Status flag for L2 sptrim routinee", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -11, "Status flag for L2 spclip routinee", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -319,7 +319,7 @@ int main(int argc, char *argv []) {
 
 			} else { 
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -12, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -12, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, cont_f_status); 
 
 				free(cont_f);
@@ -353,7 +353,7 @@ int main(int argc, char *argv []) {
 
 			} else { 
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -13, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -13, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, cont_f_status); 
 
 				free(cont_f);
@@ -421,7 +421,7 @@ int main(int argc, char *argv []) {
 		}
 		
 		if (idx != bg_nelements) {
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -14, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -14, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -561,7 +561,7 @@ int main(int argc, char *argv []) {
 		
 		if (spectrum_width < min_spectrum_width_px) {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -15, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -15, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -610,7 +610,7 @@ int main(int argc, char *argv []) {
 
 				} else { 
 
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -16, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -16, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 					free(cont_f);
 					free(in_f);					
@@ -624,7 +624,7 @@ int main(int argc, char *argv []) {
 
 			} else {
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -17, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -17, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 				free(cont_f);
 				free(in_f);					
@@ -638,7 +638,7 @@ int main(int argc, char *argv []) {
 
 		} else {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -18, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -18, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -662,7 +662,7 @@ int main(int argc, char *argv []) {
 
 		if(fits_close_file(cont_f_ptr, &cont_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -19, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -19, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, cont_f_status); 
 
 			return 1; 
@@ -671,7 +671,7 @@ int main(int argc, char *argv []) {
 	    	
 		if(fits_close_file(in_f_ptr, &in_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -20, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -20, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, in_f_status); 
 
 			return 1; 
@@ -680,7 +680,7 @@ int main(int argc, char *argv []) {
 	    	
 		if(fits_close_file(out_f_ptr, &out_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -21, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -21, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, out_f_status); 
 
 			return 1; 
@@ -690,7 +690,7 @@ int main(int argc, char *argv []) {
 		// ***********************************************************************
 		// Write success to [ERROR_CODES_FILE]
 
-		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", RETURN_FLAG, "Status flag for L2 sptrim routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", RETURN_FLAG, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 		return 0;
 

@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_trace_sdist.c
- Last Modified Date:     	02/10/14
+ Last Modified Date:     	03/10/14
 
 ************************************************************************/
 
@@ -28,17 +28,17 @@ int main(int argc, char *argv []) {
 
 	if (argc != 2) {
 
-		if(populate_env_variable(SPR_BLURB_FILE, "L2_SPR_BLURB_FILE")) {
+		if(populate_env_variable(SPTS_BLURB_FILE, "L2_SPTS_BLURB_FILE")) {
 
 			RETURN_FLAG = 1;
 
 		} else {
 
-			print_file(SPR_BLURB_FILE);
+			print_file(SPTS_BLURB_FILE);
 
 		}
 
-		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", -1, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
+		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -1, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 		return 1;
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv []) {
 
 		} else {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", -2, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -2, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 			return 1;
 
@@ -108,7 +108,7 @@ int main(int argc, char *argv []) {
 		// are sensible
 
 		if ((order < SPTRACE_VAR_POLYORDER_LO) || (order > SPTRACE_VAR_POLYORDER_HI)) {	// Check [order] is within config limits
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", -3, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -3, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fclose(inputfile);
 			return 1; 
 		}
@@ -121,7 +121,7 @@ int main(int argc, char *argv []) {
 		outputfile = fopen(SPTRACE_OUTPUTF_TRACES_FILE, FILE_WRITE_ACCESS);
 
 		if (!outputfile) { 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", -4, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -4, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fclose(inputfile);
 			return 1;
 		}
@@ -142,7 +142,7 @@ int main(int argc, char *argv []) {
 		double coeffs[order];
 		double this_chi_squared;
 		if (calc_least_sq_fit(order, row_count, x_coords, y_coords, coeffs, &this_chi_squared)) {	// reversed [coord_y] and [coord_x] as want to find x = f(y) not y = f(x)
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", -5, "Status flag for L2 frtrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -5, "Status flag for L2 frtrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fclose(inputfile);
 			fclose(outputfile);
 			return 1; 
@@ -173,18 +173,18 @@ int main(int argc, char *argv []) {
 		// [SPTRACE_OUTPUTF_TRACES_FILE] output file
 
 		if (fclose(inputfile)) {
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", -6, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -6, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			return 1; 
 		}
 		
 		if (fclose(outputfile)) {
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", -7, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -7, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			return 1; 
 		}		
 		
 		// Write success to [ERROR_CODES_FILE]
 
-		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTC", RETURN_FLAG, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
+		write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", RETURN_FLAG, "Status flag for L2 sptrace routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 		return 0;
 

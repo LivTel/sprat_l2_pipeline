@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_correct_sdist.c
- Last Modified Date:     	02/10/14
+ Last Modified Date:     	03/10/14
 
 ************************************************************************/
 
@@ -30,13 +30,13 @@ int main(int argc, char *argv []) {
 
 	if (argc != 5) {
 
-		if(populate_env_variable(SPC_BLURB_FILE, "L2_SPC_BLURB_FILE")) {
+		if(populate_env_variable(SPCS_BLURB_FILE, "L2_SPCS_BLURB_FILE")) {
 
 			RETURN_FLAG = 1;
 
 		} else {
 
-			print_file(SPC_BLURB_FILE);
+			print_file(SPCS_BLURB_FILE);
 
 		}
 
@@ -277,17 +277,6 @@ int main(int argc, char *argv []) {
 				max_offset = this_offset_ceil;
 		}	
 		
-		// Check that by rebinning we're not going to intersect the spectrum
-		if (c0 >= nyelements-max_offset || c0 <= max_offset) {
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -8, "Status flag for L2 frcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
-
-			free(input_f);
-			free(output_f);				
-			free(interpolation_type);				
-			if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-
-			return 1;
-		}
 		int nyelements_reb = nyelements-(2*max_offset);
 		
 		// ***********************************************************************
@@ -370,7 +359,7 @@ int main(int argc, char *argv []) {
 
 				} else { 
 
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -9, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
+					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -8, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
 					fits_report_error(stdout, output_f_status); 
 
 					free(input_f);
@@ -385,7 +374,7 @@ int main(int argc, char *argv []) {
 
 			} else {
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -10, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -9, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, output_f_status); 
 
 				free(input_f);
@@ -400,7 +389,7 @@ int main(int argc, char *argv []) {
 
 		} else {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -11, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -10, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fits_report_error(stdout, output_f_status); 
 
 			free(input_f);
@@ -425,7 +414,7 @@ int main(int argc, char *argv []) {
 		
 		if (fclose(inputfile)) {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -12, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -11, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 			if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
 
@@ -435,7 +424,7 @@ int main(int argc, char *argv []) {
 
 		if(fits_close_file(input_f_ptr, &input_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -13, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -12, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, input_f_status); 
 
 			return 1; 
@@ -444,7 +433,7 @@ int main(int argc, char *argv []) {
 	    	
 		if(fits_close_file(output_f_ptr, &output_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -14, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -13, "Status flag for L2 spcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, output_f_status); 
 
 			return 1; 

@@ -1,6 +1,6 @@
-####################################### sprat_red_trim ############################################
+####################################### sprat_red_clip ############################################
 
-Usage:	spfind continuum_file 
+Usage:	spclip continuum_file 
 	       input_file      
 	       bin_size_px
 	       bg_percentile
@@ -12,7 +12,7 @@ Usage:	spfind continuum_file
 	       output_file
 Synopsis:
 
-An automatic trimming routine to extract the active region from a long-slit exposure.
+An automatic clipping routine to extract the active region from a long-slit exposure.
 
 Description:
 
@@ -35,6 +35,6 @@ Finally, the automatically deduced width is checked to be greater than [min_spec
 
 Example: 
 
-sptrim continuum.fits target.fits 20 0.1 1.0 3.0 100 1 100 out.fits
+spclip continuum.fits target.fits 20 0.1 1.0 3.0 100 1 100 out.fits
 
 ###################################################################################################

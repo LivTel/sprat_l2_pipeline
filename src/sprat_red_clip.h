@@ -1,9 +1,9 @@
 /************************************************************************
 
- File:				sprat_red_trim.h
- Last Modified Date:     	18/09/14
+ File:				sprat_red_clip.h
+ Last Modified Date:     	03/10/14
 
 ************************************************************************/
 
-char SPT_BLURB_FILE [200];
+char SPC_BLURB_FILE [200];
 

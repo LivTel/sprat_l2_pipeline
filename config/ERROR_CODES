@@ -6,29 +6,29 @@
 
 # key		code	comment	
 
-L2STATTR	2	No significant difference between calculated background mean level and frame mean
-L2STATTR	1	Failed to get L2_SPT_BLURB_FILE environment variable
-L2STATTR	0	No errors encountered
-L2STATTR	-1	Failed on command line
-L2STATTR	-2	Continuum frame must have 2 axes
-L2STATTR	-3	Failed to get image parameters of continuum frame
-L2STATTR	-4	Failed to open continuum FITS file (ARG 1)
-L2STATTR	-5	Input frame must have 2 axes
-L2STATTR	-6	Failed to get image parameters of input frame
-L2STATTR	-7	Failed to open input FITS file (ARG 2)
-L2STATTR	-8	File consistency failure (Bits per pixel)
-L2STATTR	-9	File consistency failure (Number of axes)
-L2STATTR	-10	File consistency failure (Dimension of first axis)
-L2STATTR	-11	File consistency failure (Dimension of second axis)
-L2STATTR	-12	Failed to read row of continuum frame
-L2STATTR	-13	Failed to read row of input frame
-L2STATTR	-14	Spectum width is less than that defined by [min_spectrum_width] (ARG 7)
-L2STATTR	-15	Failed to write output img
-L2STATTR	-16	Failed to create output img
-L2STATTR	-17	Failed to create output FITS file (ARG 9)
-L2STATTR	-18	Failed to close continuum FITS file (ARG 1)
-L2STATTR	-19	Failed to close input FITS file (ARG 2)
-L2STATTR	-20	Failed to close input FITS file (ARG 9)
+L2STATCL	2	No significant difference between calculated background mean level and frame mean
+L2STATCL	1	Failed to get L2_SPT_BLURB_FILE environment variable
+L2STATCL	0	No errors encountered
+L2STATCL	-1	Failed on command line
+L2STATCL	-2	Continuum frame must have 2 axes
+L2STATCL	-3	Failed to get image parameters of continuum frame
+L2STATCL	-4	Failed to open continuum FITS file (ARG 1)
+L2STATCL	-5	Input frame must have 2 axes
+L2STATCL	-6	Failed to get image parameters of input frame
+L2STATCL	-7	Failed to open input FITS file (ARG 2)
+L2STATCL	-8	File consistency failure (Bits per pixel)
+L2STATCL	-9	File consistency failure (Number of axes)
+L2STATCL	-10	File consistency failure (Dimension of first axis)
+L2STATCL	-11	File consistency failure (Dimension of second axis)
+L2STATCL	-12	Failed to read row of continuum frame
+L2STATCL	-13	Failed to read row of input frame
+L2STATCL	-14	Spectum width is less than that defined by [min_spectrum_width] (ARG 7)
+L2STATCL	-15	Failed to write output img
+L2STATCL	-16	Failed to create output img
+L2STATCL	-17	Failed to create output FITS file (ARG 9)
+L2STATCL	-18	Failed to close continuum FITS file (ARG 1)
+L2STATCL	-19	Failed to close input FITS file (ARG 2)
+L2STATCL	-20	Failed to close input FITS file (ARG 9)
 
 L2STATFI	1	Failed to get L2_SPF_BLURB_FILE environment variable
 L2STATFI	0	No errors encountered
@@ -44,16 +44,16 @@ L2STATFI	-9	Failed to create [SPFIND_OUTPUTF_PEAKS_FILE] output file
 L2STATFI	-10	Failed to close [SPFIND_OUTPUTF_PEAKS_FILE] output file
 L2STATFI	-11	Failed to close target FITS file (ARG 1)
 
-L2STATTC	2	Possible poor fit, χ² not within [SPTRACE_VAR_CHISQUARED_MIN] and [SPTRACE_VAR_CHISQUARED_MAX]
-L2STATTC	1	Failed to get L2_SPR_BLURB_FILE environment variable
-L2STATTC	0	No errors encountered
-L2STATTC	-1	Failed on command line
-L2STATTC	-2	[SPFIND_OUTPUTF_PEAKS_FILE] input file doesn't exist
-L2STATTC	-3	Polynomial tracing order not between [SPTRACE_VAR_POLYORDER_{LO/HI}] limits
-L2STATTC	-4	Failed to create [SPTRACE_OUTPUTF_TRACES_FILE] output file
-L2STATTC	-5	Failed to find fit
-L2STATTC	-6	Failed to close [SPFIND_OUTPUTF_PEAKS_FILE] input file
-L2STATTC	-7	Failed to close [SPTRACE_OUTPUTF_TRACES_FILE] output file
+L2STATTR	2	Possible poor fit, χ² not within [SPTRACE_VAR_CHISQUARED_MIN] and [SPTRACE_VAR_CHISQUARED_MAX]
+L2STATTR	1	Failed to get L2_SPR_BLURB_FILE environment variable
+L2STATTR	0	No errors encountered
+L2STATTR	-1	Failed on command line
+L2STATTR	-2	[SPFIND_OUTPUTF_PEAKS_FILE] input file doesn't exist
+L2STATTR	-3	Polynomial tracing order not between [SPTRACE_VAR_POLYORDER_{LO/HI}] limits
+L2STATTR	-4	Failed to create [SPTRACE_OUTPUTF_TRACES_FILE] output file
+L2STATTR	-5	Failed to find fit
+L2STATTR	-6	Failed to close [SPFIND_OUTPUTF_PEAKS_FILE] input file
+L2STATTR	-7	Failed to close [SPTRACE_OUTPUTF_TRACES_FILE] output file
 
 L2STATCO	1	Failed to get L2_SPC_BLURB_FILE environment variable
 L2STATCO	0	No errors encountered
@@ -64,10 +64,9 @@ L2STATCO	-4	Failed to open input FITS file (ARG 1)
 L2STATCO	-5	Failed to read row of input frame
 L2STATCO	-6	[SPTRACE_OUTPUTF_TRACES_FILE] input file doesn't exist
 L2STATCO	-7	Failed to assign [polynomial_order] var, is it present in the [SPTRACE_OUTPUTF_TRACES_FILE] file?
-L2STATCO	-8	Spectrum intersects region to be rebinned
-L2STATCO	-9	Failed to write output target img
-L2STATCO	-10	Failed to create output target img
-L2STATCO	-11	Failed to create output target FITS file (ARG 4)
-L2STATCO	-12	Failed to close [SPTRACE_OUTPUTF_TRACES_FILE] input file
-L2STATCO	-13	Failed to close target FITS file (ARG 1)
-L2STATCO	-14	Failed to close target FITS file (ARG 4)
+L2STATCO	-8	Failed to write output target img
+L2STATCO	-9	Failed to create output target img
+L2STATCO	-10	Failed to create output target FITS file (ARG 4)
+L2STATCO	-11	Failed to close [SPTRACE_OUTPUTF_TRACES_FILE] input file
+L2STATCO	-12	Failed to close target FITS file (ARG 1)
+L2STATCO	-13	Failed to close target FITS file (ARG 4)
