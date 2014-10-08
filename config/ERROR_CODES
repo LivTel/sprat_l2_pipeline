@@ -69,4 +69,19 @@ L2STATCO	-9	Failed to create output target img
 L2STATCO	-10	Failed to create output target FITS file (ARG 4)
 L2STATCO	-11	Failed to close [SPTRACE_OUTPUTF_TRACES_FILE] input file
 L2STATCO	-12	Failed to close target FITS file (ARG 1)
-L2STATCO	-13	Failed to close target FITS file (ARG 4)
+L2STATCO	-13	Failed to close output FITS file (ARG 4)
+
+L2STATEX        1       Failed to get L2_SPE_BLURB_FILE environment variable
+L2STATEX        0       No errors encountered
+L2STATEX        -1      Failed on command line
+L2STATEX        -2      Input frame must have 2 axes
+L2STATEX        -3      Failed to get image parameters of input frame
+L2STATEX        -4      Failed to open input FITS file (ARG 1)
+L2STATEX        -5      Failed to read row of input frame
+L2STATEX        -6      y coordinate of extraction window violates img boundary condition
+L2STATEX        -7      [method] not recognised
+L2STATEX        -8      Failed to write output target img
+L2STATEX        -9      Failed to create output target img
+L2STATEX        -10     Failed to create output target FITS file (ARG 6)
+L2STATEX        -11     Failed to close target FITS file (ARG 1)
+L2STATEX        -12     Failed to close output FITS file (ARG 6)

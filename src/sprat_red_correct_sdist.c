@@ -185,7 +185,7 @@ int main(int argc, char *argv []) {
 
 		int polynomial_order;	
 
-		char search_string_1 [20] = "# Polynomial Order:\0";	// this is the comment to be found from the [FRTRACE_OUTPUTF_TRACES_FILE] file
+		char search_string_1 [20] = "# Polynomial Order:\0";	// this is the comment to be found from the [SPTRACE_OUTPUTF_TRACES_FILE] file
 
 		while(!feof(inputfile)) {
 
@@ -203,7 +203,7 @@ int main(int argc, char *argv []) {
 
 		}
 
-		if (find_polynomialorder_comment == FALSE) {	// error check - didn't find the comment in the [FRTRACE_OUTPUTF_TRACES_FILE] file
+		if (find_polynomialorder_comment == FALSE) {	// error check - didn't find the comment in the [SPTRACE_OUTPUTF_TRACES_FILE] file
 
 			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCO", -7, "Status flag for L2 frcorrect routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
@@ -337,6 +337,7 @@ int main(int argc, char *argv []) {
 		// ***********************************************************************
 		// Create [output_frame_values] array to hold the output data in the 
 		// correct format
+                
 		int kk;
 		double output_frame_values [nxelements*nyelements_reb];
 		memset(output_frame_values, 0, sizeof(double)*nxelements*nyelements_reb);

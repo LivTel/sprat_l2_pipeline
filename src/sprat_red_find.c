@@ -29,7 +29,7 @@ int main(int argc, char *argv []) {
 
 	}
 
-	if (argc != 11) {
+	if (argc != 13) {
 
 		if(populate_env_variable(SPF_BLURB_FILE, "L2_SPF_BLURB_FILE")) {
 
@@ -56,9 +56,11 @@ int main(int argc, char *argv []) {
 		int median_filter_width_px		= strtol(argv[5], NULL, 0);	
 		double min_SNR				= strtod(argv[6], NULL);
 		int min_spatial_width_px		= strtol(argv[7], NULL, 0);
-		int max_centering_num_px		= strtol(argv[8], NULL, 0);		
-		int centroid_half_window_size_px	= strtol(argv[9], NULL, 0);
-		int min_used_bins			= strtol(argv[10], NULL, 0);
+                int finding_window_lo_px                = strtol(argv[8], NULL, 0);
+                int finding_window_hi_px                = strtol(argv[9], NULL, 0);                
+		int max_centering_num_px		= strtol(argv[10], NULL, 0);		
+		int centroid_half_window_size_px	= strtol(argv[11], NULL, 0);
+		int min_used_bins			= strtol(argv[12], NULL, 0);
 		
 		// ***********************************************************************
 		// Open target file (ARG 1), get parameters and perform any data format 
@@ -272,11 +274,20 @@ int main(int argc, char *argv []) {
 			memcpy(this_spat_values_der_smoothed, this_spat_values_der, sizeof(double)*spat_nelements-1);
 			median_filter(this_spat_values_der, this_spat_values_der_smoothed, spat_nelements-1, median_filter_width_px);				
 			
-			// 5.	Pick most positive gradient
-			size_t this_pk_idx = gsl_stats_max_index(this_spat_values_der_smoothed, 1, spat_nelements-1);
+			// 5.	Pick most positive gradient from window, retaining proper index   
+                        double this_spat_values_der_smoothed_windowed[spat_nelements-1]; 
+                        memcpy(this_spat_values_der_smoothed_windowed, this_spat_values_der_smoothed, sizeof(double)*spat_nelements-1);
+                        for (jj=0; jj<spat_nelements; jj++) {
+                            if (jj >= finding_window_lo_px && jj <= finding_window_hi_px) {
+                                this_spat_values_der_smoothed_windowed[jj] = this_spat_values_der_smoothed_windowed[jj];
+                            } else {
+                                this_spat_values_der_smoothed_windowed[jj] = -1;
+                            }  
+                        }
+			size_t this_pk_idx = gsl_stats_max_index(this_spat_values_der_smoothed_windowed, 1, spat_nelements-1);
 			printf("Start peak index:\t\t%d\n", this_pk_idx);	
 			
-			// 6.	Using this index, find derivative turnover point
+			// 6.	Using this index, walk through centering window [max_centering_num_px] and find derivative turnover point
 			printf("Found turnover:\t\t\t");			
 			bool found_turnover = FALSE;
 			for (jj=this_pk_idx; jj<this_pk_idx+max_centering_num_px; jj++) {
@@ -296,7 +307,7 @@ int main(int argc, char *argv []) {
 				continue;
 			}
 
-			// 7.	Get parabolic centroid
+			// 7.	Get parabolic centroid using the full centroid window [centroid_half_window_size_px]
 			double this_pk_window_idxs[1 + (2*centroid_half_window_size_px)];
 			double this_pk_window_vals[1 + (2*centroid_half_window_size_px)];
 			

@@ -17,7 +17,7 @@ def print_header():
     with open(L2_MAN_DIR + "/HEADER") as f:
         for line in f:
 	    print line.strip('\n')
-    time.sleep(1)
+    time.sleep(0.2)
     
 def print_routine(routine):
     bar = []
@@ -26,7 +26,7 @@ def print_routine(routine):
     print ''.join(bar) + '****'
     print '* ' + routine + ' *'
     print ''.join(bar) + '****'
-    time.sleep(1)    
+    time.sleep(0.2)    
     
 def print_notification(message):
     print "* " + message
@@ -202,7 +202,7 @@ if __name__ == "__main__":
     print_routine("Find peaks of reference spectrum (spfind)")    
     in_ref_filename = ref + ref_suffix + trim_suffix + ".fits"
 
-    output = Popen([find, in_ref_filename, "50", "0.1", "3", "3", "100", "4", "7", "3", "5"], stdout=PIPE)
+    output = Popen([find, in_ref_filename, "50", "0.1", "3", "3", "100", "4", "50", "150", "7", "3", "5"], stdout=PIPE)
     print output.stdout.read()  
 
     # ----------------------------------------------
@@ -308,7 +308,7 @@ if __name__ == "__main__":
     print_routine("Find peaks of reference spectrum (spfind)")        
     in_ref_filename = ref + ref_suffix + trim_suffix + cor_suffix + ".fits"
 
-    output = Popen([find, in_ref_filename, "50", "0.1", "3", "3", "100", "4", "7", "3", "5"], stdout=PIPE)
+    output = Popen([find, in_ref_filename, "50", "0.1", "3", "3", "100", "4", "50", "150", "7", "3", "5"], stdout=PIPE)
     print output.stdout.read()  
 
     # ----------------------------------------------
@@ -330,9 +330,18 @@ if __name__ == "__main__":
         print_notification("Success.")
     else:
         print_notification("Failed.")
+ 
+    # ---------------------------------------------------------------
+    # - FIND POSITION OF TARGET SPECTRUM WITH A SINGLE BIN (SPFIND) -
+    # ---------------------------------------------------------------
+    print_routine("Find peaks of target spectrum (spfind)")        
+    in_target_filename = target + target_suffix + trim_suffix + cor_suffix + ".fits"
+
+    output = Popen([find, in_target_filename, "1000", "0.1", "3", "3", "10", "4", "50", "150", "7", "3", "0"], stdout=PIPE)
+    print output.stdout.read()  
+    
 
 
-	
 	
     
 

@@ -2,7 +2,7 @@
 
 ##################################
 # L2_setup 			 #
-# Last Modified Date:   01/10/14 #
+# Last Modified Date:   08/10/14 #
 ##################################
 
 ############################
@@ -47,6 +47,7 @@ setenv L2_SPC_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_CLIP
 setenv L2_SPF_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_FIND
 setenv L2_SPTS_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_TRACE_SDIST
 setenv L2_SPCS_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_CORRECT_SDIST
+setenv L2_SPE_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_EXTRACT
 
 ################
 # Set up shell #

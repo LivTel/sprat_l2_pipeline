@@ -4,7 +4,8 @@ Usage:	sptrace polynomial_order
 
 Synopsis:
 
-Produces a polyfitted trace using [SPFIND_OUTPUTF_PEAKS_FILE] output from spfind.
+Produces a polyfitted trace of s-distortion using the [SPFIND_OUTPUTF_PEAKS_FILE] output file 
+produced by spfind.
 
 Description:
 
