@@ -7,6 +7,7 @@ import os
 from subprocess import Popen, PIPE
 from shutil import copyfile, move
 import time
+from datetime import date
 
 L2_BIN_DIR 	= os.environ['L2_BIN_DIR']
 L2_TEST_DIR 	= os.environ['L2_TEST_DIR']
@@ -56,19 +57,19 @@ if __name__ == "__main__":
     # input sanity checks
     if not all([f_target, f_ref, f_cont, f_arc]):
         print "Input files are undefined"
-        exit(0)
+        exit(1)
     elif not os.path.exists(f_target):
         print "Target file doesn't exist"
-        exit(0)    
+        exit(1)    
     elif not os.path.exists(f_ref):
         print "Reference file doesn't exist"
-        exit(0)    
+        exit(1)    
     elif not os.path.exists(f_cont):	
         print "Continuum file doesn't exist"
-        exit(0)    
+        exit(1)    
     elif not os.path.exists(f_arc):	
         print "Arc file doesn't exist"
-        exit(0)
+        exit(1)
     
     # define output extensions
     target 		= os.path.splitext(os.path.basename(f_target))[0]
@@ -116,10 +117,10 @@ if __name__ == "__main__":
                 copyfile(f_arc, work_dir + "/" + arc + arc_suffix + ".fits") 
             else:
 	        print "Working directory is not empty"
-	        exit(0)
+	        exit(1)
     except OSError:
         print "Failed to copy files to working directory"
-        exit(0)
+        exit(1)
     
     f_target = target + target_suffix + ".fits"
     f_ref = ref + ref_suffix + ".fits"
@@ -127,6 +128,65 @@ if __name__ == "__main__":
     f_arc = arc + arc_suffix + ".fits"
 
     os.chdir(work_dir)
+    
+    # determine appropriate arc list
+    f_arc_fits = pyfits.open(f_arc)
+    try:
+        f_arc_fits_hdr_GRATROT = f_arc_fits[0].header['GRATROT']
+        f_arc_fits_hdr_DATEOBS = f_arc_fits[0].header['DATE-OBS']
+    except KeyError:
+        print "Failed to find GRATROT key"
+        f_arc_fits.close()
+        exit(1)
+    f_arc_fits.close()        
+        
+    if f_arc_fits_hdr_GRATROT == 0:     # red
+        cfg = "red"
+    else:
+        cfg = "blue"
+    path = L2_CONFIG_DIR + "/lookup_tables/" + cfg + "/arc.tab"
+   
+    a_path = []
+    a_from_date = []
+    a_from_time = []
+    a_to_date = []
+    a_to_time = []
+    with open(path) as f:
+        for line in f:
+            if line != "\n":
+                this_path = line.split('\t')[0].strip('\n').strip()
+                this_from_date = line.split('\t')[1].strip('\n').strip()
+                this_from_time = line.split('\t')[2].strip('\n').strip()
+                a_path.append(this_path)
+                a_from_date.append(this_from_date)
+                a_from_time.append(this_from_time)
+                
+                this_to_date = line.split('\t')[3].strip('\n').strip()
+                if ("now" in this_to_date):
+                    today = date.today()
+                    this_to_date = today.strftime("%d/%m/%y")
+                    this_to_time = time.strftime("%H:%M:%S")
+                else:
+                    this_to_date = line.split('\t')[3].strip('\n').strip()
+                    this_to_time = line.split('\t')[4].strip('\n').strip()
+                
+                a_to_date.append(this_to_date)
+                a_to_time.append(this_to_time)
+                 
+    this_arc_datetime = time.strptime(f_arc_fits_hdr_DATEOBS, "%Y-%m-%dT%H:%M:%S.%f")
+  
+    chosen_arc_file_path = None
+    for i in range(len(a_path)):
+        this_from_time = time.strptime(a_from_date[i] + " " + a_from_time[i], "%d/%m/%y %H:%M:%S")
+        this_to_time = time.strptime(a_to_date[i] + " " + a_to_time[i], "%d/%m/%y %H:%M:%S")
+        
+        if this_arc_datetime >= this_from_time and this_arc_datetime <= this_to_time:
+            chosen_arc_file_path = L2_CONFIG_DIR + "/reference_arcs/" + cfg + "/" + a_path[i]
+            break
+
+    if chosen_arc_file_path is None:
+        print "Failed to find a suitable arc"
+        exit(1)        
 
     # -------------------------
     # - TRIM SPECTRA (SPTRIM) -
@@ -406,7 +466,7 @@ if __name__ == "__main__":
     print_routine("Find dispersion solution (sparcfit)")        
     in_arc_filename = arc + arc_suffix + trim_suffix + cor_suffix + ".fits"
 
-    output = Popen([arcfit, in_arc_filename, "7", "7", "1", "2", L2_CONFIG_DIR + "/reference_arcs/red/030914/arc.lis", "3", "3", "100", "2"], stdout=PIPE)
+    output = Popen([arcfit, in_arc_filename, "7", "7", "1", "2", chosen_arc_file_path, "3", "3", "100", "2"], stdout=PIPE)
     print output.stdout.read()                   
  
     # --------------------
