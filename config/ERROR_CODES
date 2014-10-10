@@ -1,7 +1,7 @@
 # DO NOT MODIFY FORMAT
 #
 # File:				ERROR_CODES
-# Last Modified Date:     	01/10/14
+# Last Modified Date:     	08/10/14
 #
 
 # key		code	comment	
@@ -71,6 +71,25 @@ L2STATCO	-11	Failed to close [SPTRACE_OUTPUTF_TRACES_FILE] input file
 L2STATCO	-12	Failed to close target FITS file (ARG 1)
 L2STATCO	-13	Failed to close output FITS file (ARG 4)
 
+L2STATAR        3       Possible poor fit, χ² not within [SPARCFIT_VAR_CHISQUARED_MIN] and [SPARCFIT_VAR_CHISQUARED_MAX]
+L2STATAR        2       Distribution of matched arc lines may not be well sampled over the wavelength range
+L2STATAR        1       Failed to get L2_SPA_BLURB_FILE environment variable
+L2STATAR        0       No errors encountered
+L2STATAR        -1      Failed on command line
+L2STATAR        -2      Arc frame must have 2 axes
+L2STATAR        -3      Failed to get image parameters of arc frame
+L2STATAR        -4      Failed to open arc FITS file (ARG 1)
+L2STATAR        -5      Failed to read row of arc frame
+L2STATAR        -6      Failed data quality criteria - insufficient spatially contiguous peaks found ([num_peaks] < [min_contiguous_lines])
+L2STATAR        -7      Reference arc line list (ARG 6) file doesn't exist
+L2STATAR        -8      Failed data quality criteria - failed to match sufficient lines ([matched_line_count] < [min_matched_lines])
+L2STATAR        -9      Polynomial tracing order not between [SPARCFIT_VAR_POLYORDER_{LO/HI}] limits
+L2STATAR        -10     Failed to create [SPARCFIT_OUTPUTF_WAVFITS_FILE] output file
+L2STATAR        -11     Failed to find fit
+L2STATAR        -12     Failed to close arc line list reference file (ARG 11)
+L2STATAR        -13     Failed to close [SPARCFIT_OUTPUTF_WAVFITS_FILE] output file
+L2STATAR        -14     Failed to close input arc FITS file (ARG 1)
+
 L2STATEX        1       Failed to get L2_SPE_BLURB_FILE environment variable
 L2STATEX        0       No errors encountered
 L2STATEX        -1      Failed on command line
@@ -78,10 +97,12 @@ L2STATEX        -2      Input frame must have 2 axes
 L2STATEX        -3      Failed to get image parameters of input frame
 L2STATEX        -4      Failed to open input FITS file (ARG 1)
 L2STATEX        -5      Failed to read row of input frame
-L2STATEX        -6      y coordinate of extraction window violates img boundary condition
-L2STATEX        -7      [method] not recognised
-L2STATEX        -8      Failed to write output target img
-L2STATEX        -9      Failed to create output target img
-L2STATEX        -10     Failed to create output target FITS file (ARG 6)
-L2STATEX        -11     Failed to close target FITS file (ARG 1)
-L2STATEX        -12     Failed to close output FITS file (ARG 6)
+L2STATEX        -6      [SPFIND_OUTPUTF_PEAKS_FILE] input file doesn't exist
+L2STATEX        -7      y coordinate of extraction window violates img boundary condition
+L2STATEX        -8      [method] not recognised
+L2STATEX        -9      Failed to write output target img
+L2STATEX        -10      Failed to create output target img
+L2STATEX        -11     Failed to create output target FITS file (ARG 6)
+L2STATEX        -12     Failed to close target FITS file (ARG 1)
+L2STATEX        -13     Failed to close output FITS file (ARG 6)
+L2STATEX        -14     Failed to close [SPFIND_OUTPUTF_PEAKS_FILE] input file

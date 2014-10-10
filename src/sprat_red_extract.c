@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:                          sprat_red_extract.c
- Last Modified Date:            07/10/14
+ Last Modified Date:            09/10/14
 
 ************************************************************************/
 
@@ -16,6 +16,7 @@
 #include "sprat_config.h"
 #include "sprat_red_extract.h"
 #include "sprat_red_trace_sdist.h"
+#include "sprat_red_find.h"
 #include "gsl_poly.h"
 
 // *********************************************************************
@@ -28,7 +29,7 @@ int main(int argc, char *argv []) {
 
         }
 
-        if (argc != 7) {
+        if (argc != 6) {
 
                 if(populate_env_variable(SPE_BLURB_FILE, "L2_SPE_BLURB_FILE")) {
 
@@ -48,12 +49,11 @@ int main(int argc, char *argv []) {
                 // ***********************************************************************
                 // Redefine routine input parameters
                 
-                char *input_f                           = strdup(argv[1]);         
-                double spectrum_px                      = strtod(argv[2], NULL);      
-                char *method                            = strdup(argv[3]); 
-                double target_half_aperture_px          = strtod(argv[4], NULL); 
-                double sky_window_px                    = strtod(argv[5], NULL);   
-                char *output_f                          = strdup(argv[6]);                    
+                char *input_f                           = strdup(argv[1]);              
+                char *method                            = strdup(argv[2]); 
+                double target_half_aperture_px          = strtod(argv[3], NULL); 
+                double sky_window_px                    = strtod(argv[4], NULL);   
+                char *output_f                          = strdup(argv[5]);                    
                 
                 // ***********************************************************************
                 // Open input file (ARG 1), get parameters and perform any data format 
@@ -159,6 +159,61 @@ int main(int argc, char *argv []) {
 
                 }
                 
+                // ***********************************************************************
+                // Open [SPFIND_OUTPUTF_PEAKS_FILE] input file
+        
+                FILE *inputfile;
+        
+                if (!check_file_exists(SPFIND_OUTPUTF_PEAKS_FILE)) { 
+
+                        inputfile = fopen(SPFIND_OUTPUTF_PEAKS_FILE , "r");
+
+                } else {
+
+                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -6, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+
+                        return 1;
+
+                }
+
+                // ***********************************************************************
+                // Find some [SPFIND_OUTPUTF_PEAKS_FILE] input file details
+
+                char input_string [150];
+                
+                int row_count = 0;
+                while(!feof(inputfile)) {
+                        memset(input_string, '\0', sizeof(char)*150);
+                        fgets(input_string, 150, inputfile);
+                        if (strtol(&input_string[0], NULL, 0) > 0) {            // check the line begins with a positive number (usable)
+                                row_count++;
+                        }
+                }
+                
+                rewind(inputfile);
+                
+                // ***********************************************************************
+                // Store [SPFIND_OUTPUTF_PEAKS_FILE] data               
+                
+                double x_coords[row_count];
+                memset(x_coords, 0, sizeof(double)*(row_count));
+
+                double y_coords[row_count];
+                memset(y_coords, 0, sizeof(double)*(row_count));
+
+                double coord_x, coord_y;
+                int idx = 0;
+                while(!feof(inputfile)) {
+                        memset(input_string, '\0', sizeof(char)*150);
+                        fgets(input_string, 150, inputfile);    
+                        if (strtol(&input_string[0], NULL, 0) > 0) {            // check the line begins with a positive number (usable)
+                                sscanf(input_string, "%lf\t%lf\n", &coord_x, &coord_y);
+                                x_coords[idx] = coord_x;
+                                y_coords[idx] = coord_y;
+                                idx++;
+                        }
+                }            
+        
                 double output_frame_values[nxelements];
                 memset(output_frame_values, 0, sizeof(double)*nxelements);                       
                 if (strcmp(method, "simple") == 0) {
@@ -169,7 +224,7 @@ int main(int argc, char *argv []) {
 
                     double y;    
                     
-                    y = spectrum_px;
+                    y = y_coords[0];                            // should only be one bin in [SPFIND_OUTPUTF_PEAKS_FILE] data file
      
                     double this_col_value;
                     for (ii=0; ii<nxelements; ii++) {   
@@ -181,13 +236,14 @@ int main(int argc, char *argv []) {
 
                         if ((y + target_half_aperture_px > nyelements) || (y - target_half_aperture_px <= 0)) {
 
-                            write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -6, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                            write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -7, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                             fits_report_error(stdout, input_f_status); 
 
                             free(input_f);
                             free(output_f);  
                             free(method);
                             if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
+                            fclose(inputfile);
 
                             return 1;
 
@@ -229,13 +285,14 @@ int main(int argc, char *argv []) {
                     }    
                 } else {
                   
-                    write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -7, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                    write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -8, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                     fits_report_error(stdout, input_f_status); 
 
                     free(input_f);
                     free(output_f);
                     free(method);
                     if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status);  
+                    fclose(inputfile);
                     
                     return 1;
                     
@@ -262,7 +319,7 @@ int main(int argc, char *argv []) {
 
                                 } else { 
 
-                                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -8, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -9, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                                         fits_report_error(stdout, output_f_status); 
 
                                         free(input_f);
@@ -270,6 +327,7 @@ int main(int argc, char *argv []) {
                                         free(method);
                                         if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
                                         if(fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status);
+                                        fclose(inputfile);
 
                                         return 1; 
 
@@ -277,7 +335,7 @@ int main(int argc, char *argv []) {
 
                         } else {
 
-                                write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -9, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                                write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -10, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                                 fits_report_error(stdout, output_f_status); 
 
                                 free(input_f);
@@ -285,6 +343,7 @@ int main(int argc, char *argv []) {
                                 free(method);
                                 if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
                                 if(fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status);
+                                fclose(inputfile);
 
                                 return 1; 
 
@@ -292,13 +351,14 @@ int main(int argc, char *argv []) {
 
                 } else {
 
-                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -10, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -11, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                         fits_report_error(stdout, output_f_status); 
 
                         free(input_f);
                         free(output_f);
                         free(method);
                         if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
+                        fclose(inputfile);
 
                         return 1; 
 
@@ -316,7 +376,7 @@ int main(int argc, char *argv []) {
                 
                 if(fits_close_file(input_f_ptr, &input_f_status)) { 
 
-                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -11, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -12, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                         fits_report_error (stdout, input_f_status); 
 
                         return 1; 
@@ -325,12 +385,17 @@ int main(int argc, char *argv []) {
                
                 if(fits_close_file(output_f_ptr, &output_f_status)) { 
 
-                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -12, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -13, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                         fits_report_error (stdout, output_f_status); 
 
                         return 1; 
 
                 }  
+                
+                if (fclose(inputfile)) {
+                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -14, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                        return 1; 
+                } 
                 
                 // Write success to [ERROR_CODES_FILE]
 

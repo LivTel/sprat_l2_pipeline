@@ -1,3 +1,8 @@
+'''
+  - Produces a plot of the detected spectrum locations and corresponding fit.
+  - Checks the curvature of the spectrum is within a defined limit.
+'''
+
 from matplotlib import pyplot as plt
 import pyfits
 import sys
@@ -13,13 +18,15 @@ if __name__ == "__main__":
   parser.add_option('--t', dest='dat_traces', action='store', default='sptrace_traces.dat')
   parser.add_option('--o', dest='f_out', action='store', default='plot.png')
   parser.add_option('--ot', dest='plt_title', action='store', default='plot')
+  parser.add_option('--c', dest='max_curvature', action='store', default=1.0)
   (options, args) = parser.parse_args()
   
-  f_in		= options.f_in
-  dat_peaks  	= options.dat_peaks
-  dat_traces 	= options.dat_traces
-  f_out		= options.f_out
-  plt_title	= options.plt_title
+  f_in		= str(options.f_in)
+  dat_peaks  	= str(options.dat_peaks)
+  dat_traces 	= str(options.dat_traces)
+  f_out		= str(options.f_out)
+  plt_title	= str(options.plt_title)
+  max_curvature = float(options.max_curvature)
   
   hdulist = pyfits.open(f_in)
   data = hdulist[0].data
@@ -45,7 +52,8 @@ if __name__ == "__main__":
                   
   x_fitted = range(0, len(data[0]))
   y_fitted = np.polyval(coeffs[::-1], x_fitted)
-                  
+        
+  # plot
   y_min = min(y_fitted) - PLOT_PADDING
   y_max = max(y_fitted) + PLOT_PADDING
                   
@@ -57,4 +65,11 @@ if __name__ == "__main__":
   plt.xlabel("x")
   plt.ylabel("y")
   plt.savefig(f_out)
+  
+  # check deviation and set return code
+  deviation = np.max(y_fitted) - np.min(y_fitted)
+  if deviation > max_curvature:
+    exit(1)
+  else:
+    exit(0)
                   

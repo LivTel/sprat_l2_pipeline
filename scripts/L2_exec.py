@@ -12,12 +12,13 @@ L2_BIN_DIR 	= os.environ['L2_BIN_DIR']
 L2_TEST_DIR 	= os.environ['L2_TEST_DIR']
 L2_SCRIPT_DIR	= os.environ['L2_SCRIPT_DIR']
 L2_MAN_DIR	= os.environ['L2_MAN_DIR']
+L2_CONFIG_DIR   = os.environ['L2_CONFIG_DIR']
 
 def print_header():
     with open(L2_MAN_DIR + "/HEADER") as f:
         for line in f:
 	    print line.strip('\n')
-    time.sleep(0.2)
+    time.sleep(0.1)
     
 def print_routine(routine):
     bar = []
@@ -26,7 +27,7 @@ def print_routine(routine):
     print ''.join(bar) + '****'
     print '* ' + routine + ' *'
     print ''.join(bar) + '****'
-    time.sleep(0.2)    
+    time.sleep(0.1)    
     
 def print_notification(message):
     print "* " + message
@@ -80,12 +81,19 @@ if __name__ == "__main__":
     arc_suffix 		= "_arc"
     trim_suffix 	= "_tr"
     cor_suffix		= "_cor"
+    ext_suffix          = "_ex"
 
     # define routine paths
     clip 	        = L2_BIN_DIR + "/spclip"
     find	        = L2_BIN_DIR + "/spfind"
     trace	        = L2_BIN_DIR + "/sptrace"
     correct	        = L2_BIN_DIR + "/spcorrect"
+    arcfit              = L2_BIN_DIR + "/sparcfit"
+    extract             = L2_BIN_DIR + "/spextract"    
+    
+    # define output plot filenames
+    ref_pre_sdist_plot  = "ref_pre_sdist_plot.png"
+    ref_post_sdist_plot = "ref_post_sdist_plot.png"
 
     #define script paths
     plot_peaks	        = L2_SCRIPT_DIR + "/L2_analyse_plotpeaks.py"
@@ -142,7 +150,7 @@ if __name__ == "__main__":
         with open("error_codes") as f_old:
             for line in f_old:
 	        if not line.startswith("L2STATCL"):
-                    f_new.write("\n\n" + line + "\n\n")
+                    f_new.write(line)
                 else:
 		    key 	= line.split('\t')[0]
 		    code 	= line.split('\t')[1]	
@@ -164,7 +172,7 @@ if __name__ == "__main__":
 		    desc 	= line.split('\t')[2].strip('\n')	
 		    f_new.write("L2STATCR\t" + code + "\t" + desc + " (ref)\n")
     os.remove("error_codes")
-    move("new_error_codes", "error_codes")		
+    move("new_error_codes", "error_codes")
 		
     output = Popen([clip, in_cont_filename, in_cont_filename, "20", "0.1", "1.0", "3.0", "100", "1", "100", out_cont_filename], stdout=PIPE)
     print output.stdout.read()  
@@ -203,7 +211,19 @@ if __name__ == "__main__":
     in_ref_filename = ref + ref_suffix + trim_suffix + ".fits"
 
     output = Popen([find, in_ref_filename, "50", "0.1", "3", "3", "100", "4", "50", "150", "7", "3", "5"], stdout=PIPE)
-    print output.stdout.read()  
+    print output.stdout.read()   
+    with open("new_error_codes", "w") as f_new:
+        with open("error_codes") as f_old:
+            for line in f_old:
+                if not line.startswith("L2STATFI"):
+                    f_new.write(line)
+                else:
+                    key         = line.split('\t')[0]
+                    code        = line.split('\t')[1]   
+                    desc        = line.split('\t')[2].strip('\n')       
+                    f_new.write("L2STATF1\t" + code + "\t" + desc + " (ref uncorrected)" + "\n")
+    os.remove("error_codes")
+    move("new_error_codes", "error_codes")    
 
     # ----------------------------------------------
     # - FIND SDIST OF REFERENCE SPECTRUM (SPTRACE) -
@@ -211,6 +231,18 @@ if __name__ == "__main__":
     print_routine("Find sdist of reference spectrum (sptrace)")      
     output = Popen([trace, "2"], stdout=PIPE)
     print output.stdout.read()  
+    with open("new_error_codes", "w") as f_new:
+        with open("error_codes") as f_old:
+            for line in f_old:
+                if not line.startswith("L2STATTR"):
+                    f_new.write(line)
+                else:
+                    key         = line.split('\t')[0]
+                    code        = line.split('\t')[1]   
+                    desc        = line.split('\t')[2].strip('\n')       
+                    f_new.write("L2STATT1\t" + code + "\t" + desc + " (ref uncorrected)" + "\n")
+    os.remove("error_codes")
+    move("new_error_codes", "error_codes")  
 
     # ---------------------------------------------------------
     # - PLOT TRACE OF REFERENCE SPECTRUM PRE SDIST CORRECTION -
@@ -218,12 +250,13 @@ if __name__ == "__main__":
     print_routine("Plot trace of reference spectrum pre sdist correction")       
     in_ref_filename = ref + ref_suffix + trim_suffix + ".fits"
 
-    output = Popen(["python", plot_peaks, "--f", in_ref_filename, "--o", "pre_sdist_cor.png", "--ot", "Pre SDIST correction"], stdout=PIPE)
+    output = Popen(["python", plot_peaks, "--f", in_ref_filename, "--o", ref_pre_sdist_plot, "--ot", "Reference pre SDIST correction"], stdout=PIPE)
     print output.stdout.read()   
-    if os.path.exists("pre_sdist_cor.png"):
+    if os.path.exists(ref_pre_sdist_plot):
         print_notification("Success.")
     else:
-        print_notification("Failed.")    
+        print_notification("Failed.") 
+        exit(1)
 
     # -----------------------------------------
     # - CORRECT SPECTRA FOR SDIST (SPCORRECT) -
@@ -248,7 +281,7 @@ if __name__ == "__main__":
         with open("error_codes") as f_old:
             for line in f_old:
 	        if not line.startswith("L2STATCO"):
-                    f_new.write("\n\n" + line + "\n\n")
+                    f_new.write(line)
                 else:
 		    key 	= line.split('\t')[0]
 		    code 	= line.split('\t')[1]	
@@ -301,6 +334,16 @@ if __name__ == "__main__":
 		    f_new.write("L2STATOA\t" + code + "\t" + desc + " (arc)\n")
     os.remove("error_codes")
     move("new_error_codes", "error_codes")
+    
+    # --------------------
+    # - RENAME DAT FILES -
+    # --------------------   
+    for i in os.listdir("."):
+        if i.endswith(".dat"):
+            if not i.startswith("p_"):
+                filename = os.path.splitext(os.path.basename(i))[0]
+                ext = os.path.splitext(os.path.basename(i))[1]
+                move(i, "p_" + filename + "_ref_uncorrected" + ext)   
 
     # ---------------------------------------------
     # - FIND PEAKS OF REFERENCE SPECTRUM (SPFIND) -
@@ -310,6 +353,13 @@ if __name__ == "__main__":
 
     output = Popen([find, in_ref_filename, "50", "0.1", "3", "3", "100", "4", "50", "150", "7", "3", "5"], stdout=PIPE)
     print output.stdout.read()  
+    with open("new_error_codes", "w") as f_new:
+        with open("error_codes") as f_old:
+            for line in f_old:
+                if not line.startswith("L2STATFI"):
+                    f_new.write(line)
+    os.remove("error_codes")
+    move("new_error_codes", "error_codes")      
 
     # ----------------------------------------------
     # - FIND SDIST OF REFERENCE SPECTRUM (SPTRACE) -
@@ -317,19 +367,58 @@ if __name__ == "__main__":
     print_routine("Find sdist of reference spectrum (sptrace)")         
     output = Popen([trace, "2"], stdout=PIPE)
     print output.stdout.read()  
+    with open("new_error_codes", "w") as f_new:
+        with open("error_codes") as f_old:
+            for line in f_old:
+                if not line.startswith("L2STATTR"):
+                    f_new.write(line)
+    os.remove("error_codes")
+    move("new_error_codes", "error_codes")    
 
-    # ------------------------------------------------
-    # - PLOT TRACE OF SPECTRUM POST SDIST CORRECTION -
-    # ------------------------------------------------
+    # ----------------------------------------------------------------------------------------------------------
+    # - PLOT TRACE OF SPECTRUM POST SDIST CORRECTION AND CHECK RETURN CODE FOR SIGNIFICANT REMAINING CURVATURE -
+    # ----------------------------------------------------------------------------------------------------------
     print_routine("Plot trace of spectrum post sdist correction (l2pp)")     
     in_ref_filename = ref + ref_suffix + trim_suffix + cor_suffix + ".fits"
 
-    output = Popen(["python", plot_peaks, "--f", in_ref_filename, "--o", "post_sdist_cor.png", "--ot", "Post SDIST correction"], stdout=PIPE)
+    output = Popen(["python", plot_peaks, "--f", in_ref_filename, "--o", ref_post_sdist_plot, "--ot", "Reference post SDIST correction", "--c", "1.0"], stdout=PIPE)
     print output.stdout.read()  
-    if os.path.exists("post_sdist_cor.png"):
+    output.wait()
+    if os.path.exists(ref_pre_sdist_plot) and output.returncode == 0:
         print_notification("Success.")
     else:
         print_notification("Failed.")
+        exit(1)
+           
+    # --------------------
+    # - RENAME DAT FILES -
+    # --------------------   
+    for i in os.listdir("."):
+        if i.endswith(".dat"):
+            if not i.startswith("p_"):
+                filename = os.path.splitext(os.path.basename(i))[0]
+                ext = os.path.splitext(os.path.basename(i))[1]
+                move(i, "p_" + filename + "_ref_corrected" + ext)      
+                
+    # ------------------------------------------------
+    # - FIND PIXEL TO WAVELENGTH SOLUTIONS (sparcfit -
+    # ------------------------------------------------
+    print_routine("Find dispersion solution (sparcfit)")        
+    in_arc_filename = arc + arc_suffix + trim_suffix + cor_suffix + ".fits"
+
+    output = Popen([arcfit, in_arc_filename, "7", "7", "1", "2", L2_CONFIG_DIR + "/reference_arcs/red/030914/arc.lis", "3", "3", "100", "2"], stdout=PIPE)
+    print output.stdout.read()                   
+ 
+    # --------------------
+    # - RENAME DAT FILES -
+    # --------------------   
+    for i in os.listdir("."):
+        if i.endswith(".dat"):
+            if not i.startswith("p_"):
+                filename = os.path.splitext(os.path.basename(i))[0]
+                ext = os.path.splitext(os.path.basename(i))[1]
+                move(i, "p_" + filename + "_arc_corrected" + ext)      
+                
  
     # ---------------------------------------------------------------
     # - FIND POSITION OF TARGET SPECTRUM WITH A SINGLE BIN (SPFIND) -
@@ -338,9 +427,90 @@ if __name__ == "__main__":
     in_target_filename = target + target_suffix + trim_suffix + cor_suffix + ".fits"
 
     output = Popen([find, in_target_filename, "1000", "0.1", "3", "3", "10", "4", "50", "150", "7", "3", "0"], stdout=PIPE)
-    print output.stdout.read()  
+    print output.stdout.read() 
+    with open("new_error_codes", "w") as f_new:
+        with open("error_codes") as f_old:
+            for line in f_old:
+                if not line.startswith("L2STATFI"):
+                    f_new.write(line)
+                else:
+                    key         = line.split('\t')[0]
+                    code        = line.split('\t')[1]   
+                    desc        = line.split('\t')[2].strip('\n')       
+                    f_new.write("L2STATF2\t" + code + "\t" + desc + " (target corrected)"+ "\n")
+    os.remove("error_codes")
+    move("new_error_codes", "error_codes")        
     
+    # -------------------------------
+    # - EXTRACT SPECTRA (SPEXTRACT) -
+    # -------------------------------
+    # N.B. have to rewrite error_codes file after each run as 
+    # each run gives the same header key.
+    print_routine("Extract spectra (spextract)")
+    
+    in_target_filename = target + target_suffix + trim_suffix + cor_suffix + ".fits"
+    in_ref_filename = ref + ref_suffix + trim_suffix + cor_suffix + ".fits"
+    in_cont_filename = cont + cont_suffix + trim_suffix + cor_suffix + ".fits"
+    in_arc_filename = arc + arc_suffix + trim_suffix + cor_suffix + ".fits"
+    out_target_filename = target + target_suffix + trim_suffix + cor_suffix + ext_suffix + ".fits"
+    out_ref_filename = ref + ref_suffix + trim_suffix + cor_suffix + ext_suffix + ".fits"
+    out_cont_filename = cont + cont_suffix + trim_suffix + cor_suffix + ext_suffix + ".fits"
+    out_arc_filename = arc + arc_suffix + trim_suffix + cor_suffix + ext_suffix + ".fits"
 
+    output = Popen([extract, in_target_filename, "simple", "4", "4", out_target_filename], stdout=PIPE)
+    print output.stdout.read()  
+    with open("new_error_codes", "w") as f_new:
+        with open("error_codes") as f_old:
+            for line in f_old:
+                if not line.startswith("L2STATEX"):
+                    f_new.write(line)
+                else:
+                    key         = line.split('\t')[0]
+                    code        = line.split('\t')[1]   
+                    desc        = line.split('\t')[2].strip('\n')       
+                    f_new.write("L2STATXT\t" + code + "\t" + desc + " (target)\n")
+    os.remove("error_codes")
+    move("new_error_codes", "error_codes")      
+    
+    output = Popen([extract, in_cont_filename, "simple", "4", "4", out_cont_filename], stdout=PIPE)
+    print output.stdout.read()  
+    with open("new_error_codes", "w") as f_new:
+        with open("error_codes") as f_old:
+            for line in f_old:
+                if not line.startswith("L2STATEX"):
+                    f_new.write(line)
+                else:
+                    key         = line.split('\t')[0]
+                    code        = line.split('\t')[1]   
+                    desc        = line.split('\t')[2].strip('\n')       
+                    f_new.write("L2STATXC\t" + code + "\t" + desc + " (continuum)\n")
+    os.remove("error_codes")
+    move("new_error_codes", "error_codes")   
+    
+    output = Popen([extract, in_arc_filename, "simple", "4", "4", out_arc_filename], stdout=PIPE)
+    print output.stdout.read()  
+    with open("new_error_codes", "w") as f_new:
+        with open("error_codes") as f_old:
+            for line in f_old:
+                if not line.startswith("L2STATEX"):
+                    f_new.write(line)
+                else:
+                    key         = line.split('\t')[0]
+                    code        = line.split('\t')[1]   
+                    desc        = line.split('\t')[2].strip('\n')       
+                    f_new.write("L2STATXA\t" + code + "\t" + desc + " (arc)\n")
+    os.remove("error_codes")
+    move("new_error_codes", "error_codes")     
+    
+    # --------------------
+    # - RENAME DAT FILES -
+    # --------------------   
+    for i in os.listdir("."):
+        if i.endswith(".dat"):
+            if not i.startswith("p_"):
+                filename = os.path.splitext(os.path.basename(i))[0]
+                ext = os.path.splitext(os.path.basename(i))[1]
+                move(i, "p_" + filename + "_target_corrected" + ext)   
 
 	
     

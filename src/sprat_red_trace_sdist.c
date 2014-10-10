@@ -16,6 +16,7 @@
 #include "sprat_config.h"
 #include "sprat_red_trace_sdist.h"
 #include "sprat_red_find.h"
+#include "gsl_poly.h"
 
 // *********************************************************************
 
@@ -46,8 +47,8 @@ int main(int argc, char *argv []) {
 		// ***********************************************************************
 		// Redefine routine input parameters
 
-		int order	= strtol(argv[1], NULL, 0);	
-
+		int order	                = strtol(argv[1], NULL, 0);	
+                
 		// ***********************************************************************
 		// Open [SPFIND_OUTPUTF_PEAKS_FILE] input file
 	
@@ -166,7 +167,7 @@ int main(int argc, char *argv []) {
 
 		if ((this_chi_squared < SPTRACE_VAR_CHISQUARED_MIN) || (this_chi_squared > SPTRACE_VAR_CHISQUARED_MAX)) {	// comparing doubles but accuracy isn't a necessity so don't need gsl_fcmp function
 			RETURN_FLAG = 2;
-		}		
+		}	
 
 		// ***********************************************************************
 		// Close [SPFIND_OUTPUTF_PEAKS_FILE] input file and 
