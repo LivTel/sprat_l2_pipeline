@@ -1,6 +1,6 @@
 ##################################
 # Makefile 			 #
-# Last Modified Date:   11/09/14 #
+# Last Modified Date:   14/10/14 #
 ##################################
 
 #############################
@@ -43,7 +43,7 @@ INCLUDES	= -I/usr/include/cfitsio -I/usr/include/gsl#			rmb/laptop
 # make default #
 ################
 
-all: sprat_red_clip sprat_red_find sprat_red_trace_sdist sprat_red_correct_sdist sprat_red_arcfit sprat_red_extract
+all: sprat_red_clip sprat_red_find sprat_red_trace_sdist sprat_red_correct_sdist sprat_red_arcfit sprat_red_rebin sprat_red_extract
 
 #################
 # make routines #
@@ -67,7 +67,11 @@ sprat_red_correct_sdist: sprat_red_correct_sdist.c libsprat
 	
 sprat_red_arcfit: sprat_red_arcfit.c libsprat
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) sprat_red_arcfit.c -lsprat -lgsl -lgslcblas -lcfitsio -lm -o sparcfit
-	$(MV) sparcfit $(L2_BIN_DIR)		
+	$(MV) sparcfit $(L2_BIN_DIR)	
+	
+sprat_red_rebin: sprat_red_rebin.c libsprat
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) sprat_red_rebin.c -lsprat -lgsl -lgslcblas -lcfitsio -lm -o sprebin
+	$(MV) sprebin $(L2_BIN_DIR)	
 	
 sprat_red_extract: sprat_red_extract.c libsprat
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) sprat_red_extract.c -lsprat -lgsl -lgslcblas -lcfitsio -lm -o spextract

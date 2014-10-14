@@ -1,7 +1,7 @@
 
 ##################################
 # L2_aliases 			 #
-# Last Modified Date:   09/10/14 #
+# Last Modified Date:   14/10/14 #
 ##################################
 
 ################
@@ -13,6 +13,7 @@ alias spfind $L2_BIN_DIR/spfind
 alias sptrace $L2_BIN_DIR/sptrace
 alias spcorrect $L2_BIN_DIR/spcorrect
 alias sparcfit $L2_BIN_DIR/sparcfit
+alias sprebin $L2_BIN_DIR/sprebin
 alias spextract $L2_BIN_DIR/spextract
 
 ##################

@@ -82,6 +82,7 @@ if __name__ == "__main__":
     arc_suffix 		= "_arc"
     trim_suffix 	= "_tr"
     cor_suffix		= "_cor"
+    reb_suffix          = "_reb"
     ext_suffix          = "_ex"
 
     # define routine paths
@@ -91,13 +92,19 @@ if __name__ == "__main__":
     correct	        = L2_BIN_DIR + "/spcorrect"
     arcfit              = L2_BIN_DIR + "/sparcfit"
     extract             = L2_BIN_DIR + "/spextract"    
+    rebin               = L2_BIN_DIR + "/sprebin"
     
     # define output plot filenames
     ref_pre_sdist_plot  = "ref_pre_sdist_plot.png"
     ref_post_sdist_plot = "ref_post_sdist_plot.png"
 
-    #define script paths
+    # define script paths
     plot_peaks	        = L2_SCRIPT_DIR + "/L2_analyse_plotpeaks.py"
+    
+    # define some wavelength fitting parameters
+    start_wav           = 4020          # A
+    end_wav             = 7960          # A
+    dispersion          = 4.6           # A/px
     
     # move files to working directory, redefine paths and change to working directory
     try:
@@ -460,14 +467,24 @@ if __name__ == "__main__":
                 ext = os.path.splitext(os.path.basename(i))[1]
                 move(i, "p_" + filename + "_ref_corrected" + ext)      
                 
-    # ------------------------------------------------
-    # - FIND PIXEL TO WAVELENGTH SOLUTIONS (sparcfit -
-    # ------------------------------------------------
+    # -------------------------------------------------
+    # - FIND PIXEL TO WAVELENGTH SOLUTIONS (sparcfit) -
+    # -------------------------------------------------
     print_routine("Find dispersion solution (sparcfit)")        
     in_arc_filename = arc + arc_suffix + trim_suffix + cor_suffix + ".fits"
 
     output = Popen([arcfit, in_arc_filename, "7", "7", "1", "2", chosen_arc_file_path, "3", "3", "100", "2"], stdout=PIPE)
-    print output.stdout.read()                   
+    print output.stdout.read()           
+    
+    # -------------------
+    # - REBIN (sprebin) -
+    # -------------------
+    print_routine("Rebin data spectrally (sprebin)")        
+    in_target_filename = target + target_suffix + trim_suffix + cor_suffix + ".fits"
+    out_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
+
+    output = Popen([rebin, in_target_filename, str(start_wav), str(end_wav), "linear", str(dispersion), "1", out_target_filename], stdout=PIPE)
+    print output.stdout.read()       
  
     # --------------------
     # - RENAME DAT FILES -
@@ -479,7 +496,6 @@ if __name__ == "__main__":
                 ext = os.path.splitext(os.path.basename(i))[1]
                 move(i, "p_" + filename + "_arc_corrected" + ext)      
                 
- 
     # ---------------------------------------------------------------
     # - FIND POSITION OF TARGET SPECTRUM WITH A SINGLE BIN (SPFIND) -
     # ---------------------------------------------------------------
@@ -508,14 +524,8 @@ if __name__ == "__main__":
     # each run gives the same header key.
     print_routine("Extract spectra (spextract)")
     
-    in_target_filename = target + target_suffix + trim_suffix + cor_suffix + ".fits"
-    in_ref_filename = ref + ref_suffix + trim_suffix + cor_suffix + ".fits"
-    in_cont_filename = cont + cont_suffix + trim_suffix + cor_suffix + ".fits"
-    in_arc_filename = arc + arc_suffix + trim_suffix + cor_suffix + ".fits"
-    out_target_filename = target + target_suffix + trim_suffix + cor_suffix + ext_suffix + ".fits"
-    out_ref_filename = ref + ref_suffix + trim_suffix + cor_suffix + ext_suffix + ".fits"
-    out_cont_filename = cont + cont_suffix + trim_suffix + cor_suffix + ext_suffix + ".fits"
-    out_arc_filename = arc + arc_suffix + trim_suffix + cor_suffix + ext_suffix + ".fits"
+    in_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
+    out_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ".fits"
 
     output = Popen([extract, in_target_filename, "simple", "4", "4", out_target_filename], stdout=PIPE)
     print output.stdout.read()  
@@ -531,36 +541,6 @@ if __name__ == "__main__":
                     f_new.write("L2STATXT\t" + code + "\t" + desc + " (target)\n")
     os.remove("error_codes")
     move("new_error_codes", "error_codes")      
-    
-    output = Popen([extract, in_cont_filename, "simple", "4", "4", out_cont_filename], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-                if not line.startswith("L2STATEX"):
-                    f_new.write(line)
-                else:
-                    key         = line.split('\t')[0]
-                    code        = line.split('\t')[1]   
-                    desc        = line.split('\t')[2].strip('\n')       
-                    f_new.write("L2STATXC\t" + code + "\t" + desc + " (continuum)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")   
-    
-    output = Popen([extract, in_arc_filename, "simple", "4", "4", out_arc_filename], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-                if not line.startswith("L2STATEX"):
-                    f_new.write(line)
-                else:
-                    key         = line.split('\t')[0]
-                    code        = line.split('\t')[1]   
-                    desc        = line.split('\t')[2].strip('\n')       
-                    f_new.write("L2STATXA\t" + code + "\t" + desc + " (arc)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")     
     
     # --------------------
     # - RENAME DAT FILES -

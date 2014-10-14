@@ -1,7 +1,7 @@
 # DO NOT MODIFY FORMAT
 #
 # File:				ERROR_CODES
-# Last Modified Date:     	08/10/14
+# Last Modified Date:     	14/10/14
 #
 
 # key		code	comment	
@@ -106,3 +106,24 @@ L2STATEX        -11     Failed to create output target FITS file (ARG 6)
 L2STATEX        -12     Failed to close target FITS file (ARG 1)
 L2STATEX        -13     Failed to close output FITS file (ARG 6)
 L2STATEX        -14     Failed to close [SPFIND_OUTPUTF_PEAKS_FILE] input file
+
+L2STATRE        1       Failed to get L2_SPR_BLURB_FILE environment variable
+L2STATRE        0       No errors encountered
+L2STATRE        -1      Failed on command line
+L2STATRE        -2      Input frame must have 2 axes
+L2STATRE        -3      Failed to get image parameters of input frame
+L2STATRE        -4      Failed to open input FITS file (ARG 1)
+L2STATRE        -5      [SPARCFIT_OUTPUTF_WAVFITS_FILE] file doesn't exist
+L2STATRE        -6      Failed to assign [polynomial_order] var, is it present in the [SPARCFIT_OUTPUTF_WAVFITS_FILE] file?
+L2STATRE        -7      Desired starting wavelength (ARG 2) is outside of inherent wavelength boundaries
+L2STATRE        -8      Desired ending wavelength (ARG 3) is outside of inherent wavelength boundaries
+L2STATRE        -9      Interpolation type [interpolation_type] not recognised
+L2STATRE        -10     Failed to read row of target frame
+L2STATRE        -11     Failed to create [SPREBIN_OUTPUTF_REBIN_WAVFITS_FILE] output file
+L2STATRE        -12     Failed to write output img
+L2STATRE        -13     Failed to create output img
+L2STATRE        -14     Failed to create output FITS file (ARG 7)
+L2STATRE        -15     Failed to close dispersion solutions file
+L2STATRE        -16     Failed to close [SPREBIN_OUTPUTF_REBIN_WAVFITS_FILE] file
+L2STATRE        -17     Failed to close input FITS file (ARG 1)
+L2STATRE        -18     Failed to close output FITS file (ARG 7)
