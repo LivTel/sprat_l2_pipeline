@@ -47,13 +47,6 @@ int main(int argc, char *argv []) {
 
 	} else {
 
-		char time_start [80];
-		memset(time_start, '\0', sizeof(char)*80);
-
-		find_time(time_start);
-
-		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "STARTDATE", "L2DATE", time_start, "when this reduction was performed", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
-
 		// ***********************************************************************
 		// Redefine routine input parameters
 

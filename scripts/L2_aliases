@@ -15,6 +15,7 @@ alias spcorrect $L2_BIN_DIR/spcorrect
 alias sparcfit $L2_BIN_DIR/sparcfit
 alias sprebin $L2_BIN_DIR/sprebin
 alias spextract $L2_BIN_DIR/spextract
+alias spreformat $L2_BIN_DIR/spreformat
 
 ##################
 # Script aliases #

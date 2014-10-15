@@ -194,6 +194,13 @@ if __name__ == "__main__":
     if chosen_arc_file_path is None:
         print "Failed to find a suitable arc"
         exit(1)        
+        
+    # add L2DATE key to additional_keys
+    with open("additional_keys", 'w') as f:
+        today = date.today()
+        now_date = today.strftime("%d-%m-%y")
+        now_time = time.strftime("%H:%M:%S")
+        f.write("str\tSTARTDATE\tL2DATE\t" + now_date + " " + now_time + "\twhen this reduction was performed\n")
 
     # -------------------------
     # - TRIM SPECTRA (SPTRIM) -
