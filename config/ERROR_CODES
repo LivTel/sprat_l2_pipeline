@@ -127,3 +127,32 @@ L2STATRE        -15     Failed to close dispersion solutions file
 L2STATRE        -16     Failed to close [SPREBIN_OUTPUTF_REBIN_WAVFITS_FILE] file
 L2STATRE        -17     Failed to close input FITS file (ARG 1)
 L2STATRE        -18     Failed to close output FITS file (ARG 7)
+
+L2STATRF	6	Failed to write checksum for output file (ARG 4)
+L2STATRF	5	Failed to write error codes file to header of output file (ARG 4)
+L2STATRF	4	Failed to write STARTDATE additional key to header of output file (ARG 4)
+L2STATRF	3	Failed to write CALIBRATION additional key to header of output file (ARG 4)
+L2STATRF	2	Failed to get L2_FITS_KEYS_TO_ACTION_FILE environment variable, unable to write headers from headers file (ARG 2)
+L2STATRF	1	Failed to get L2_FRRF_BLURB_FILE environment variable
+L2STATRF	0	No errors encountered
+L2STATRF	-1	Failed on command line
+L2STATRF	-2	Operation not recognised (ARG 3)
+L2STATRF	-3	Failed to get image parameters of input frame
+L2STATRF	-4	Failed to open input FITS file (ARG 1)
+L2STATRF	-5	Failed to open headers FITS fits (ARG 2)
+L2STATRF	-6	Failed to create output FITS file (ARG 4)
+L2STATRF	-7	Failed to open output FITS fits (ARG 4)
+L2STATRF	-8	Failed to get number of HDUs in output FITS file (ARG 4)
+L2STATRF	-9	Failed to create output img (BLANK)
+L2STATRF	-10	Failed to create output img (COPY)
+L2STATRF	-11	Failed to copy data (COPY)
+L2STATRF	-12	Failed to write EXTNAME key to output frame
+L2STATRF	-13	Failed to get hdrspace from input file (ARG 1)
+L2STATRF	-14	Failed to read record from input file (ARG 1)
+L2STATRF	-15	Failed to get hdrspace from headers file (ARG 2)
+L2STATRF	-16	Failed to read record from headers file (ARG 2)
+L2STATRF	-17	Failed to close input FITS file (ARG 1)
+L2STATRF	-18	Failed to close headers FITS file (ARG 2)
+L2STATRF	-19	Failed to close output FITS file (ARG 4)
+
+

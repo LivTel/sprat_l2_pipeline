@@ -22,6 +22,8 @@ alias spreformat $L2_BIN_DIR/spreformat
 ##################
 
 alias l2pp python $L2_SCRIPT_DIR/L2_analyse_plotpeaks.py
+alias l2pi python $L2_SCRIPT_DIR/L2_analyse_plotimage.py
+alias l2ps python $L2_SCRIPT_DIR/L2_analyse_plotspec.py
 alias l2exec python $L2_SCRIPT_DIR/L2_exec.py
 
 

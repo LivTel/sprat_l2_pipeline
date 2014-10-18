@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_reformat.c
- Last Modified Date:     	14/10/14
+ Last Modified Date:     	18/10/14
 
 ************************************************************************/
 
@@ -57,9 +57,9 @@ int main (int argc, char *argv []) {
 		// ***********************************************************************
 		// Check operation choice is recognised
 
-		if (strcmp(operation, "L1_IMAGE") && strcmp(operation, "RSS_NONSS") && strcmp(operation, "RSS_SS") && strcmp(operation, "CUBE_NONSS") && strcmp(operation, "CUBE_SS") && strcmp(operation, "SPEC_NONSS") && strcmp(operation, "SPEC_SS") && strcmp(operation, "COLCUBE_NONSS")) {
+		if (strcmp(operation, "L1_IMAGE") && strcmp(operation, "LSS_NONSS") && strcmp(operation, "SPEC_NONSS")) {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -2, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -2, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 			free(input_f);
 			free(headers_f);
@@ -91,7 +91,7 @@ int main (int argc, char *argv []) {
 
 				if(!populate_img_parameters(input_f, input_f_ptr, input_f_maxdim, &input_f_bitpix, &input_f_naxis, input_f_naxes, &input_f_status, "INPUT FRAME")) {} else { 
 
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -3, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -3, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 					fits_report_error(stdout, input_f_status); 
 
 					free(input_f);
@@ -107,7 +107,7 @@ int main (int argc, char *argv []) {
 
 			} else { 
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -4, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -4, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, input_f_status); 
 
 				free(input_f);
@@ -130,7 +130,7 @@ int main (int argc, char *argv []) {
 
 		if(!fits_open_file(&headers_f_ptr, headers_f, READONLY, &headers_f_status)) {} else { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -5, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -5, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fits_report_error(stdout, headers_f_status); 
 
 			free(input_f);
@@ -158,7 +158,7 @@ int main (int argc, char *argv []) {
 
 			} else {
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -6, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -6, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, output_f_status); 
 
 				free(input_f);
@@ -179,7 +179,7 @@ int main (int argc, char *argv []) {
 
 			} else { 
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -7, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -7, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, output_f_status); 
 
 				free(input_f);
@@ -203,7 +203,7 @@ int main (int argc, char *argv []) {
 
 		if(!fits_get_num_hdus(output_f_ptr, &hdunum, &output_f_status)) {} else {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -8, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -8, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fits_report_error(stdout, output_f_status); 
 
 			free(input_f);
@@ -225,7 +225,7 @@ int main (int argc, char *argv []) {
 		// SPECIFIC FRAME DATA HANDLING
 		// ***********************************************************************
 
-		int ii, jj;
+		int ii;
 
 		// ***********************************************************************
 		// Write blank extension to output file (ARG 4) if input file (ARG 1) is
@@ -244,7 +244,7 @@ int main (int argc, char *argv []) {
 
 			if(!fits_create_img(output_f_ptr, output_f_bitpix, output_f_naxis, output_f_naxes, &output_f_status)) {} else {
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -9, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -9, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, output_f_status); 
 
 				free(input_f);
@@ -262,9 +262,9 @@ int main (int argc, char *argv []) {
 
 			RETURN_FLAG = 2;
 			
-		} else if (!strcmp(operation, "L1_IMAGE") || !strcmp(operation, "RSS_NONSS") || !strcmp(operation, "RSS_SS")) { 
+		} else if (!strcmp(operation, "L1_IMAGE") || !strcmp(operation, "LSS_NONSS") || !strcmp(operation, "SPEC_NONSS")) { 
 
-			// COPY DATA FROM INPUT FILE TO OUTPUT FILE 			    (COPY)
+			// COPY DATA FROM INPUT FILE TO OUTPUT FILE 			    (COPY) 
 			// ***********************************************************************
 			// 1.	Set output file (ARG 4) parameters
 
@@ -275,7 +275,7 @@ int main (int argc, char *argv []) {
 
 			if(!fits_create_img(output_f_ptr, output_f_bitpix, output_f_naxis, output_f_naxes, &output_f_status)) {} else {
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -10, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -10, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, output_f_status); 
 
 				free(input_f);
@@ -295,7 +295,7 @@ int main (int argc, char *argv []) {
 
 			if(!fits_copy_data(input_f_ptr, output_f_ptr, &output_f_status)) {} else {
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -11, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -11, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 				fits_report_error(stdout, output_f_status); 
 
 				free(input_f);
@@ -310,393 +310,6 @@ int main (int argc, char *argv []) {
 				return 1; 
 
 			}
-
-		} else if (!strcmp(operation, "CUBE_NONSS") || !strcmp(operation, "CUBE_SS")) {
-
-			// REFORMAT DATA FROM INPUT FILE TO OUTPUT FILE 		(DATACUBE)
-			// ***********************************************************************
-			// 1.	Set the range limits using input fits file (ARG 1)
-
-			int cut_x [2] = {1, input_f_naxes[0]};
-			int cut_y [2] = {1, input_f_naxes[1]};
-
-			// 2.	Set parameters used when reading data from input fits file (ARG 1)
-
-			long fpixel [2] = {cut_x[0], cut_y[0]};
-			long nxelements = (cut_x[1] - cut_x[0]) + 1;
-			long nyelements = (cut_y[1] - cut_y[0]) + 1;
-
-			// 3.	Set output file (ARG 4) parameters
-
-			long output_f_naxes[3] = {FRREFORMAT_VAR_IFU_DIM_X, FRREFORMAT_VAR_IFU_DIM_Y, nxelements};
-			int output_f_bitpix = input_f_bitpix, output_f_naxis = 3;
-			long output_f_fpixel = 1;
-
-			double output_frame_values [FRREFORMAT_VAR_IFU_DIM_X*FRREFORMAT_VAR_IFU_DIM_Y*nxelements];
-	     		memset(output_frame_values, 0, sizeof(double)*FRREFORMAT_VAR_IFU_DIM_X*FRREFORMAT_VAR_IFU_DIM_Y*nxelements);
-
-			// 4.	Create array to store pixel values from input fits file (ARG 1)
-
-			double input_f_pixels [nxelements];
-
-			// 5.	Read row of input frame (ARG 1)
-
-			int this_fibre_index;
-
-			double input_frame_values [nyelements][nxelements];
-			memset(input_frame_values, 0, sizeof(double)*nyelements*nxelements);
-
-			for (fpixel[1] = cut_y[0]; fpixel[1] <= cut_y[1]; fpixel[1]++) {
-
-				this_fibre_index = fpixel[1] - 1;
-
-				memset(input_f_pixels, 0, sizeof(double)*nxelements);
-
-				if(!fits_read_pix(input_f_ptr, IMG_READ_ACCURACY, fpixel, nxelements, NULL, input_f_pixels, NULL, &input_f_status)) {
-
-					for (ii=0; ii<nxelements; ii++) {
-
-						input_frame_values[this_fibre_index][ii] = input_f_pixels[ii];
-
-					}
-
-				} else { 
-
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -12, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
-					fits_report_error(stdout, input_f_status); 
-
-					free(input_f);
-					free(headers_f);
-					free(operation);
-					free(output_f);
-
-					if (fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-					if (fits_close_file(headers_f_ptr, &headers_f_status)) fits_report_error (stdout, headers_f_status); 
-					if (fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status); 
-
-					return 1; 
-
-				}
-
-			}
-
-			// 6.	Rearrange input frame values [input_frame_values] into datacube format
-
-			int output_frame_values_index = 0;
-
-			for (ii=0; ii<nxelements; ii++) {
-
-				for (jj=0; jj<nyelements; jj++) {
-
-					output_frame_values[output_frame_values_index] = input_frame_values[FRREFORMAT_VAR_IFU_FIBRE_FORMAT[jj]][ii];
-					output_frame_values_index++;
-
-				}
-
-			}
-
-			// 7.	Create a new IMG extension in output file (ARG 4)
-
-			if(!fits_create_img(output_f_ptr, output_f_bitpix, output_f_naxis, output_f_naxes, &output_f_status)) {} else {
-
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -13, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
-				fits_report_error(stdout, output_f_status); 
-
-				free(input_f);
-				free(headers_f);
-				free(operation);
-				free(output_f);
-
-				if (fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-				if (fits_close_file(headers_f_ptr, &headers_f_status)) fits_report_error (stdout, headers_f_status); 
-				if (fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status); 
-
-				return 1; 
-
-			}
-
-			// 8.	Write datacube values [output_frame_values] to output file (ARG 4)
-
-			if (!fits_write_img(output_f_ptr, INTERMEDIATE_IMG_ACCURACY[1], output_f_fpixel, FRREFORMAT_VAR_IFU_DIM_X*FRREFORMAT_VAR_IFU_DIM_Y*nxelements, output_frame_values, &output_f_status)) {} else { 
-
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -14, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
-				fits_report_error(stdout, output_f_status); 
-
-				free(input_f);
-				free(headers_f);
-				free(operation);
-				free(output_f);
-
-				if (fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-				if (fits_close_file(headers_f_ptr, &headers_f_status)) fits_report_error (stdout, headers_f_status); 
-				if (fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status); 
-
-				return 1; 
-
-			}
-
-		} else if (!strcmp(operation, "SPEC_NONSS") || !strcmp(operation, "SPEC_SS")) {
-
-			// REFORMAT DATA FROM INPUT FILE TO OUTPUT FILE 		(SPECTRUM)
-			// ***********************************************************************
-			// 1.	Set the range limits using input fits file (ARG 1)
-
-			int cut_x [2] = {1, input_f_naxes[0]};
-			int cut_y [2] = {1, input_f_naxes[1]};
-
-			// 2.	Set parameters used when reading data from input fits file (ARG 1)
-
-			long fpixel [2] = {cut_x[0], cut_y[0]};
-			long nxelements = (cut_x[1] - cut_x[0]) + 1;
-			long nyelements = (cut_y[1] - cut_y[0]) + 1;
-
-			// 3.	Set output file (ARG 4) parameters
-
-			long output_f_naxes[2] = {nxelements, 1};
-			int output_f_bitpix = input_f_bitpix, output_f_naxis = 2;
-			long output_f_fpixel = 1;
-
-			double output_frame_values [nxelements];
-	     		memset(output_frame_values, 0, sizeof(double)*nxelements);
-
-			// 4.	Create array to store pixel values from input fits file (ARG 1)
-
-			double input_f_pixels [nxelements];
-			double smoothed_input_f_pixels [nxelements];
-
-			// 5.	Read row of input frame (ARG 1)
-
-			int this_fibre_index;
-
-			double total_fluxes [nyelements];
-			memset(total_fluxes, 0, sizeof(double)*nyelements);	
-
-			double input_frame_values [nyelements][nxelements];
-			memset(input_frame_values, 0, sizeof(double)*nyelements*nxelements);
-
-			for (fpixel[1] = cut_y[0]; fpixel[1] <= cut_y[1]; fpixel[1]++) {
-
-				this_fibre_index = fpixel[1] - 1;
-
-				memset(input_f_pixels, 0, sizeof(double)*nxelements);
-				memset(smoothed_input_f_pixels, 0, sizeof(double)*nxelements);
-
-				if(!fits_read_pix(input_f_ptr, IMG_READ_ACCURACY, fpixel, nxelements, NULL, input_f_pixels, NULL, &input_f_status)) {
-
-					// 6.	Apply a median smoothing filter to eliminate CR from brightest fibre selection
-
-					median_filter(input_f_pixels, smoothed_input_f_pixels, nxelements, FRREFORMAT_VAR_SPECTRUM_MEDIAN_HALF_FILTER_SIZE);
-
-					for (ii=0; ii<nxelements; ii++) {
-
-						input_frame_values[this_fibre_index][ii] = input_f_pixels[ii];
-
-						// 7.	Sum total flux and store
-
-						total_fluxes[this_fibre_index] += smoothed_input_f_pixels[ii];
-
-					}
-
-				} else { 
-
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -15, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
-					fits_report_error(stdout, input_f_status); 
-
-					free(input_f);
-					free(headers_f);
-					free(operation);
-					free(output_f);
-
-					if (fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-					if (fits_close_file(headers_f_ptr, &headers_f_status)) fits_report_error (stdout, headers_f_status); 
-					if (fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status); 
-
-					return 1; 
-
-				}
-
-			}
-
-			// 8.	Find indexes of the brightest [FRREFORMAT_VAR_SPECTRUM_NUM_FIBRES] fibres
-
-			size_t brightest_fibre_indexes[FRREFORMAT_VAR_SPECTRUM_NUM_FIBRES];
-
-			gsl_sort_largest_index(brightest_fibre_indexes, FRREFORMAT_VAR_SPECTRUM_NUM_FIBRES, total_fluxes, 1, nyelements);
-
-			// 9.	Add flux from each of the brightest rows
-
-			for (ii=0; ii<nxelements; ii++) {
-
-				for (jj=0; jj<FRREFORMAT_VAR_SPECTRUM_NUM_FIBRES; jj++) {
-
-					output_frame_values[ii] += input_frame_values[brightest_fibre_indexes[jj]][ii];
-
-				}
-
-			}
-
-			// 10.	Create a new IMG extension in output file (ARG 4)
-
-			if(!fits_create_img(output_f_ptr, output_f_bitpix, output_f_naxis, output_f_naxes, &output_f_status)) {} else {
-
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -16, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
-				fits_report_error(stdout, output_f_status); 
-
-				free(input_f);
-				free(headers_f);
-				free(operation);
-				free(output_f);
-
-				if (fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-				if (fits_close_file(headers_f_ptr, &headers_f_status)) fits_report_error (stdout, headers_f_status); 
-				if (fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status); 
-
-				return 1; 
-
-			}
-
-			// 11.	Write spectrum values [output_frame_values] to output file (ARG 4)
-
-			if (!fits_write_img(output_f_ptr, INTERMEDIATE_IMG_ACCURACY[1], output_f_fpixel, nxelements, output_frame_values, &output_f_status)) {} else { 
-
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -17, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
-				fits_report_error(stdout, output_f_status); 
-
-				free(input_f);
-				free(headers_f);
-				free(operation);
-				free(output_f);
-
-				if (fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-				if (fits_close_file(headers_f_ptr, &headers_f_status)) fits_report_error (stdout, headers_f_status); 
-				if (fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status); 
-
-				return 1; 
-
-			}
-
-		} else if (!strcmp(operation, "COLCUBE_NONSS")) {
-
-			// REFORMAT DATA FROM INPUT FILE TO OUTPUT FILE 	      (IFU BUNDLE)
-			// ***********************************************************************
-			// 1.	Set the range limits using input fits file (ARG 1)
-
-			int cut_x [2] = {1, input_f_naxes[0]};
-			int cut_y [2] = {1, input_f_naxes[1]};
-
-			// 2.	Set parameters used when reading data from input fits file (ARG 1)
-
-			long fpixel [2] = {cut_x[0], cut_y[0]};
-			long nxelements = (cut_x[1] - cut_x[0]) + 1;
-			long nyelements = (cut_y[1] - cut_y[0]) + 1;
-
-			// 3.	Set output file (ARG 4) parameters
-
-			long output_f_naxes[3] = {FRREFORMAT_VAR_IFU_DIM_X, FRREFORMAT_VAR_IFU_DIM_Y};
-			int output_f_bitpix = input_f_bitpix, output_f_naxis = 2;
-			long output_f_fpixel = 1;
-
-			double output_frame_values [FRREFORMAT_VAR_IFU_DIM_X*FRREFORMAT_VAR_IFU_DIM_Y];
-	     		memset(output_frame_values, 0, sizeof(double)*FRREFORMAT_VAR_IFU_DIM_X*FRREFORMAT_VAR_IFU_DIM_Y);
-
-			// 4.	Create array to store pixel values from input fits file (ARG 1)
-
-			double input_f_pixels [nxelements];
-
-			// 5.	Read row of input frame (ARG 1)
-
-			int this_fibre_index;
-
-			double total_fluxes [nyelements];
-			memset(total_fluxes, 0, sizeof(double)*nyelements);
-
-			for (fpixel[1] = cut_y[0]; fpixel[1] <= cut_y[1]; fpixel[1]++) {
-
-				this_fibre_index = fpixel[1] - 1;
-
-				memset(input_f_pixels, 0, sizeof(double)*nxelements);
-
-				if(!fits_read_pix(input_f_ptr, IMG_READ_ACCURACY, fpixel, nxelements, NULL, input_f_pixels, NULL, &input_f_status)) {
-
-					for (ii=0; ii<nxelements; ii++) {
-
-						// 6.	Sum total flux and store
-
-						total_fluxes[this_fibre_index] += input_f_pixels[ii];
-
-					}
-
-				} else { 
-
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -18, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
-					fits_report_error(stdout, input_f_status); 
-
-					free(input_f);
-					free(headers_f);
-					free(operation);
-					free(output_f);
-
-					if (fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-					if (fits_close_file(headers_f_ptr, &headers_f_status)) fits_report_error (stdout, headers_f_status); 
-					if (fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status); 
-
-					return 1; 
-
-				}
-
-			}
-
-			// 7.	Rearrange input frame values [input_frame_values] into IFU bundle format
-
-			int output_frame_values_index = 0;
-
-			for (jj=0; jj<nyelements; jj++) {
-
-				output_frame_values[output_frame_values_index] = total_fluxes[FRREFORMAT_VAR_IFU_FIBRE_FORMAT[jj]];
-				output_frame_values_index++;
-
-			}
-
-			// 8.	Create a new IMG extension in output file (ARG 4)
-
-			if(!fits_create_img(output_f_ptr, output_f_bitpix, output_f_naxis, output_f_naxes, &output_f_status)) {} else {
-
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -19, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
-				fits_report_error(stdout, output_f_status); 
-
-				free(input_f);
-				free(headers_f);
-				free(operation);
-				free(output_f);
-
-				if (fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-				if (fits_close_file(headers_f_ptr, &headers_f_status)) fits_report_error (stdout, headers_f_status); 
-				if (fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status); 
-
-				return 1; 
-
-			}
-
-			// 9.	Write datacube values [output_frame_values] to output file (ARG 4)
-
-			if (!fits_write_img(output_f_ptr, INTERMEDIATE_IMG_ACCURACY[1], output_f_fpixel, FRREFORMAT_VAR_IFU_DIM_X*FRREFORMAT_VAR_IFU_DIM_Y, output_frame_values, &output_f_status)){} else { 
-
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -20, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
-				fits_report_error(stdout, output_f_status); 
-
-				free(input_f);
-				free(headers_f);
-				free(operation);
-				free(output_f);
-
-				if (fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-				if (fits_close_file(headers_f_ptr, &headers_f_status)) fits_report_error (stdout, headers_f_status); 
-				if (fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status); 
-
-				return 1; 
-
-			}
-
 
 		}
 
@@ -705,7 +318,7 @@ int main (int argc, char *argv []) {
 
 		if (!fits_write_key(output_f_ptr, TSTRING, "EXTNAME", operation, NULL, &output_f_status)) {} else {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -21, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -12, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fits_report_error(stdout, output_f_status); 
 
 			free(input_f);
@@ -743,7 +356,7 @@ int main (int argc, char *argv []) {
 
 				if(!fits_get_hdrspace(input_f_ptr, &nkeys, NULL, &input_f_status)) {} else {
 
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -22, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -13, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 					fits_report_error(stdout, headers_f_status); 
 
 					free(input_f);
@@ -765,7 +378,7 @@ int main (int argc, char *argv []) {
 
 					if(!fits_read_record(input_f_ptr, ii, card, &input_f_status)) {} else {
 
-						write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -23, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+						write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -14, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 						fits_report_error(stdout, input_f_status); 
 
 						free(input_f);
@@ -805,7 +418,7 @@ int main (int argc, char *argv []) {
 
 				if(!fits_get_hdrspace(headers_f_ptr, &nkeys, NULL, &headers_f_status)) {} else {
 
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -24, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -15, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 					fits_report_error(stdout, headers_f_status); 
 
 					free(input_f);
@@ -829,7 +442,7 @@ int main (int argc, char *argv []) {
 
 					if(!fits_read_record(headers_f_ptr, ii, card, &headers_f_status)) {} else {
 
-						write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -25, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+						write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -16, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 						fits_report_error(stdout, headers_f_status); 
 
 						free(input_f);
@@ -876,69 +489,9 @@ int main (int argc, char *argv []) {
 
 		if (!strcmp(operation, "L1_IMAGE")) {	
 
-		} else if (!strcmp(operation, "RSS_NONSS")) {
+		} else if (!strcmp(operation, "LSS_NONSS")) {
 
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "RSS_CALIBRATION", 2, &output_f_status) == 1) {
-
-				RETURN_FLAG = 3;
-
-			}
-
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "STARTDATE", 2, &output_f_status) == 1) {
-
-				RETURN_FLAG = 4;
-
-			}
-
-			if (write_error_codes_file_to_header(ERROR_CODES_FILE, output_f_ptr, &output_f_status) == 1) {
-
-				RETURN_FLAG = 5;
-
-			}
-
-		} else if (!strcmp(operation, "CUBE_NONSS")) {
-
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "CUBE_CALIBRATION", 2, &output_f_status) == 1) {
-
-				RETURN_FLAG = 3;
-
-			}
-
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "STARTDATE", 2, &output_f_status) == 1) {
-
-				RETURN_FLAG = 4;
-
-			}
-
-			if (write_error_codes_file_to_header(ERROR_CODES_FILE, output_f_ptr, &output_f_status) == 1) {
-
-				RETURN_FLAG = 5;
-
-			}
-
-		} else if (!strcmp(operation, "RSS_SS")) {
-
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "RSS_CALIBRATION", 2, &output_f_status) == 1) {
-
-				RETURN_FLAG = 3;
-	
-			}
-
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "STARTDATE", 2, &output_f_status) == 1) {
-
-				RETURN_FLAG = 4;
-
-			}
-
-			if (write_error_codes_file_to_header(ERROR_CODES_FILE, output_f_ptr, &output_f_status) == 1) {
-
-				RETURN_FLAG = 5;
-
-			}
-
-		} else if (!strcmp(operation, "CUBE_SS")) {
-
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "CUBE_CALIBRATION", 2, &output_f_status) == 1) {
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "LSS_CALIBRATION", 2, &output_f_status) == 1) {
 
 				RETURN_FLAG = 3;
 
@@ -976,47 +529,7 @@ int main (int argc, char *argv []) {
 
 			}	
 
-		} else if (!strcmp(operation, "SPEC_SS")) {
-
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "SPEC_CALIBRATION", 2, &output_f_status) == 1) {
-
-				RETURN_FLAG = 3;
-	
-			}
-
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "STARTDATE", 2, &output_f_status) == 1) {
-
-				RETURN_FLAG = 4;
-
-			}
-
-			if (write_error_codes_file_to_header(ERROR_CODES_FILE, output_f_ptr, &output_f_status) == 1) {
-
-				RETURN_FLAG = 5;
-
-			}
-
-		} else if (!strcmp(operation, "COLCUBE_NONSS")) {
-
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "COLCUBE_CALIBRATION", 2, &output_f_status) == 1) {
-
-				RETURN_FLAG = 3;
-	
-			}
-
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "STARTDATE", 2, &output_f_status) == 1) {
-
-				RETURN_FLAG = 4;
-
-			}
-
-			if (write_error_codes_file_to_header(ERROR_CODES_FILE, output_f_ptr, &output_f_status) == 1) {
-
-				RETURN_FLAG = 5;
-
-			}
-
-		}
+		} 
 
 		// ***********************************************************************
 		// Write checksums
@@ -1042,7 +555,7 @@ int main (int argc, char *argv []) {
 
 			if (fits_close_file(input_f_ptr, &input_f_status)) { 
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -26, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -17, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 				fits_report_error (stdout, input_f_status); 
 
 				if (fits_close_file(headers_f_ptr, &headers_f_status)) fits_report_error (stdout, headers_f_status); 
@@ -1056,7 +569,7 @@ int main (int argc, char *argv []) {
 
 		if (fits_close_file(headers_f_ptr, &headers_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -27, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -18, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, headers_f_status); 
 
 			if (fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status); 
@@ -1067,7 +580,7 @@ int main (int argc, char *argv []) {
 
 		if (fits_close_file(output_f_ptr, &output_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -28, "Status flag for L2 frreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -19, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, output_f_status); 
 
 			return 1; 

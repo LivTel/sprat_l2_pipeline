@@ -93,13 +93,18 @@ if __name__ == "__main__":
     arcfit              = L2_BIN_DIR + "/sparcfit"
     extract             = L2_BIN_DIR + "/spextract"    
     rebin               = L2_BIN_DIR + "/sprebin"
+    reformat		= L2_BIN_DIR + "/spreformat"
     
     # define output plot filenames
-    ref_pre_sdist_plot  = "ref_pre_sdist_plot.png"
-    ref_post_sdist_plot = "ref_post_sdist_plot.png"
+    ref_pre_sdist_plot  	= "ref_pre_sdist_plot.png"
+    ref_post_sdist_plot 	= "ref_post_sdist_plot.png"
+    target_output_L1_IMAGE	= "target_L1_IMAGE.png"
+    target_output_SPEC_NONSS	= "target_SPEC_NONSS.png"
 
     # define script paths
     plot_peaks	        = L2_SCRIPT_DIR + "/L2_analyse_plotpeaks.py"
+    plot_image		= L2_SCRIPT_DIR + "/L2_analyse_plotimage.py"
+    plot_spec		= L2_SCRIPT_DIR + "/L2_analyse_plotspec.py"
     
     # define some wavelength fitting parameters
     start_wav           = 4020          # A
@@ -558,7 +563,61 @@ if __name__ == "__main__":
                 filename = os.path.splitext(os.path.basename(i))[0]
                 ext = os.path.splitext(os.path.basename(i))[1]
                 move(i, "p_" + filename + "_target_corrected" + ext)   
+                
+    # ------------------------------
+    # - REFORMAT FILE (SPREFORMAT) -
+    # ------------------------------
+    print_routine("Reformat spectra (spreformat)")
+    
+    in_target_headers_filename = target + target_suffix + ".fits"    
+    in_target_filename_L1_IMAGE = target + target_suffix + ".fits"    
+    in_target_filename_LSS_NONSS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
+    in_target_filename_SPEC_NONSS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ".fits"
+    
+    out_target_filename = target.split('_1.fits')[0] + "_2.fits"
+    
+    # L1_IMAGE
+    output = Popen([reformat, in_target_filename_L1_IMAGE, in_target_headers_filename, "L1_IMAGE", out_target_filename], stdout=PIPE)
+    print output.stdout.read()           
+    
+    # LSS_NONSS
+    output = Popen([reformat, in_target_filename_LSS_NONSS, in_target_headers_filename, "LSS_NONSS", out_target_filename], stdout=PIPE)
+    print output.stdout.read()   
+    
+    # SPEC_NONSS
+    output = Popen([reformat, in_target_filename_SPEC_NONSS, in_target_headers_filename, "SPEC_NONSS", out_target_filename], stdout=PIPE)
+    print output.stdout.read() 
+    
+    # ----------------------------------------------
+    # - GENERATE RASTER PLOT OF L1_IMAGE extension -
+    # ----------------------------------------------
+    print_routine("Plot extensions of output file (l2pi)")     
+    in_target_filename = target.split('_1.fits')[0] + "_2.fits"
 
+    output = Popen(["python", plot_image, "--f", in_target_filename, "--hdu", "L1_IMAGE", "--o", target_output_L1_IMAGE, "--ot", "L1_IMAGE"], stdout=PIPE)
+    print output.stdout.read()  
+    output.wait()
+    if os.path.exists(target_output_L1_IMAGE) and output.returncode == 0:
+        print_notification("Success.")
+    else:
+        print_notification("Failed.")
+        exit(1)
+        
+    # ------------------------------------------------
+    # - GENERATE RASTER PLOT OF SPEC_NONSS extension -
+    # ------------------------------------------------      
+    print_routine("Plot extensions of output file (l2ps)")     
+    in_target_filename = target.split('_1.fits')[0] + "_2.fits"    
+        
+    output = Popen(["python", plot_spec, "--f", in_target_filename, "--hdu", "SPEC_NONSS", "--o", target_output_SPEC_NONSS, "--ot", "SPEC_NONSS"], stdout=PIPE)
+    print output.stdout.read()  
+    output.wait()
+    if os.path.exists(target_output_SPEC_NONSS) and output.returncode == 0:
+        print_notification("Success.")
+    else:
+        print_notification("Failed.")
+        exit(1)
+	        
 	
     
 
