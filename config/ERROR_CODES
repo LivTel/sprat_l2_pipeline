@@ -98,14 +98,16 @@ L2STATEX        -3      Failed to get image parameters of input frame
 L2STATEX        -4      Failed to open input FITS file (ARG 1)
 L2STATEX        -5      Failed to read row of input frame
 L2STATEX        -6      [SPFIND_OUTPUTF_PEAKS_FILE] input file doesn't exist
-L2STATEX        -7      y coordinate of extraction window violates img boundary condition
+L2STATEX        -7      y coordinate of target extraction window violates img boundary condition
 L2STATEX        -8      [method] not recognised
-L2STATEX        -9      Failed to write output target img
-L2STATEX        -10      Failed to create output target img
-L2STATEX        -11     Failed to create output target FITS file (ARG 6)
-L2STATEX        -12     Failed to close target FITS file (ARG 1)
-L2STATEX        -13     Failed to close output FITS file (ARG 6)
-L2STATEX        -14     Failed to close [SPFIND_OUTPUTF_PEAKS_FILE] input file
+L2STATEX        -9      y coordinate of sky extraction window violates img boundary condition
+L2STATEX        -10      [ss_method] not recognised
+L2STATEX        -11     Failed to write output target img
+L2STATEX        -12     Failed to create output target img
+L2STATEX        -13     Failed to create output target FITS file (ARG 6)
+L2STATEX        -14     Failed to close target FITS file (ARG 1)
+L2STATEX        -15     Failed to close output FITS file (ARG 6)
+L2STATEX        -16     Failed to close [SPFIND_OUTPUTF_PEAKS_FILE] input file
 
 L2STATRE        1       Failed to get L2_SPR_BLURB_FILE environment variable
 L2STATRE        0       No errors encountered

@@ -19,7 +19,6 @@ def print_header():
     with open(L2_MAN_DIR + "/HEADER") as f:
         for line in f:
 	    print line.strip('\n')
-    time.sleep(0.1)
     
 def print_routine(routine):
     bar = []
@@ -27,8 +26,7 @@ def print_routine(routine):
         bar.append("*")
     print ''.join(bar) + '****'
     print '* ' + routine + ' *'
-    print ''.join(bar) + '****'
-    time.sleep(0.1)    
+    print ''.join(bar) + '****' 
     
 def print_notification(message):
     print "* " + message
@@ -39,11 +37,11 @@ if __name__ == "__main__":
     print_header()
     
     parser = OptionParser()
-    parser.add_option('--t', dest='f_target', action='store', default=L2_TEST_DIR + "/target.fits")
-    parser.add_option('--r', dest='f_ref', action='store', default=L2_TEST_DIR + "/ref.fits")
-    parser.add_option('--c', dest='f_cont', action='store', default=L2_TEST_DIR + "/continuum.fits")
-    parser.add_option('--a', dest='f_arc', action='store', default=L2_TEST_DIR + "/arc.fits")
-    parser.add_option('--dir', dest='work_dir', action='store', default="test")
+    parser.add_option('--t', dest='f_target', action='store', default=L2_TEST_DIR + "/default/target.fits", help="path to target file")
+    parser.add_option('--r', dest='f_ref', action='store', default=L2_TEST_DIR + "/default/ref.fits", help="path to reference file")
+    parser.add_option('--c', dest='f_cont', action='store', default=L2_TEST_DIR + "/default/continuum.fits", help="path to continuum file")
+    parser.add_option('--a', dest='f_arc', action='store', default=L2_TEST_DIR + "/default/arc.fits", help="path to arc file")
+    parser.add_option('--dir', dest='work_dir', action='store', default="test", help="path to working dir")
     parser.add_option('--o', dest='clobber', action='store_true')
     (options, args) = parser.parse_args()
 
@@ -84,6 +82,7 @@ if __name__ == "__main__":
     cor_suffix		= "_cor"
     reb_suffix          = "_reb"
     ext_suffix          = "_ex"
+    ss_suffix           = "_ss"
 
     # define routine paths
     clip 	        = L2_BIN_DIR + "/spclip"
@@ -100,6 +99,7 @@ if __name__ == "__main__":
     ref_post_sdist_plot 	= "ref_post_sdist_plot.png"
     target_output_L1_IMAGE	= "target_L1_IMAGE.png"
     target_output_SPEC_NONSS	= "target_SPEC_NONSS.png"
+    target_output_SPEC_SS       = "target_SPEC_SS.png"
 
     # define script paths
     plot_peaks	        = L2_SCRIPT_DIR + "/L2_analyse_plotpeaks.py"
@@ -485,7 +485,7 @@ if __name__ == "__main__":
     print_routine("Find dispersion solution (sparcfit)")        
     in_arc_filename = arc + arc_suffix + trim_suffix + cor_suffix + ".fits"
 
-    output = Popen([arcfit, in_arc_filename, "7", "7", "1", "2", chosen_arc_file_path, "3", "3", "100", "2"], stdout=PIPE)
+    output = Popen([arcfit, in_arc_filename, "7", "7", "1", "2", chosen_arc_file_path, "3", "3", "100", "4"], stdout=PIPE)
     print output.stdout.read()           
     
     # -------------------
@@ -514,7 +514,7 @@ if __name__ == "__main__":
     print_routine("Find peaks of target spectrum (spfind)")        
     in_target_filename = target + target_suffix + trim_suffix + cor_suffix + ".fits"
 
-    output = Popen([find, in_target_filename, "1000", "0.1", "3", "3", "10", "4", "50", "150", "7", "3", "0"], stdout=PIPE)
+    output = Popen([find, in_target_filename, "1000", "0.1", "3", "3", "3", "4", "110", "140", "7", "3", "1"], stdout=PIPE)
     print output.stdout.read() 
     with open("new_error_codes", "w") as f_new:
         with open("error_codes") as f_old:
@@ -534,12 +534,12 @@ if __name__ == "__main__":
     # -------------------------------
     # N.B. have to rewrite error_codes file after each run as 
     # each run gives the same header key.
-    print_routine("Extract spectra (spextract)")
+    print_routine("Extract NONSS spectra (spextract)")
     
     in_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
     out_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ".fits"
 
-    output = Popen([extract, in_target_filename, "simple", "4", "4", out_target_filename], stdout=PIPE)
+    output = Popen([extract, in_target_filename, "simple", "none", "4", "0", out_target_filename], stdout=PIPE)
     print output.stdout.read()  
     with open("new_error_codes", "w") as f_new:
         with open("error_codes") as f_old:
@@ -550,9 +550,30 @@ if __name__ == "__main__":
                     key         = line.split('\t')[0]
                     code        = line.split('\t')[1]   
                     desc        = line.split('\t')[2].strip('\n')       
-                    f_new.write("L2STATXT\t" + code + "\t" + desc + " (target)\n")
+                    f_new.write("L2STATX1\t" + code + "\t" + desc + " (target NONSS)\n")
     os.remove("error_codes")
-    move("new_error_codes", "error_codes")      
+    move("new_error_codes", "error_codes")     
+    
+    
+    print_routine("Extract SS spectra (spextract)")
+    
+    in_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
+    out_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ss_suffix + ".fits"
+
+    output = Popen([extract, in_target_filename, "simple", "median", "4", "25", out_target_filename], stdout=PIPE)
+    print output.stdout.read()  
+    with open("new_error_codes", "w") as f_new:
+        with open("error_codes") as f_old:
+            for line in f_old:
+                if not line.startswith("L2STATEX"):
+                    f_new.write(line)
+                else:
+                    key         = line.split('\t')[0]
+                    code        = line.split('\t')[1]   
+                    desc        = line.split('\t')[2].strip('\n')       
+                    f_new.write("L2STATX2\t" + code + "\t" + desc + " (target SS)\n")
+    os.remove("error_codes")
+    move("new_error_codes", "error_codes")        
     
     # --------------------
     # - RENAME DAT FILES -
@@ -573,8 +594,9 @@ if __name__ == "__main__":
     in_target_filename_L1_IMAGE = target + target_suffix + ".fits"    
     in_target_filename_LSS_NONSS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
     in_target_filename_SPEC_NONSS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ".fits"
+    in_target_filename_SPEC_SS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ss_suffix + ".fits"
     
-    out_target_filename = target.split('_1.fits')[0] + "_2.fits"
+    out_target_filename = target[:-1] + "2.fits"
     
     # L1_IMAGE
     output = Popen([reformat, in_target_filename_L1_IMAGE, in_target_headers_filename, "L1_IMAGE", out_target_filename], stdout=PIPE)
@@ -588,11 +610,15 @@ if __name__ == "__main__":
     output = Popen([reformat, in_target_filename_SPEC_NONSS, in_target_headers_filename, "SPEC_NONSS", out_target_filename], stdout=PIPE)
     print output.stdout.read() 
     
+    # SPEC_SS
+    output = Popen([reformat, in_target_filename_SPEC_SS, in_target_headers_filename, "SPEC_SS", out_target_filename], stdout=PIPE)
+    print output.stdout.read() 
+    
     # ----------------------------------------------
     # - GENERATE RASTER PLOT OF L1_IMAGE extension -
     # ----------------------------------------------
     print_routine("Plot extensions of output file (l2pi)")     
-    in_target_filename = target.split('_1.fits')[0] + "_2.fits"
+    in_target_filename = target[:-1] + "2.fits"
 
     output = Popen(["python", plot_image, "--f", in_target_filename, "--hdu", "L1_IMAGE", "--o", target_output_L1_IMAGE, "--ot", "L1_IMAGE"], stdout=PIPE)
     print output.stdout.read()  
@@ -607,7 +633,7 @@ if __name__ == "__main__":
     # - GENERATE RASTER PLOT OF SPEC_NONSS extension -
     # ------------------------------------------------      
     print_routine("Plot extensions of output file (l2ps)")     
-    in_target_filename = target.split('_1.fits')[0] + "_2.fits"    
+    in_target_filename = target[:-1] + "2.fits"    
         
     output = Popen(["python", plot_spec, "--f", in_target_filename, "--hdu", "SPEC_NONSS", "--o", target_output_SPEC_NONSS, "--ot", "SPEC_NONSS"], stdout=PIPE)
     print output.stdout.read()  
@@ -617,6 +643,21 @@ if __name__ == "__main__":
     else:
         print_notification("Failed.")
         exit(1)
+        
+    # ------------------------------------------------
+    # - GENERATE RASTER PLOT OF SPEC_NONSS extension -
+    # ------------------------------------------------      
+    print_routine("Plot extensions of output file (l2ps)")     
+    in_target_filename = target[:-1] + "2.fits"    
+        
+    output = Popen(["python", plot_spec, "--f", in_target_filename, "--hdu", "SPEC_SS", "--o", target_output_SPEC_SS, "--ot", "SPEC_SS"], stdout=PIPE)
+    print output.stdout.read()  
+    output.wait()
+    if os.path.exists(target_output_SPEC_SS) and output.returncode == 0:
+        print_notification("Success.")
+    else:
+        print_notification("Failed.")
+        exit(1)        
 	        
 	
     

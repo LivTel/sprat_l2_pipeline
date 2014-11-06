@@ -18,6 +18,8 @@
 #include "sprat_red_trace_sdist.h"
 #include "sprat_red_find.h"
 #include "gsl_poly.h"
+#include <gsl/gsl_sort_double.h>
+#include <gsl/gsl_statistics_double.h>
 
 // *********************************************************************
 
@@ -29,7 +31,7 @@ int main(int argc, char *argv []) {
 
         }
 
-        if (argc != 6) {
+        if (argc != 7) {
 
                 if(populate_env_variable(SPE_BLURB_FILE, "L2_SPE_BLURB_FILE")) {
 
@@ -51,9 +53,10 @@ int main(int argc, char *argv []) {
                 
                 char *input_f                           = strdup(argv[1]);              
                 char *method                            = strdup(argv[2]); 
-                double target_half_aperture_px          = strtod(argv[3], NULL); 
-                double sky_window_px                    = strtod(argv[4], NULL);   
-                char *output_f                          = strdup(argv[5]);                    
+                char *ss_method                         = strdup(argv[3]); 
+                double target_half_aperture_px          = strtod(argv[4], NULL); 
+                int sky_window_half_aperture_px         = strtol(argv[5], NULL, 0);   
+                char *output_f                          = strdup(argv[6]);                    
                 
                 // ***********************************************************************
                 // Open input file (ARG 1), get parameters and perform any data format 
@@ -75,6 +78,7 @@ int main(int argc, char *argv []) {
                                         free(input_f);
                                         free(output_f);
                                         free(method);
+                                        free(ss_method);
                                         if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
 
                                         return 1;
@@ -89,6 +93,7 @@ int main(int argc, char *argv []) {
                                 free(input_f);
                                 free(output_f);                                
                                 free(method);
+                                free(ss_method);
                                 if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
 
                                 return 1; 
@@ -103,6 +108,7 @@ int main(int argc, char *argv []) {
                         free(input_f);
                         free(output_f);                        
                         free(method);
+                        free(ss_method);
                         
                         return 1; 
 
@@ -150,7 +156,8 @@ int main(int argc, char *argv []) {
 
                                 free(input_f);  
                                 free(output_f);  
-                                free(method);                                
+                                free(method);
+                                free(ss_method);                                
                                 if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
 
                                 return 1; 
@@ -215,10 +222,14 @@ int main(int argc, char *argv []) {
                 }            
         
                 double output_frame_values[nxelements];
-                memset(output_frame_values, 0, sizeof(double)*nxelements);                       
+                memset(output_frame_values, 0, sizeof(double)*nxelements);     
+                
+                // ***********************************************************************
+                // EXTRACTION
+                               
                 if (strcmp(method, "simple") == 0) {
                     // ***********************************************************************
-                    // PARTIAL PIXEL APERTURE EXTRACTION OF FLUX, NO SKY SUBTRACTION
+                    // PARTIAL PIXEL APERTURE
 
                     int ii, jj;
 
@@ -242,6 +253,8 @@ int main(int argc, char *argv []) {
                             free(input_f);
                             free(output_f);  
                             free(method);
+                            free(ss_method);
+                            
                             if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
                             fclose(inputfile);
 
@@ -259,29 +272,31 @@ int main(int argc, char *argv []) {
 
                         int y_low_floor, y_high_floor;
         
-                        y_low_floor = floor(y-target_half_aperture_px-0.5);
+                        y_low_floor = floor(y-target_half_aperture_px-0.5);            // 0.5 as taking (half_ap*2) + 1 as total aperture
                         y_high_floor = floor(y+target_half_aperture_px+0.5);
                                             
                         for (jj=y_low_floor; jj<=y_high_floor; jj++) {
-                          
+                         
                             if (jj == y_low_floor) {                        // outside pixel where partial flux needs to be taken into account
                                   
+
                                 double partial_fraction_of_bin = (y_low_floor + 1) - y_low;
                                 this_col_value += partial_fraction_of_bin * input_frame_values[jj][ii];
-                                    
+                                
                             } else if (jj == y_high_floor) {                // outside pixel where partial flux needs to be taken into account
                                   
                                 double partial_fraction_of_bin = y_high - y_high_floor;
                                 this_col_value += partial_fraction_of_bin * input_frame_values[jj][ii];
-
+                                
                             } else {
                               
                                 this_col_value += input_frame_values[jj][ii]; 
                                     
                             }
-                        }  
+                        }   
                         
                         output_frame_values[ii] = this_col_value;
+                        
                     }    
                 } else {
                   
@@ -291,6 +306,119 @@ int main(int argc, char *argv []) {
                     free(input_f);
                     free(output_f);
                     free(method);
+                    free(ss_method);
+                    
+                    if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status);  
+                    fclose(inputfile);
+                    
+                    return 1;
+                    
+                }
+                
+                // ***********************************************************************
+                // SKY SUBTRACTION
+                
+                if (strcmp(ss_method, "none") == 0) {
+                } else if (strcmp(ss_method, "median") == 0) {
+
+                    // ***********************************************************************
+                    // MEDIAN SUBTRACTION             
+                    int ii, jj;
+
+                    double y;    
+                    
+                    y = y_coords[0];                            // should only be one bin in [SPFIND_OUTPUTF_PEAKS_FILE] data file
+     
+                    double this_col_value;
+                    
+                    for (ii=0; ii<nxelements; ii++) {          
+                        this_col_value = 0.;
+                        
+                        // ***********************************************************************
+                        // Does [y] violate the img boundaries?
+
+                        if ((y + target_half_aperture_px + sky_window_half_aperture_px > nyelements) || (y - target_half_aperture_px - sky_window_half_aperture_px <= 0)) {
+
+                            write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -9, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                            fits_report_error(stdout, input_f_status); 
+
+                            free(input_f);
+                            free(output_f);  
+                            free(method);
+                            free(ss_method);
+                            
+                            if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
+                            fclose(inputfile);
+
+                            return 1;
+
+                        }
+                        
+                        // ***********************************************************************
+                        // Find pixels for sky aperture
+
+                        int ap_lower_lo, ap_lower_hi, ap_upper_lo, ap_upper_hi; 
+                        
+                        ap_lower_lo = floor(y-target_half_aperture_px-0.5) - sky_window_half_aperture_px - 1;
+                        ap_lower_hi = floor(y-target_half_aperture_px-0.5) - 1;
+                        ap_upper_lo = floor(y-target_half_aperture_px+0.5) + 1;
+                        ap_upper_hi = floor(y-target_half_aperture_px+0.5) + sky_window_half_aperture_px + 1;
+                        
+                        int n_ap_values = (ap_lower_hi-ap_lower_lo) + (ap_upper_hi-ap_upper_lo) + 2;
+                        
+                        double ap_values[n_ap_values];
+                             
+                        int idx = 0;
+ 
+                        
+                        for (jj=ap_lower_lo; jj<=ap_lower_hi; jj++) {
+                          
+                            ap_values[idx] = input_frame_values[jj][ii]; 
+                            idx++;
+                                    
+                        }  
+                        
+                        for (jj=ap_upper_lo; jj<=ap_upper_hi; jj++) {
+                          
+                            ap_values[idx] = input_frame_values[jj][ii]; 
+                            idx++;
+                                    
+                        }  
+                        
+                        // DEBUG
+                        /*for (jj=0; jj<idx; jj++) 
+                          printf("%f,", ap_values[jj]);
+                        
+                        printf("\n");
+                        
+                        for (jj=0; jj<idx; jj++) 
+                          printf("%d,", jj);
+                        
+                        printf("\n");*/ 
+                        
+                        // Take median
+                        double ap_values_sorted [n_ap_values];
+                        memcpy(ap_values_sorted, ap_values, sizeof(double)*n_ap_values);
+
+                        gsl_sort(ap_values_sorted, 1, (ap_lower_hi-ap_lower_lo) + (ap_upper_hi-ap_upper_lo) + 2);
+                        double ap_values_median = gsl_stats_median_from_sorted_data(ap_values_sorted, 1, n_ap_values);     
+                        
+                        this_col_value = ap_values_median * ((target_half_aperture_px*2) + 1);    // need to scale up to target extraction aperture size
+                        
+                        output_frame_values[ii] -= this_col_value;              
+
+                    }
+                  
+                } else {
+                  
+                    write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -10, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                    fits_report_error(stdout, input_f_status); 
+
+                    free(input_f);
+                    free(output_f);
+                    free(method);
+                    free(ss_method);
+                    
                     if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status);  
                     fclose(inputfile);
                     
@@ -319,12 +447,14 @@ int main(int argc, char *argv []) {
 
                                 } else { 
 
-                                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -9, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -11, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                                         fits_report_error(stdout, output_f_status); 
 
                                         free(input_f);
                                         free(output_f);
                                         free(method);
+                                        free(ss_method);
+                                        
                                         if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
                                         if(fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status);
                                         fclose(inputfile);
@@ -335,12 +465,14 @@ int main(int argc, char *argv []) {
 
                         } else {
 
-                                write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -10, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                                write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -12, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                                 fits_report_error(stdout, output_f_status); 
 
                                 free(input_f);
                                 free(output_f);
                                 free(method);
+                                free(ss_method);
+                                
                                 if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
                                 if(fits_close_file(output_f_ptr, &output_f_status)) fits_report_error (stdout, output_f_status);
                                 fclose(inputfile);
@@ -351,7 +483,7 @@ int main(int argc, char *argv []) {
 
                 } else {
 
-                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -11, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -13, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                         fits_report_error(stdout, output_f_status); 
 
                         free(input_f);
@@ -369,14 +501,15 @@ int main(int argc, char *argv []) {
 
                 free(input_f);
                 free(output_f);
-                free(method);                
+                free(method);  
+                free(ss_method);
                 
                 // ***********************************************************************
                 // Close input file (ARG 1) and output file (ARG 6)          
                 
                 if(fits_close_file(input_f_ptr, &input_f_status)) { 
 
-                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -12, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -14, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                         fits_report_error (stdout, input_f_status); 
 
                         return 1; 
@@ -385,7 +518,7 @@ int main(int argc, char *argv []) {
                
                 if(fits_close_file(output_f_ptr, &output_f_status)) { 
 
-                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -13, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -15, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                         fits_report_error (stdout, output_f_status); 
 
                         return 1; 
@@ -393,7 +526,7 @@ int main(int argc, char *argv []) {
                 }  
                 
                 if (fclose(inputfile)) {
-                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -14, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATTR", -16, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);
                         return 1; 
                 } 
                 

@@ -9,16 +9,16 @@
 # User defined environment #
 ############################
 
-#setenv L2_BASE_DIR "/home/rmb/devel/SPRAT/sprat_l2_pipeline"					# rmb/desktop
-setenv L2_BASE_DIR "/home/rmb/tmp/sprat_l2_pipeline"						# rmb/laptop
+setenv L2_BASE_DIR "/home/rmb/devel/SPRAT/sprat_l2_pipeline"					# rmb/desktop
+#setenv L2_BASE_DIR "/home/rmb/tmp/sprat_l2_pipeline"						# rmb/laptop
 
-#setenv L2_SUCCESS_LOG_PATH "/home/rmb/devel/SPRAT/sprat_l2_pipeline/logs/L2_success.log"	# rmb/desktop
+setenv L2_SUCCESS_LOG_PATH "/home/rmb/devel/SPRAT/sprat_l2_pipeline/logs/L2_success.log"	# rmb/desktop
 #setenv L2_SUCCESS_LOG_PATH "/home/data/rmb/L2_success.log"					# lt/lt-archive
-setenv L2_SUCCESS_LOG_PATH "/home/rmb/tmp/sprat_l2_pipeline/logs/L2_success.log"		# rmb/laptop
+#setenv L2_SUCCESS_LOG_PATH "/home/rmb/tmp/sprat_l2_pipeline/logs/L2_success.log"		# rmb/laptop
 
-#setenv L2_FAIL_LOG_PATH "/home/rmb/devel/SPRAT/sprat_l2_pipeline/logs/L2_fail.log"		# rmb/desktop
+setenv L2_FAIL_LOG_PATH "/home/rmb/devel/SPRAT/sprat_l2_pipeline/logs/L2_fail.log"		# rmb/desktop
 #setenv L2_FAIL_LOG_PATH "/home/data/rmb/L2_fail.log"						# lt/lt-archive
-setenv L2_FAIL_LOG_PATH "/home/rmb/tmp/sprat_l2_pipeline/logs/L2_fail.log"			# rmb/laptop
+#setenv L2_FAIL_LOG_PATH "/home/rmb/tmp/sprat_l2_pipeline/logs/L2_fail.log"			# rmb/laptop
 
 setenv LD_LIBRARY_PATH /usr/lib:/usr/lib64:/usr/lib/gsl						# all
 
