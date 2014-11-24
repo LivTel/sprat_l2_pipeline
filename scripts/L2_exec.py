@@ -96,9 +96,13 @@ def chk_ref_run(f_ref, f_cont):
     print_notification("Success.")    
     
     # clean up
-    os.remove("error_codes")
-    os.remove(out_ref_filename)
-    os.remove("spfind_peaks.dat")                
+    if os.path.exists("error_codes"):
+        os.remove("error_codes")
+    if os.path.exists(out_ref_filename):
+        os.remove(out_ref_filename)
+    if os.path.exists("spfind_peaks.dat"):
+        os.remove("spfind_peaks.dat")     
+        
     exit(0)
 
 def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
