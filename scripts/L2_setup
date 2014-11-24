@@ -66,7 +66,7 @@ source $L2_SCRIPT_DIR/L2_aliases
 # Set permissions on scripts #
 ##############################
 
-chmod +x $L2_SCRIPT_DIR/*
+#chmod +x $L2_SCRIPT_DIR/*
 
 ######################################################################################################
 # Create time log file ($L2_TIME_LOG_PATH) and fail log file ($L2_FAIL_LOG_PATH) if it doesn't exist #

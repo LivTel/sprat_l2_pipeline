@@ -29,7 +29,7 @@ int main(int argc, char *argv []) {
 
 	}
 
-	if (argc != 11) {
+	if (argc != 13) {
 
 		if(populate_env_variable(SPC_BLURB_FILE, "L2_SPC_BLURB_FILE")) {
 
@@ -59,7 +59,9 @@ int main(int argc, char *argv []) {
 		int scan_window_size_px		= strtol(argv[7], NULL, 0);
 		int scan_window_nsigma		= strtol(argv[8], NULL, 0);
 		int min_spectrum_width_px	= strtol(argv[9], NULL, 0);
-		char *out_f			= strdup(argv[10]);
+                int force_lo_px                 = strtol(argv[10], NULL, 0);
+                int force_hi_px                 = strtol(argv[11], NULL, 0);
+		char *out_f			= strdup(argv[12]);
 		
 		// ***********************************************************************
 		// Open cont file (ARG 1), get parameters and perform any data format 
@@ -413,7 +415,7 @@ int main(int argc, char *argv []) {
 					break;
 		}
 		
-		if (idx != bg_nelements) {
+		/*if (idx != bg_nelements) {
 			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -14, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
@@ -422,7 +424,7 @@ int main(int argc, char *argv []) {
 			if(fits_close_file(cont_f_ptr, &cont_f_status)) fits_report_error (stdout, cont_f_status); 
 
 			return 1;
-		}		
+		}*/		
 		
 		double start_mean = gsl_stats_mean(bg_values, 1, bg_nelements);
 		double start_sd	  = gsl_stats_sd(bg_values, 1, bg_nelements);		
@@ -544,6 +546,12 @@ int main(int argc, char *argv []) {
 				
 		int median_edges_b = floor(gsl_stats_median_from_sorted_data(edges_b_sorted, 1, nedges_b));
 		int median_edges_t = ceil(gsl_stats_median_from_sorted_data(edges_t_sorted, 1, nedges_t));
+                
+                if (force_lo_px != -1)
+                    median_edges_b = force_lo_px;
+                if (force_hi_px != -1)
+                    median_edges_t = force_hi_px;
+                
 		int spectrum_width = (int)fabs(median_edges_t - median_edges_b);
 		
 		printf("\nEdges detected");
@@ -554,7 +562,7 @@ int main(int argc, char *argv []) {
 		
 		if (spectrum_width < min_spectrum_width_px) {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -15, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -14, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -603,7 +611,7 @@ int main(int argc, char *argv []) {
 
 				} else { 
 
-					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -16, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+					write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -15, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 					free(cont_f);
 					free(in_f);					
@@ -617,7 +625,7 @@ int main(int argc, char *argv []) {
 
 			} else {
 
-				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -17, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+				write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -16, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 				free(cont_f);
 				free(in_f);					
@@ -631,7 +639,7 @@ int main(int argc, char *argv []) {
 
 		} else {
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -18, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -17, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 
 			free(cont_f);
 			free(in_f);					
@@ -655,7 +663,7 @@ int main(int argc, char *argv []) {
 
 		if(fits_close_file(cont_f_ptr, &cont_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -19, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -18, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, cont_f_status); 
 
 			return 1; 
@@ -664,7 +672,7 @@ int main(int argc, char *argv []) {
 	    	
 		if(fits_close_file(in_f_ptr, &in_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -20, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -19, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, in_f_status); 
 
 			return 1; 
@@ -673,7 +681,7 @@ int main(int argc, char *argv []) {
 	    	
 		if(fits_close_file(out_f_ptr, &out_f_status)) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -21, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -20, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
 			fits_report_error (stdout, out_f_status); 
 
 			return 1; 

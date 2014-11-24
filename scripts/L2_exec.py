@@ -66,7 +66,7 @@ def chk_ref_run(f_ref, f_cont):
     in_cont_filename = f_cont
     out_ref_filename = os.path.splitext(os.path.basename(f_ref))[0] + ref_suffix + trim_suffix + ".fits"
 
-    output = Popen([clip, in_cont_filename, in_ref_filename, "20", "0.1", "1.0", "3.0", "100", "1", "100", out_ref_filename], stdout=PIPE)
+    output = Popen([clip, in_cont_filename, in_ref_filename, "20", "0.1", "1.0", "3.0", "100", "1", "216", "34", "255", out_ref_filename], stdout=PIPE)
     print output.stdout.read()      
         
     # ---------------------------------------------
@@ -280,7 +280,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     out_cont_filename = cont + cont_suffix + trim_suffix + ".fits"
     out_arc_filename = arc + arc_suffix + trim_suffix + ".fits"
 
-    output = Popen([clip, in_cont_filename, in_target_filename, "20", "0.1", "1.0", "3.0", "100", "1", "100", out_target_filename], stdout=PIPE)
+    output = Popen([clip, in_cont_filename, in_target_filename, "20", "0.1", "1.0", "3.0", "100", "1", "216", "34", "255", out_target_filename], stdout=PIPE)
     print output.stdout.read()  
     with open("new_error_codes", "w") as f_new:
         with open("error_codes") as f_old:
@@ -295,7 +295,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     os.remove("error_codes")
     move("new_error_codes", "error_codes")	
 
-    output = Popen([clip, in_cont_filename, in_ref_filename, "20", "0.1", "1.0", "3.0", "100", "1", "100", out_ref_filename], stdout=PIPE)
+    output = Popen([clip, in_cont_filename, in_ref_filename, "20", "0.1", "1.0", "3.0", "100", "1", "216", "34", "255", out_ref_filename], stdout=PIPE)
     print output.stdout.read()  
     with open("new_error_codes", "w") as f_new:
         with open("error_codes") as f_old:
@@ -310,7 +310,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     os.remove("error_codes")
     move("new_error_codes", "error_codes")
 		
-    output = Popen([clip, in_cont_filename, in_cont_filename, "20", "0.1", "1.0", "3.0", "100", "1", "100", out_cont_filename], stdout=PIPE)
+    output = Popen([clip, in_cont_filename, in_cont_filename, "20", "0.1", "1.0", "3.0", "100", "1", "216", "34", "255", out_cont_filename], stdout=PIPE)
     print output.stdout.read()  
     with open("new_error_codes", "w") as f_new:
         with open("error_codes") as f_old:
@@ -325,7 +325,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     os.remove("error_codes")
     move("new_error_codes", "error_codes")		
 		
-    output = Popen([clip, in_cont_filename, in_arc_filename, "20", "0.1", "1.0", "3.0", "100", "1", "100", out_arc_filename], stdout=PIPE)
+    output = Popen([clip, in_cont_filename, in_arc_filename, "20", "0.1", "1.0", "3.0", "100", "1", "216", "34", "255", out_arc_filename], stdout=PIPE)
     print output.stdout.read()  
     with open("new_error_codes", "w") as f_new:
         with open("error_codes") as f_old:
