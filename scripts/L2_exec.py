@@ -32,26 +32,76 @@ def print_notification(message):
     print "* " + message
     print
     
-if __name__ == "__main__":
-  
-    print_header()
+def chk_ref_run(f_ref, f_cont):
+    # input sanity checks
+    if not all([f_ref, f_cont]):
+        print "Input files are undefined"
+        exit(1)   
+    elif not os.path.exists(f_ref):
+        print "Reference file doesn't exist"
+        exit(1)    
+    elif not os.path.exists(f_cont):    
+        print "Continuum file doesn't exist"
+        exit(1)      
+
+    # define output extensions        
+    ref                 = f_ref
+    cont                = f_cont    
+    target_suffix       = "_target"
+    ref_suffix          = "_ref"
+    cont_suffix         = "_cont"
+    arc_suffix          = "_arc"
+    trim_suffix         = "_tr"
     
-    parser = OptionParser()
-    parser.add_option('--t', dest='f_target', action='store', default=L2_TEST_DIR + "/default/target.fits", help="path to target file")
-    parser.add_option('--r', dest='f_ref', action='store', default=L2_TEST_DIR + "/default/ref.fits", help="path to reference file")
-    parser.add_option('--c', dest='f_cont', action='store', default=L2_TEST_DIR + "/default/continuum.fits", help="path to continuum file")
-    parser.add_option('--a', dest='f_arc', action='store', default=L2_TEST_DIR + "/default/arc.fits", help="path to arc file")
-    parser.add_option('--dir', dest='work_dir', action='store', default="test", help="path to working dir")
-    parser.add_option('--o', dest='clobber', action='store_true')
-    (options, args) = parser.parse_args()
+    # define routine paths
+    clip                = L2_BIN_DIR + "/spclip"
+    find                = L2_BIN_DIR + "/spfind"    
+    
+    # -------------------------
+    # - TRIM SPECTRA (SPTRIM) -
+    # -------------------------
+    print_routine("Trim spectra (sptrim)")
+    
+    in_ref_filename = f_ref
+    in_cont_filename = f_cont
+    out_ref_filename = os.path.splitext(os.path.basename(f_ref))[0] + ref_suffix + trim_suffix + ".fits"
 
-    f_target = options.f_target
-    f_ref = options.f_ref
-    f_cont = options.f_cont
-    f_arc = options.f_arc
-    work_dir = options.work_dir
-    clobber = options.clobber
+    output = Popen([clip, in_cont_filename, in_ref_filename, "20", "0.1", "1.0", "3.0", "100", "1", "100", out_ref_filename], stdout=PIPE)
+    print output.stdout.read()      
+        
+    # ---------------------------------------------
+    # - FIND PEAKS OF REFERENCE SPECTRUM (SPFIND) -
+    # ---------------------------------------------
+    print_routine("Find peaks of reference spectrum (spfind)")        
+    in_ref_filename = os.path.splitext(os.path.basename(f_ref))[0] + ref_suffix + trim_suffix + ".fits"
 
+    output = Popen([find, in_ref_filename, "50", "0.1", "3", "3", "100", "4", "50", "150", "7", "3", "5"], stdout=PIPE)
+    print output.stdout.read() 
+    
+    rtn_codes = []
+    with open("error_codes") as f:
+        for line in f:
+            if line.startswith("L2"):
+                rtn_codes.append(int(line.split('\t')[1]))
+
+    for i in rtn_codes:
+        if i != 0:
+            print_notification("A process returned a non-zero error code. Failed.")
+            # clean up
+            os.remove("error_codes")
+            os.remove(out_ref_filename)
+            os.remove("spfind_peaks.dat")  
+            exit(1)
+            
+    print_notification("Success.")    
+    
+    # clean up
+    os.remove("error_codes")
+    os.remove(out_ref_filename)
+    os.remove("spfind_peaks.dat")                
+    exit(0)
+
+def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     # input sanity checks
     if not all([f_target, f_ref, f_cont, f_arc]):
         print "Input files are undefined"
@@ -659,6 +709,30 @@ if __name__ == "__main__":
         print_notification("Failed.")
         exit(1)        
 	        
-	
+if __name__ == "__main__":
+  
+    print_header()
     
+    parser = OptionParser()
+    parser.add_option('--t', dest='f_target', action='store', default=L2_TEST_DIR + "/default/target.fits", help="path to target file")
+    parser.add_option('--r', dest='f_ref', action='store', default=L2_TEST_DIR + "/default/ref.fits", help="path to reference file")
+    parser.add_option('--c', dest='f_cont', action='store', default=L2_TEST_DIR + "/default/continuum.fits", help="path to continuum file")
+    parser.add_option('--a', dest='f_arc', action='store', default=L2_TEST_DIR + "/default/arc.fits", help="path to arc file")
+    parser.add_option('--dir', dest='work_dir', action='store', default="test", help="path to working dir")
+    parser.add_option('--rc', dest='ref_chk', action='store_true', help="perform reference frame check")
+    parser.add_option('--o', dest='clobber', action='store_true')
+    (options, args) = parser.parse_args()
 
+    f_target = options.f_target
+    f_ref = options.f_ref
+    f_cont = options.f_cont
+    f_arc = options.f_arc
+    work_dir = options.work_dir
+    ref_chk = options.ref_chk
+    clobber = options.clobber
+    
+    if ref_chk:
+      chk_ref_run(f_ref, f_cont)
+    else:
+      full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber)	        
+    
