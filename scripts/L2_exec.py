@@ -88,9 +88,12 @@ def chk_ref_run(f_ref, f_cont):
         if i != 0:
             print_notification("A process returned a non-zero error code. Failed.")
             # clean up
-            os.remove("error_codes")
-            os.remove(out_ref_filename)
-            os.remove("spfind_peaks.dat")  
+            if os.path.exists("error_codes"):
+                os.remove("error_codes")
+            if os.path.exists(out_ref_filename):
+                os.remove(out_ref_filename)
+            if os.path.exists("spfind_peaks.dat"):
+                os.remove("spfind_peaks.dat")   
             exit(1)
             
     print_notification("Success.")    
