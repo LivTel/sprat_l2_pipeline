@@ -436,7 +436,7 @@ int main(int argc, char *argv []) {
 		int retain_indexes[spat_nelements*disp_nelements_binned]; 
 		
 		printf("\nBinned background level determination");
-		printf("\n-------------------------------------\n\n");
+		printf("\n-------------------------------------\n");
 		
 		printf("\nStart mean:\t\t\t%f", start_mean);
 		printf("\nStart SD:\t\t\t%f", start_sd);

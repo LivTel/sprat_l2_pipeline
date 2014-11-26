@@ -11,23 +11,7 @@ from optparse import OptionParser
 
 PLOT_PADDING = 20
 
-if __name__ == "__main__":
-  parser = OptionParser()
-  parser.add_option('--f', dest='f_in', action='store', default='out.fits')
-  parser.add_option('--p', dest='dat_peaks', action='store', default='spfind_peaks.dat')
-  parser.add_option('--t', dest='dat_traces', action='store', default='sptrace_traces.dat')
-  parser.add_option('--o', dest='f_out', action='store', default='plot.png')
-  parser.add_option('--ot', dest='plt_title', action='store', default='plot')
-  parser.add_option('--c', dest='max_curvature', action='store', default=1.0)
-  (options, args) = parser.parse_args()
-  
-  f_in		= str(options.f_in)
-  dat_peaks  	= str(options.dat_peaks)
-  dat_traces 	= str(options.dat_traces)
-  f_out		= str(options.f_out)
-  plt_title	= str(options.plt_title)
-  max_curvature = float(options.max_curvature)
-  
+def execute(f_in, dat_peaks, dat_traces, f_out, plt_title, max_curvature, save=True, hold=False):
   hdulist = pyfits.open(f_in)
   data = hdulist[0].data
   
@@ -64,12 +48,36 @@ if __name__ == "__main__":
   plt.title(plt_title)
   plt.xlabel("x")
   plt.ylabel("y")
-  plt.savefig(f_out)
+  
+  if save:
+      plt.savefig(f_out)
+  if not hold:
+      plt.clf()  
   
   # check deviation and set return code
   deviation = np.max(y_fitted) - np.min(y_fitted)
-  if deviation > max_curvature:
-    exit(1)
+  if deviation > float(max_curvature):
+    return 1
   else:
-    exit(0)
-                  
+    return 0            
+
+if __name__ == "__main__":
+  parser = OptionParser()
+  parser.add_option('--f', dest='f_in', action='store', default='out.fits')
+  parser.add_option('--p', dest='dat_peaks', action='store', default='spfind_peaks.dat')
+  parser.add_option('--t', dest='dat_traces', action='store', default='sptrace_traces.dat')
+  parser.add_option('--o', dest='f_out', action='store', default='plot.png')
+  parser.add_option('--ot', dest='plt_title', action='store', default='plot')
+  parser.add_option('--c', dest='max_curvature', action='store', default=1.0)
+  (options, args) = parser.parse_args()
+  
+  f_in		= str(options.f_in)
+  dat_peaks  	= str(options.dat_peaks)
+  dat_traces 	= str(options.dat_traces)
+  f_out		= str(options.f_out)
+  plt_title	= str(options.plt_title)
+  max_curvature = float(options.max_curvature)
+  
+  execute(f_in, dat_peaks, dat_traces, f_out, plt_title, max_curvature)
+  
+  

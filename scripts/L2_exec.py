@@ -8,12 +8,33 @@ from subprocess import Popen, PIPE
 from shutil import copyfile, move
 import time
 from datetime import date
+import ConfigParser
 
-L2_BIN_DIR 	= os.environ['L2_BIN_DIR']
-L2_TEST_DIR 	= os.environ['L2_TEST_DIR']
-L2_SCRIPT_DIR	= os.environ['L2_SCRIPT_DIR']
-L2_MAN_DIR	= os.environ['L2_MAN_DIR']
-L2_CONFIG_DIR   = os.environ['L2_CONFIG_DIR']
+from L2_exec_err import errors
+from L2_analyse_plotpeaks import execute as a_pp_execute
+from L2_analyse_plotimage import execute as a_pi_execute
+from L2_analyse_plotspec import execute as a_ps_execute
+
+L2_BIN_DIR 	        = os.environ['L2_BIN_DIR']
+L2_TEST_DIR 	        = os.environ['L2_TEST_DIR']
+L2_SCRIPT_DIR	        = os.environ['L2_SCRIPT_DIR']
+L2_MAN_DIR	        = os.environ['L2_MAN_DIR']
+L2_CONFIG_DIR           = os.environ['L2_CONFIG_DIR']
+L2_SUCCESS_LOG_PATH     = os.environ['L2_SUCCESS_LOG_PATH']
+L2_FAIL_LOG_PATH        = os.environ['L2_FAIL_LOG_PATH']
+
+clip            = L2_BIN_DIR + "/spclip"
+find            = L2_BIN_DIR + "/spfind"
+trace           = L2_BIN_DIR + "/sptrace"
+correct         = L2_BIN_DIR + "/spcorrect"
+arcfit          = L2_BIN_DIR + "/sparcfit"
+extract         = L2_BIN_DIR + "/spextract"    
+rebin           = L2_BIN_DIR + "/sprebin"
+reformat        = L2_BIN_DIR + "/spreformat"
+    
+plot_peaks      = L2_SCRIPT_DIR + "/L2_analyse_plotpeaks.py"
+plot_image      = L2_SCRIPT_DIR + "/L2_analyse_plotimage.py"
+plot_spec       = L2_SCRIPT_DIR + "/L2_analyse_plotspec.py"    
 
 def print_header():
     with open(L2_MAN_DIR + "/HEADER") as f:
@@ -31,143 +52,151 @@ def print_routine(routine):
 def print_notification(message):
     print "* " + message
     print
+  
+def read_ini(path):
+    ini = ConfigParser.ConfigParser()
+    ini.read(path)
+    cfg = {}
+    for section in ini.sections():
+        cfg[section] = {}
+        for option in ini.options(section):
+            cfg[section][option] = str(ini.get(section, option))  
+    return cfg
+  
+def rewrite_error_codes_file(error_codes_file, old_header_key="", new_header_key="", add_to_desc="", omit=False):
+    with open("new_error_codes", "w") as f_new:
+        with open(error_codes_file) as f_old:
+            for line in f_old:
+                if omit:
+                    if not line.startswith(old_header_key):
+                        f_new.write(line)
+                else:
+                    if not line.startswith(old_header_key):
+                        f_new.write(line)
+                    else:
+                        key         = line.split('\t')[0]
+                        code        = line.split('\t')[1]   
+                        desc        = line.split('\t')[2].strip('\n')       
+                        f_new.write(new_header_key + "\t" + code + "\t" + desc + " " + add_to_desc + "\n")
+    os.remove(error_codes_file)
+    move("new_error_codes", error_codes_file)
+    
+def rename_dat_files(suffix):
+    for i in os.listdir("."):
+        if i.endswith(".dat"):
+            if not i.startswith("p_"):
+                filename = os.path.splitext(os.path.basename(i))[0]
+                ext = os.path.splitext(os.path.basename(i))[1]
+                move(i, "p_" + filename + "_" + suffix + ext)   
     
 def chk_ref_run(f_ref, f_cont):
+  
+    def _cleanup():
+        if os.path.exists("error_codes"):
+            os.remove("error_codes")
+        if os.path.exists("tmp.fits"):
+            os.remove("tmp.fits")
+        if os.path.exists("spfind_peaks.dat"):
+            os.remove("spfind_peaks.dat")         
+  
+    cfg = read_ini("/mnt/NAS/devel/SPRAT/sprat_l2_pipeline/scripts/config.ini")
+    err = errors()
+
     # input sanity checks
     if not all([f_ref, f_cont]):
-        print "Input files are undefined"
-        exit(1)   
+        err.set_code(1)
     elif not os.path.exists(f_ref):
-        print "Reference file doesn't exist"
-        exit(1)    
-    elif not os.path.exists(f_cont):    
-        print "Continuum file doesn't exist"
-        exit(1)      
-
-    # define output extensions        
-    ref                 = f_ref
-    cont                = f_cont    
-    target_suffix       = "_target"
-    ref_suffix          = "_ref"
-    cont_suffix         = "_cont"
-    arc_suffix          = "_arc"
-    trim_suffix         = "_tr"
-    
-    # define routine paths
-    clip                = L2_BIN_DIR + "/spclip"
-    find                = L2_BIN_DIR + "/spfind"    
-    
+        err.set_code(3)   
+    elif not os.path.exists(f_cont):
+        err.set_code(4) 
+        
     # -------------------------
-    # - TRIM SPECTRA (SPTRIM) -
+    # - CLIP SPECTRA (SPCLIP) -
     # -------------------------
+    
     print_routine("Trim spectra (sptrim)")
     
     in_ref_filename = f_ref
     in_cont_filename = f_cont
-    out_ref_filename = os.path.splitext(os.path.basename(f_ref))[0] + ref_suffix + trim_suffix + ".fits"
+    out_ref_filename = "tmp.fits"
 
-    output = Popen([clip, in_cont_filename, in_ref_filename, "20", "0.1", "1.0", "3.0", "100", "1", "216", "34", "255", out_ref_filename], stdout=PIPE)
-    print output.stdout.read()      
-        
+    output = Popen([clip, in_cont_filename, in_ref_filename, cfg['spclip']['bin_size_px'], cfg['spclip']['bg_percentile'], cfg['spclip']['clip_sigma'], cfg['spclip']['thresh_sigma'], \
+      cfg['spclip']['scan_window_size_px'], cfg['spclip']['scan_window_nsigma'], cfg['spclip']['min_spectrum_width_px'], cfg['spclip']['force_bottom_px'], cfg['spclip']['force_top_px'], \
+        out_ref_filename], stdout=PIPE)   
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(20)
+    
     # ---------------------------------------------
     # - FIND PEAKS OF REFERENCE SPECTRUM (SPFIND) -
     # ---------------------------------------------
-    print_routine("Find peaks of reference spectrum (spfind)")        
-    in_ref_filename = os.path.splitext(os.path.basename(f_ref))[0] + ref_suffix + trim_suffix + ".fits"
-
-    output = Popen([find, in_ref_filename, "50", "0.1", "3", "3", "100", "4", "50", "150", "7", "3", "5"], stdout=PIPE)
-    print output.stdout.read() 
     
+    print_routine("Find peaks of reference spectrum (spfind)")   
+    
+    # use previous filename as input
+    in_ref_filename = out_ref_filename
+
+    output = Popen([find, in_ref_filename, cfg['spfind_ref']['bin_size_px'], cfg['spfind_ref']['bg_percentile'], cfg['spfind_ref']['clip_sigma'], \
+      cfg['spfind_ref']['median_filter_width_px'], cfg['spfind_ref']['min_snr'], cfg['spfind_ref']['min_spatial_width_px'], cfg['spfind_ref']['finding_window_lo_px'], \
+        cfg['spfind_ref']['finding_window_hi_px'], cfg['spfind_ref']['max_centering_num_px'], cfg['spfind_ref']['centroid_half_window_size_px'], \
+          cfg['spfind_ref']['min_used_bins']], stdout=PIPE)
+    print output.stdout.read()  
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(21)    
+       
+    # get error codes from file
     rtn_codes = []
-    with open("error_codes") as f:
+    with open(cfg['general']['error_codes_file']) as f:
         for line in f:
             if line.startswith("L2"):
                 rtn_codes.append(int(line.split('\t')[1]))
 
     for i in rtn_codes:
         if i != 0:
-            print_notification("A process returned a non-zero error code. Failed.")
-            # clean up
-            if os.path.exists("error_codes"):
-                os.remove("error_codes")
-            if os.path.exists(out_ref_filename):
-                os.remove(out_ref_filename)
-            if os.path.exists("spfind_peaks.dat"):
-                os.remove("spfind_peaks.dat")   
-            exit(1)
-            
-    print_notification("Success.")    
+            _cleanup()  
+            err.set_code(13)            
+             
+    _cleanup()
+    err.set_code(0)    
     
-    # clean up
-    if os.path.exists("error_codes"):
-        os.remove("error_codes")
-    if os.path.exists(out_ref_filename):
-        os.remove(out_ref_filename)
-    if os.path.exists("spfind_peaks.dat"):
-        os.remove("spfind_peaks.dat")     
-        
-    exit(0)
 
 def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
+
+    cfg = read_ini("/mnt/NAS/devel/SPRAT/sprat_l2_pipeline/scripts/config.ini")
+    err = errors()
+
     # input sanity checks
     if not all([f_target, f_ref, f_cont, f_arc]):
-        print "Input files are undefined"
-        exit(1)
+        err.set_code(1)
     elif not os.path.exists(f_target):
-        print "Target file doesn't exist"
-        exit(1)    
+        err.set_code(2)   
     elif not os.path.exists(f_ref):
-        print "Reference file doesn't exist"
-        exit(1)    
+        err.set_code(3)   
     elif not os.path.exists(f_cont):	
-        print "Continuum file doesn't exist"
-        exit(1)    
+        err.set_code(4)    
     elif not os.path.exists(f_arc):	
-        print "Arc file doesn't exist"
-        exit(1)
-    
-    # define output extensions
-    target 		= os.path.splitext(os.path.basename(f_target))[0]
-    ref 		= os.path.splitext(os.path.basename(f_ref))[0]
-    cont		= os.path.splitext(os.path.basename(f_cont))[0]
-    arc			= os.path.splitext(os.path.basename(f_arc))[0]
-    target_suffix 	= "_target"
-    ref_suffix 		= "_ref"
-    cont_suffix		= "_cont"
-    arc_suffix 		= "_arc"
-    trim_suffix 	= "_tr"
-    cor_suffix		= "_cor"
-    reb_suffix          = "_reb"
-    ext_suffix          = "_ex"
-    ss_suffix           = "_ss"
+        err.set_code(5) 
+      
+    # get basename of files
+    target              = os.path.splitext(os.path.basename(f_target))[0]
+    ref                 = os.path.splitext(os.path.basename(f_ref))[0]
+    cont                = os.path.splitext(os.path.basename(f_cont))[0]
+    arc                 = os.path.splitext(os.path.basename(f_arc))[0]          
 
-    # define routine paths
-    clip 	        = L2_BIN_DIR + "/spclip"
-    find	        = L2_BIN_DIR + "/spfind"
-    trace	        = L2_BIN_DIR + "/sptrace"
-    correct	        = L2_BIN_DIR + "/spcorrect"
-    arcfit              = L2_BIN_DIR + "/sparcfit"
-    extract             = L2_BIN_DIR + "/spextract"    
-    rebin               = L2_BIN_DIR + "/sprebin"
-    reformat		= L2_BIN_DIR + "/spreformat"
+    # OUTPUT
+    ## L2
+    output_target       = target[:-1] + "2.fits"       
     
-    # define output plot filenames
+    ## plots
     ref_pre_sdist_plot  	= "ref_pre_sdist_plot.png"
     ref_post_sdist_plot 	= "ref_post_sdist_plot.png"
-    target_output_L1_IMAGE	= "target_L1_IMAGE.png"
-    target_output_SPEC_NONSS	= "target_SPEC_NONSS.png"
-    target_output_SPEC_SS       = "target_SPEC_SS.png"
+    L1_IMAGE_plot	        = "L1_IMAGE.png"
+    SPEC_NONSS_plot	        = os.path.splitext(os.path.basename(output_target))[0] + "_SPEC_NONSS.png"
+    SPEC_SS_plot                = os.path.splitext(os.path.basename(output_target))[0] + "_SPEC_SS.png"
+    montage_plot                = os.path.splitext(os.path.basename(output_target))[0] + "_output.png"  
 
-    # define script paths
-    plot_peaks	        = L2_SCRIPT_DIR + "/L2_analyse_plotpeaks.py"
-    plot_image		= L2_SCRIPT_DIR + "/L2_analyse_plotimage.py"
-    plot_spec		= L2_SCRIPT_DIR + "/L2_analyse_plotspec.py"
-    
-    # define some wavelength fitting parameters
-    start_wav           = 4020          # A
-    end_wav             = 7960          # A
-    dispersion          = 4.6           # A/px
-    
     # move files to working directory, redefine paths and change to working directory
     try:
         if not os.path.exists(work_dir):
@@ -185,11 +214,9 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
                 copyfile(f_cont, work_dir + "/" + cont + cont_suffix + ".fits")
                 copyfile(f_arc, work_dir + "/" + arc + arc_suffix + ".fits") 
             else:
-	        print "Working directory is not empty"
-	        exit(1)
+	        err.set_code(14)
     except OSError:
-        print "Failed to copy files to working directory"
-        exit(1)
+        err.set_code(15)
     
     f_target = target + target_suffix + ".fits"
     f_ref = ref + ref_suffix + ".fits"
@@ -198,22 +225,46 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
 
     os.chdir(work_dir)
     
-    # determine appropriate arc list
+    # ---------
+    # - START -
+    # ---------  
+    
+    today = date.today()
+    now_date = today.strftime("%d-%m-%y")
+    now_time = time.strftime("%H:%M:%S")
+    # add L2DATE key to additional_keys
+    with open("additional_keys", 'w') as f:
+        f.write("str\tSTARTDATE\tL2DATE\t" + now_date + " " + now_time + "\twhen this reduction was performed\n")     
+        
+    st_unix = time.time()    
+    
+    # ------------------------------------
+    # - DETERMINE SUITABLE ARC REFERENCE -
+    # ------------------------------------  
+    
+    print_routine("Finding suitable arc reference file.")
+    print 
+    
     f_arc_fits = pyfits.open(f_arc)
     try:
-        f_arc_fits_hdr_GRATROT = f_arc_fits[0].header['GRATROT']
-        f_arc_fits_hdr_DATEOBS = f_arc_fits[0].header['DATE-OBS']
+        f_arc_fits_hdr_GRATROT = int(f_arc_fits[0].header['GRATROT'].strip())
+        f_arc_fits_hdr_DATEOBS = f_arc_fits[0].header['DATE-OBS'].strip()
     except KeyError:
-        print "Failed to find GRATROT key"
         f_arc_fits.close()
-        exit(1)
+        err.set_code(16)
+    except ValueError:
+        f_arc_fits.close()
+        err.set_code(17)
     f_arc_fits.close()        
-        
+
     if f_arc_fits_hdr_GRATROT == 0:     # red
-        cfg = "red"
+        grating = "red"
+    elif f_arc_fits_hdr_GRATROT == 1:   # blue
+        grating = "blue"
     else:
-        cfg = "blue"
-    path = L2_CONFIG_DIR + "/lookup_tables/" + cfg + "/arc.tab"
+        err.set_code(18)   
+        
+    path = L2_CONFIG_DIR + "/lookup_tables/" + grating + "/arc.tab"
    
     a_path = []
     a_from_date = []
@@ -250,25 +301,19 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
         this_to_time = time.strptime(a_to_date[i] + " " + a_to_time[i], "%d/%m/%y %H:%M:%S")
         
         if this_arc_datetime >= this_from_time and this_arc_datetime <= this_to_time:
-            chosen_arc_file_path = L2_CONFIG_DIR + "/reference_arcs/" + cfg + "/" + a_path[i]
+            chosen_arc_file_path = L2_CONFIG_DIR + "/reference_arcs/" + grating + "/" + a_path[i]
             break
 
     if chosen_arc_file_path is None:
-        print "Failed to find a suitable arc"
-        exit(1)        
+        print_notification("Failed.") 
+        err.set_code(19)   
         
-    # add L2DATE key to additional_keys
-    with open("additional_keys", 'w') as f:
-        today = date.today()
-        now_date = today.strftime("%d-%m-%y")
-        now_time = time.strftime("%H:%M:%S")
-        f.write("str\tSTARTDATE\tL2DATE\t" + now_date + " " + now_time + "\twhen this reduction was performed\n")
-
+    print_notification("Success. Using file " + chosen_arc_file_path)
+         
     # -------------------------
-    # - TRIM SPECTRA (SPTRIM) -
+    # - CLIP SPECTRA (SPCLIP) -
     # -------------------------
-    # N.B. have to rewrite error_codes file after each run as 
-    # each run gives the same header key.
+    
     print_routine("Trim spectra (sptrim)")
     
     in_target_filename = f_target
@@ -280,125 +325,99 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     out_cont_filename = cont + cont_suffix + trim_suffix + ".fits"
     out_arc_filename = arc + arc_suffix + trim_suffix + ".fits"
 
-    output = Popen([clip, in_cont_filename, in_target_filename, "20", "0.1", "1.0", "3.0", "100", "1", "216", "34", "255", out_target_filename], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-	        if not line.startswith("L2STATCL"):
-                    f_new.write(line)
-                else:
-		    key 	= line.split('\t')[0]
-		    code 	= line.split('\t')[1]	
-		    desc 	= line.split('\t')[2].strip('\n')	
-		    f_new.write("L2STATCT\t" + code + "\t" + desc + " (target)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")	
+    ## target
+    output = Popen([clip, in_cont_filename, in_target_filename, cfg['spclip']['bin_size_px'], cfg['spclip']['bg_percentile'], cfg['spclip']['clip_sigma'], cfg['spclip']['thresh_sigma'], \
+      cfg['spclip']['scan_window_size_px'], cfg['spclip']['scan_window_nsigma'], cfg['spclip']['min_spectrum_width_px'], cfg['spclip']['force_bottom_px'], cfg['spclip']['force_top_px'], \
+        out_target_filename], stdout=PIPE)  
+    print output.stdout.read()
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(20, is_fatal=False)    
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATCL", "L2STATCT", add_to_desc="(target)")
 
-    output = Popen([clip, in_cont_filename, in_ref_filename, "20", "0.1", "1.0", "3.0", "100", "1", "216", "34", "255", out_ref_filename], stdout=PIPE)
+    ## reference
+    output = Popen([clip, in_cont_filename, in_ref_filename, cfg['spclip']['bin_size_px'], cfg['spclip']['bg_percentile'], cfg['spclip']['clip_sigma'], cfg['spclip']['thresh_sigma'], \
+      cfg['spclip']['scan_window_size_px'], cfg['spclip']['scan_window_nsigma'], cfg['spclip']['min_spectrum_width_px'], cfg['spclip']['force_bottom_px'], cfg['spclip']['force_top_px'], \
+        out_ref_filename], stdout=PIPE)   
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(20, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATCL", "L2STATCR", add_to_desc="(ref)")
+    
+    ## continuum
+    output = Popen([clip, in_cont_filename, in_cont_filename, cfg['spclip']['bin_size_px'], cfg['spclip']['bg_percentile'], cfg['spclip']['clip_sigma'], cfg['spclip']['thresh_sigma'], \
+      cfg['spclip']['scan_window_size_px'], cfg['spclip']['scan_window_nsigma'], cfg['spclip']['min_spectrum_width_px'], cfg['spclip']['force_bottom_px'], cfg['spclip']['force_top_px'], \
+        out_cont_filename], stdout=PIPE)
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(20, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATCL", "L2STATCC", add_to_desc="(continuum)")
+  
+    ## arc
+    output = Popen([clip, in_cont_filename, in_arc_filename, cfg['spclip']['bin_size_px'], cfg['spclip']['bg_percentile'], cfg['spclip']['clip_sigma'], cfg['spclip']['thresh_sigma'], \
+      cfg['spclip']['scan_window_size_px'], cfg['spclip']['scan_window_nsigma'], cfg['spclip']['min_spectrum_width_px'], cfg['spclip']['force_bottom_px'], cfg['spclip']['force_top_px'], \
+        out_arc_filename], stdout=PIPE)
     print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-	        if not line.startswith("L2STATCL"):
-                    f_new.write(line)
-                else:
-		    key 	= line.split('\t')[0]
-		    code 	= line.split('\t')[1]	
-		    desc 	= line.split('\t')[2].strip('\n')	
-		    f_new.write("L2STATCR\t" + code + "\t" + desc + " (ref)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")
-		
-    output = Popen([clip, in_cont_filename, in_cont_filename, "20", "0.1", "1.0", "3.0", "100", "1", "216", "34", "255", out_cont_filename], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-	        if not line.startswith("L2STATCL"):
-                    f_new.write(line)
-                else:
-		    key 	= line.split('\t')[0]
-		    code 	= line.split('\t')[1]	
-		    desc 	= line.split('\t')[2].strip('\n')	
-		    f_new.write("L2STATCC\t" + code + "\t" + desc + " (continuum)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")		
-		
-    output = Popen([clip, in_cont_filename, in_arc_filename, "20", "0.1", "1.0", "3.0", "100", "1", "216", "34", "255", out_arc_filename], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-	        if not line.startswith("L2STATCL"):
-                    f_new.write(line)
-                else:
-		    key 	= line.split('\t')[0]
-		    code 	= line.split('\t')[1]	
-		    desc 	= line.split('\t')[2].strip('\n')	
-		    f_new.write("L2STATCA\t" + code + "\t" + desc + " (arc)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(20, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATCL", "L2STATCA", add_to_desc="(arc)")
 
     # ---------------------------------------------
     # - FIND PEAKS OF REFERENCE SPECTRUM (SPFIND) -
     # ---------------------------------------------
-    print_routine("Find peaks of reference spectrum (spfind)")    
+    
+    print_routine("Find peaks of reference spectrum (spfind)")   
+    
     in_ref_filename = ref + ref_suffix + trim_suffix + ".fits"
 
-    output = Popen([find, in_ref_filename, "50", "0.1", "3", "3", "100", "4", "50", "150", "7", "3", "5"], stdout=PIPE)
-    print output.stdout.read()   
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-                if not line.startswith("L2STATFI"):
-                    f_new.write(line)
-                else:
-                    key         = line.split('\t')[0]
-                    code        = line.split('\t')[1]   
-                    desc        = line.split('\t')[2].strip('\n')       
-                    f_new.write("L2STATF1\t" + code + "\t" + desc + " (ref uncorrected)" + "\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")    
+    output = Popen([find, in_ref_filename, cfg['spfind_ref']['bin_size_px'], cfg['spfind_ref']['bg_percentile'], cfg['spfind_ref']['clip_sigma'], \
+      cfg['spfind_ref']['median_filter_width_px'], cfg['spfind_ref']['min_snr'], cfg['spfind_ref']['min_spatial_width_px'], cfg['spfind_ref']['finding_window_lo_px'], \
+        cfg['spfind_ref']['finding_window_hi_px'], cfg['spfind_ref']['max_centering_num_px'], cfg['spfind_ref']['centroid_half_window_size_px'], \
+          cfg['spfind_ref']['min_used_bins']], stdout=PIPE)
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(21, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATFI", "L2STATF1", add_to_desc="(ref uncorrected)")
 
     # ----------------------------------------------
     # - FIND SDIST OF REFERENCE SPECTRUM (SPTRACE) -
     # ----------------------------------------------
-    print_routine("Find sdist of reference spectrum (sptrace)")      
-    output = Popen([trace, "2"], stdout=PIPE)
+    
+    print_routine("Find sdist of reference spectrum (sptrace)") 
+    
+    output = Popen([trace, cfg['sptrace']['polynomial_order']], stdout=PIPE)
     print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-                if not line.startswith("L2STATTR"):
-                    f_new.write(line)
-                else:
-                    key         = line.split('\t')[0]
-                    code        = line.split('\t')[1]   
-                    desc        = line.split('\t')[2].strip('\n')       
-                    f_new.write("L2STATT1\t" + code + "\t" + desc + " (ref uncorrected)" + "\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")  
-
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(22, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATTR", "L2STATT1", add_to_desc="(ref uncorrected)")
+  
     # ---------------------------------------------------------
     # - PLOT TRACE OF REFERENCE SPECTRUM PRE SDIST CORRECTION -
     # ---------------------------------------------------------
-    print_routine("Plot trace of reference spectrum pre sdist correction")       
+    
+    print_routine("Plot trace of reference spectrum pre sdist correction") 
+    print
+    
     in_ref_filename = ref + ref_suffix + trim_suffix + ".fits"
-
-    output = Popen(["python", plot_peaks, "--f", in_ref_filename, "--o", ref_pre_sdist_plot, "--ot", "Reference pre SDIST correction"], stdout=PIPE)
-    print output.stdout.read()   
+    
+    a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_pre_sdist_plot, "Reference pre SDIST correction", \
+      cfg['general']['max_curvature_post_cor']) 
+    
     if os.path.exists(ref_pre_sdist_plot):
         print_notification("Success.")
     else:
         print_notification("Failed.") 
-        exit(1)
+        err.set_code(6, is_fatal=False)
 
     # -----------------------------------------
     # - CORRECT SPECTRA FOR SDIST (SPCORRECT) -
     # -----------------------------------------
-    # N.B. have to rewrite error_codes file after each run as 
-    # each run gives the same header key.
+    
     print_routine("Correct spectra for sdist (spcorrect)")      
 
     in_target_filename = target + target_suffix + trim_suffix + ".fits"
@@ -411,159 +430,130 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     out_cont_filename = cont + cont_suffix + trim_suffix + cor_suffix + ".fits"
     out_arc_filename = arc + arc_suffix + trim_suffix + cor_suffix + ".fits"
 
-    output = Popen([correct, in_target_filename, "linear", "1", out_target_filename], stdout=PIPE)
+    ## target
+    output = Popen([correct, in_target_filename, cfg['spcorrect']['interpolation_type'], cfg['spcorrect']['conserve_flux'], out_target_filename], stdout=PIPE)
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(23, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATCO", "L2STATOT", add_to_desc="(target)")
+    
+    ## reference
+    output = Popen([correct, in_ref_filename, cfg['spcorrect']['interpolation_type'], cfg['spcorrect']['conserve_flux'], out_ref_filename], stdout=PIPE)
     print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-	        if not line.startswith("L2STATCO"):
-                    f_new.write(line)
-                else:
-		    key 	= line.split('\t')[0]
-		    code 	= line.split('\t')[1]	
-		    desc 	= line.split('\t')[2].strip('\n')	
-		    f_new.write("L2STATOT\t" + code + "\t" + desc + " (target)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")	
-
-    output = Popen([correct, in_ref_filename, "linear", "1", out_ref_filename], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-	        if not line.startswith("L2STATCO"):
-                    f_new.write(line)
-                else:
-		    key 	= line.split('\t')[0]
-		    code 	= line.split('\t')[1]	
-		    desc 	= line.split('\t')[2].strip('\n')	
-		    f_new.write("L2STATOR\t" + code + "\t" + desc + " (ref)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")		
-		
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(23, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATCO", "L2STATOR", add_to_desc="(ref)")
+    
+    ## continuum
     output = Popen([correct, in_cont_filename, "linear", "1", out_cont_filename], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-	        if not line.startswith("L2STATCO"):
-                    f_new.write(line)
-                else:
-		    key 	= line.split('\t')[0]
-		    code 	= line.split('\t')[1]	
-		    desc 	= line.split('\t')[2].strip('\n')	
-		    f_new.write("L2STATOC\t" + code + "\t" + desc + " (continuum)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")		
-		
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(23, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATCO", "L2STATOC", add_to_desc="(continuum)")
+   
+    ## arc	
     output = Popen([correct, in_arc_filename, "linear", "1", out_arc_filename], stdout=PIPE)
     print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-	        if not line.startswith("L2STATCO"):
-                    f_new.write(line)
-                else:
-                    key 	= line.split('\t')[0]
-		    code 	= line.split('\t')[1]	
-		    desc 	= line.split('\t')[2].strip('\n')	
-		    f_new.write("L2STATOA\t" + code + "\t" + desc + " (arc)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(23, is_fatal=False)     
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATCO", "L2STATOA", add_to_desc="(arc)")
     
-    # --------------------
-    # - RENAME DAT FILES -
-    # --------------------   
-    for i in os.listdir("."):
-        if i.endswith(".dat"):
-            if not i.startswith("p_"):
-                filename = os.path.splitext(os.path.basename(i))[0]
-                ext = os.path.splitext(os.path.basename(i))[1]
-                move(i, "p_" + filename + "_ref_uncorrected" + ext)   
+    # rename dat files to avoid conflict
+    rename_dat_files("ref_uncorrected")
 
     # ---------------------------------------------
     # - FIND PEAKS OF REFERENCE SPECTRUM (SPFIND) -
     # ---------------------------------------------
-    print_routine("Find peaks of reference spectrum (spfind)")        
+    
+    print_routine("Find peaks of reference spectrum (spfind)")       
+    
     in_ref_filename = ref + ref_suffix + trim_suffix + cor_suffix + ".fits"
 
-    output = Popen([find, in_ref_filename, "50", "0.1", "3", "3", "100", "4", "50", "150", "7", "3", "5"], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-                if not line.startswith("L2STATFI"):
-                    f_new.write(line)
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")      
+    output = Popen([find, in_ref_filename, cfg['spfind_ref']['bin_size_px'], cfg['spfind_ref']['bg_percentile'], cfg['spfind_ref']['clip_sigma'], \
+      cfg['spfind_ref']['median_filter_width_px'], cfg['spfind_ref']['min_snr'], cfg['spfind_ref']['min_spatial_width_px'], cfg['spfind_ref']['finding_window_lo_px'], \
+        cfg['spfind_ref']['finding_window_hi_px'], cfg['spfind_ref']['max_centering_num_px'], cfg['spfind_ref']['centroid_half_window_size_px'], \
+          cfg['spfind_ref']['min_used_bins']], stdout=PIPE)
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(21, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATFI", omit=True)
 
     # ----------------------------------------------
     # - FIND SDIST OF REFERENCE SPECTRUM (SPTRACE) -
     # ----------------------------------------------
-    print_routine("Find sdist of reference spectrum (sptrace)")         
-    output = Popen([trace, "2"], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-                if not line.startswith("L2STATTR"):
-                    f_new.write(line)
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")    
+    
+    print_routine("Find sdist of reference spectrum (sptrace)")       
+    
+    output = Popen([trace, cfg['sptrace']['polynomial_order']], stdout=PIPE)
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(22, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATTR", omit=True)
 
     # ----------------------------------------------------------------------------------------------------------
     # - PLOT TRACE OF SPECTRUM POST SDIST CORRECTION AND CHECK RETURN CODE FOR SIGNIFICANT REMAINING CURVATURE -
     # ----------------------------------------------------------------------------------------------------------
-    print_routine("Plot trace of spectrum post sdist correction (l2pp)")     
+    
+    print_routine("Plot trace of spectrum post sdist correction (l2pp)") 
+    print
+    
     in_ref_filename = ref + ref_suffix + trim_suffix + cor_suffix + ".fits"
-
-    output = Popen(["python", plot_peaks, "--f", in_ref_filename, "--o", ref_post_sdist_plot, "--ot", "Reference post SDIST correction", "--c", "1.0"], stdout=PIPE)
-    print output.stdout.read()  
-    output.wait()
-    if os.path.exists(ref_pre_sdist_plot) and output.returncode == 0:
+    
+    rtn = a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_post_sdist_plot, "Reference post SDIST correction", \
+      cfg['general']['max_curvature_post_cor']) 
+    
+    if os.path.exists(ref_pre_sdist_plot) and rtn == 0:
         print_notification("Success.")
-    else:
-        print_notification("Failed.")
-        exit(1)
-           
-    # --------------------
-    # - RENAME DAT FILES -
-    # --------------------   
-    for i in os.listdir("."):
-        if i.endswith(".dat"):
-            if not i.startswith("p_"):
-                filename = os.path.splitext(os.path.basename(i))[0]
-                ext = os.path.splitext(os.path.basename(i))[1]
-                move(i, "p_" + filename + "_ref_corrected" + ext)      
+    elif not os.path.exists(ref_pre_sdist_plot):
+        print_notification("Failed.") 
+        err.set_code(7, is_fatal=False)   
+    elif rtn != 0:
+        print_notification("Failed.") 
+        err.set_code(8) 
+        
+    # rename dat files to avoid conflict
+    rename_dat_files("ref_corrected")       
                 
     # -------------------------------------------------
     # - FIND PIXEL TO WAVELENGTH SOLUTIONS (sparcfit) -
     # -------------------------------------------------
-    print_routine("Find dispersion solution (sparcfit)")        
+    
+    print_routine("Find dispersion solution (sparcfit)")   
+    
     in_arc_filename = arc + arc_suffix + trim_suffix + cor_suffix + ".fits"
 
-    output = Popen([arcfit, in_arc_filename, "7", "7", "1", "2", chosen_arc_file_path, "3", "3", "100", "4"], stdout=PIPE)
-    print output.stdout.read()           
+    output = Popen([arcfit, in_arc_filename, cfg['sparcfit']['min_dist'], cfg['sparcfit']['half_aperture_num_pix'], cfg['sparcfit']['derivative_tol'], \
+      cfg['sparcfit']['derivative_tol_ref_px'], chosen_arc_file_path, cfg['sparcfit']['max_pix_diff'], cfg['sparcfit']['min_matched_lines'], \
+        cfg['sparcfit']['max_av_wavelength_diff'], cfg['sparcfit']['fit_order']], stdout=PIPE)
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(24, is_fatal=False)      
     
     # -------------------
     # - REBIN (sprebin) -
     # -------------------
-    print_routine("Rebin data spectrally (sprebin)")        
+    
+    print_routine("Rebin data spectrally (sprebin)") 
+    
     in_target_filename = target + target_suffix + trim_suffix + cor_suffix + ".fits"
     out_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
 
-    output = Popen([rebin, in_target_filename, str(start_wav), str(end_wav), "linear", str(dispersion), "1", out_target_filename], stdout=PIPE)
-    print output.stdout.read()       
- 
-    # --------------------
-    # - RENAME DAT FILES -
-    # --------------------   
-    for i in os.listdir("."):
-        if i.endswith(".dat"):
-            if not i.startswith("p_"):
-                filename = os.path.splitext(os.path.basename(i))[0]
-                ext = os.path.splitext(os.path.basename(i))[1]
-                move(i, "p_" + filename + "_arc_corrected" + ext)      
+    output = Popen([rebin, in_target_filename, cfg['sprebin']['start_wav'], cfg['sprebin']['end_wav'], cfg['sprebin']['interpolation_type'], cfg['sprebin']['dispersion'], \
+       cfg['sprebin']['conserve_flux'], out_target_filename], stdout=PIPE)
+    print output.stdout.read()  
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(25, is_fatal=False)     
+    
+    # rename dat files to avoid conflict
+    rename_dat_files("arc_corrected")         
                 
     # ---------------------------------------------------------------
     # - FIND POSITION OF TARGET SPECTRUM WITH A SINGLE BIN (SPFIND) -
@@ -571,80 +561,53 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     print_routine("Find peaks of target spectrum (spfind)")        
     in_target_filename = target + target_suffix + trim_suffix + cor_suffix + ".fits"
 
-    output = Popen([find, in_target_filename, "1000", "0.1", "3", "3", "3", "4", "110", "140", "7", "3", "1"], stdout=PIPE)
+    output = Popen([find, in_target_filename, cfg['spfind_target']['bin_size_px'], cfg['spfind_target']['bg_percentile'], cfg['spfind_target']['clip_sigma'], \
+      cfg['spfind_target']['median_filter_width_px'], cfg['spfind_target']['min_snr'], cfg['spfind_target']['min_spatial_width_px'], cfg['spfind_target']['finding_window_lo_px'], \
+        cfg['spfind_target']['finding_window_hi_px'], cfg['spfind_target']['max_centering_num_px'], cfg['spfind_target']['centroid_half_window_size_px'], \
+          cfg['spfind_target']['min_used_bins']], stdout=PIPE)
     print output.stdout.read() 
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-                if not line.startswith("L2STATFI"):
-                    f_new.write(line)
-                else:
-                    key         = line.split('\t')[0]
-                    code        = line.split('\t')[1]   
-                    desc        = line.split('\t')[2].strip('\n')       
-                    f_new.write("L2STATF2\t" + code + "\t" + desc + " (target corrected)"+ "\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")        
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(21, is_fatal=False) 
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATFI", "L2STATF2", "(target corrected)")      
     
     # -------------------------------
     # - EXTRACT SPECTRA (SPEXTRACT) -
     # -------------------------------
-    # N.B. have to rewrite error_codes file after each run as 
-    # each run gives the same header key.
+
     print_routine("Extract NONSS spectra (spextract)")
     
     in_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
     out_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ".fits"
 
-    output = Popen([extract, in_target_filename, "simple", "none", "4", "0", out_target_filename], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-                if not line.startswith("L2STATEX"):
-                    f_new.write(line)
-                else:
-                    key         = line.split('\t')[0]
-                    code        = line.split('\t')[1]   
-                    desc        = line.split('\t')[2].strip('\n')       
-                    f_new.write("L2STATX1\t" + code + "\t" + desc + " (target NONSS)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")     
-    
+    output = Popen([extract, in_target_filename, cfg['spextract_nonss']['method'], cfg['spextract_nonss']['ss_method'], cfg['spextract_nonss']['target_half_aperture_px'], \
+      cfg['spextract_nonss']['sky_window_half_aperture_px'], out_target_filename], stdout=PIPE)
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(26, is_fatal=False)     
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATEX", "L2STATX1", "(target NONSS)") 
     
     print_routine("Extract SS spectra (spextract)")
     
     in_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
     out_target_filename = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ss_suffix + ".fits"
-
-    output = Popen([extract, in_target_filename, "simple", "median", "4", "25", out_target_filename], stdout=PIPE)
-    print output.stdout.read()  
-    with open("new_error_codes", "w") as f_new:
-        with open("error_codes") as f_old:
-            for line in f_old:
-                if not line.startswith("L2STATEX"):
-                    f_new.write(line)
-                else:
-                    key         = line.split('\t')[0]
-                    code        = line.split('\t')[1]   
-                    desc        = line.split('\t')[2].strip('\n')       
-                    f_new.write("L2STATX2\t" + code + "\t" + desc + " (target SS)\n")
-    os.remove("error_codes")
-    move("new_error_codes", "error_codes")        
     
-    # --------------------
-    # - RENAME DAT FILES -
-    # --------------------   
-    for i in os.listdir("."):
-        if i.endswith(".dat"):
-            if not i.startswith("p_"):
-                filename = os.path.splitext(os.path.basename(i))[0]
-                ext = os.path.splitext(os.path.basename(i))[1]
-                move(i, "p_" + filename + "_target_corrected" + ext)   
-                
+    output = Popen([extract, in_target_filename, cfg['spextract_ss']['method'], cfg['spextract_ss']['ss_method'], cfg['spextract_ss']['target_half_aperture_px'], \
+      cfg['spextract_ss']['sky_window_half_aperture_px'], out_target_filename], stdout=PIPE)
+    print output.stdout.read()
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(26, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATEX", "L2STATX2", "(target SS)")     
+ 
+    # rename dat files to avoid conflict
+    rename_dat_files("target_corrected")
+            
     # ------------------------------
     # - REFORMAT FILE (SPREFORMAT) -
     # ------------------------------
+    
     print_routine("Reformat spectra (spreformat)")
     
     in_target_headers_filename = target + target_suffix + ".fits"    
@@ -655,66 +618,117 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     
     out_target_filename = target[:-1] + "2.fits"
     
-    # L1_IMAGE
+    ## make L1 extension
     output = Popen([reformat, in_target_filename_L1_IMAGE, in_target_headers_filename, "L1_IMAGE", out_target_filename], stdout=PIPE)
-    print output.stdout.read()           
-    
-    # LSS_NONSS
-    output = Popen([reformat, in_target_filename_LSS_NONSS, in_target_headers_filename, "LSS_NONSS", out_target_filename], stdout=PIPE)
     print output.stdout.read()   
     
-    # SPEC_NONSS
-    output = Popen([reformat, in_target_filename_SPEC_NONSS, in_target_headers_filename, "SPEC_NONSS", out_target_filename], stdout=PIPE)
-    print output.stdout.read() 
-    
-    # SPEC_SS
-    output = Popen([reformat, in_target_filename_SPEC_SS, in_target_headers_filename, "SPEC_SS", out_target_filename], stdout=PIPE)
-    print output.stdout.read() 
+    ## make additional extensions
+    for op in cfg['spreformat']['operations'].split(','):
+        if op.strip() == "LSS_NONSS":
+          in_f = in_target_filename_LSS_NONSS
+        elif op.strip() == "SPEC_NONSS":
+          in_f = in_target_filename_SPEC_NONSS
+        elif op.strip() == "SPEC_SS":
+          in_f = in_target_filename_SPEC_SS
+        else:
+          continue
+        
+        output = Popen([reformat, in_f, in_target_headers_filename, op.strip(), out_target_filename], stdout=PIPE)
+        print output.stdout.read() 
+        output.wait()
+        if output.returncode != 0:
+            err.set_code(27, is_fatal=False)  
     
     # ----------------------------------------------
     # - GENERATE RASTER PLOT OF L1_IMAGE extension -
-    # ----------------------------------------------
-    print_routine("Plot extensions of output file (l2pi)")     
-    in_target_filename = target[:-1] + "2.fits"
+    # ----------------------------------------------   
+    
+    print_routine("Plot extensions of output file (l2pi)")  
+    print
+    
+    # use previously defined output filename from spreformat
+    in_target_filename = out_target_filename
+    
+    a_pi_execute(in_target_filename, "L1_IMAGE", L1_IMAGE_plot, "L1_IMAGE")
+    
+    if os.path.exists(L1_IMAGE_plot):
+        print_notification("Success.")
+    else:
+        print_notification("Failed.") 
+        err.set_code(9, is_fatal=False)    
+        
+    # ------------------------------------------------
+    # - GENERATE RASTER PLOT OF SPEC_NONSS extension -
+    # ------------------------------------------------    
+    
+    print_routine("Plot extensions of output file (l2ps)")   
+    print
+    
+    # use previously defined output filename from spreformat
+    in_target_filename = out_target_filename  
+    
+    a_ps_execute(in_target_filename, "SPEC_NONSS", SPEC_NONSS_plot, "SPEC_NONSS")
+        
+    if os.path.exists(SPEC_NONSS_plot):
+        print_notification("Success.")
+    else:
+        print_notification("Failed.") 
+        err.set_code(10, is_fatal=False)  
+        
+    # ------------------------------------------------
+    # - GENERATE RASTER PLOT OF SPEC_NONSS extension -
+    # ------------------------------------------------  
+    
+    print_routine("Plot extensions of output file (l2ps)")   
+    print
+    
+    # use previously defined output filename from spreformat
+    in_target_filename = out_target_filename   
+        
+    a_ps_execute(in_target_filename, "SPEC_SS", SPEC_SS_plot, "SPEC_SS")
+        
+    if os.path.exists(SPEC_SS_plot):
+        print_notification("Success.")
+    else:
+        print_notification("Failed.") 
+        err.set_code(11, is_fatal=False)   
+        
+    # -------------------------
+    # - GENERATE MONTAGE PLOT -
+    # -------------------------  
+    
+    print_routine("Montage extensions of output file (l2pi/l2ps)")       
+    print
+    
+    # use previously defined output filename from spreformat
+    in_target_filename = out_target_filename       
+    
+    fig = plt.figure()
+    fig.suptitle("Raster image of L1_IMAGE and SPEC_* extensions for file " + in_target_filename, fontsize=12)
+    fig.add_subplot(211)
+    a_pi_execute(in_target_filename, "L1_IMAGE", "", "", save=False, hold=True)
+    fig.add_subplot(212)
+    a_ps_execute(in_target_filename, "SPEC_NONSS", "", "", leg_title="SPEC_NONSS", save=False, hold=True) 
+    a_ps_execute(in_target_filename, "SPEC_SS", "",  "", legend=True, leg_title="SPEC_SS", save=False, hold=True)
+    plt.savefig(montage_plot)
+    
+    if os.path.exists(montage_plot):
+        print_notification("Success.")
+    else:
+        print_notification("Failed.") 
+        err.set_code(12, is_fatal=False)   
 
-    output = Popen(["python", plot_image, "--f", in_target_filename, "--hdu", "L1_IMAGE", "--o", target_output_L1_IMAGE, "--ot", "L1_IMAGE"], stdout=PIPE)
-    print output.stdout.read()  
-    output.wait()
-    if os.path.exists(target_output_L1_IMAGE) and output.returncode == 0:
-        print_notification("Success.")
-    else:
-        print_notification("Failed.")
-        exit(1)
+    # -------
+    # - END -
+    # -------       
         
-    # ------------------------------------------------
-    # - GENERATE RASTER PLOT OF SPEC_NONSS extension -
-    # ------------------------------------------------      
-    print_routine("Plot extensions of output file (l2ps)")     
-    in_target_filename = target[:-1] + "2.fits"    
-        
-    output = Popen(["python", plot_spec, "--f", in_target_filename, "--hdu", "SPEC_NONSS", "--o", target_output_SPEC_NONSS, "--ot", "SPEC_NONSS"], stdout=PIPE)
-    print output.stdout.read()  
-    output.wait()
-    if os.path.exists(target_output_SPEC_NONSS) and output.returncode == 0:
-        print_notification("Success.")
-    else:
-        print_notification("Failed.")
-        exit(1)
-        
-    # ------------------------------------------------
-    # - GENERATE RASTER PLOT OF SPEC_NONSS extension -
-    # ------------------------------------------------      
-    print_routine("Plot extensions of output file (l2ps)")     
-    in_target_filename = target[:-1] + "2.fits"    
-        
-    output = Popen(["python", plot_spec, "--f", in_target_filename, "--hdu", "SPEC_SS", "--o", target_output_SPEC_SS, "--ot", "SPEC_SS"], stdout=PIPE)
-    print output.stdout.read()  
-    output.wait()
-    if os.path.exists(target_output_SPEC_SS) and output.returncode == 0:
-        print_notification("Success.")
-    else:
-        print_notification("Failed.")
-        exit(1)        
+    print_routine("Results")       
+    print        
+    fi_unix = time.time()
+    exec_time = fi_unix - st_unix
+    print_notification("Execution time: " + str(exec_time) + "s.")
+    
+    err.set_code(0)    
 	        
 if __name__ == "__main__":
   
@@ -738,6 +752,17 @@ if __name__ == "__main__":
     ref_chk = options.ref_chk
     clobber = options.clobber
     
+    # DEFINE EXTENSIONS    
+    target_suffix       = "_target"
+    ref_suffix          = "_ref"
+    cont_suffix         = "_cont"
+    arc_suffix          = "_arc"
+    trim_suffix         = "_tr"
+    cor_suffix          = "_cor"
+    reb_suffix          = "_reb"
+    ext_suffix          = "_ex"
+    ss_suffix           = "_ss"    
+
     if ref_chk:
       chk_ref_run(f_ref, f_cont)
     else:
