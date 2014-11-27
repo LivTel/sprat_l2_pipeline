@@ -2,7 +2,7 @@
 
 ##################################
 # L2_setup 			 #
-# Last Modified Date:   26/11/14 #
+# Last Modified Date:   27/11/14 #
 ##################################
 
 ############################
@@ -10,6 +10,7 @@
 ############################
 
 setenv L2_BASE_DIR "/home/rmb/devel/SPRAT/sprat_l2_pipeline"					# rmb/desktop
+#setenv L2_BASE_DIR "/space/home/eng/rmb/sprat_l2_pipeline"                                     # eng/ltdevsrv
 #setenv L2_BASE_DIR "/home/rmb/tmp/sprat_l2_pipeline"						# rmb/laptop
 #setenv L2_BASE_DIR "/usr/local/bin/sprat_l2_pipeline"						# eng/lt-qc
 
