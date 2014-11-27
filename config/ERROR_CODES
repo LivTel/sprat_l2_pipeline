@@ -130,11 +130,12 @@ L2STATRE        -16     Failed to close [SPREBIN_OUTPUTF_REBIN_WAVFITS_FILE] fil
 L2STATRE        -17     Failed to close input FITS file (ARG 1)
 L2STATRE        -18     Failed to close output FITS file (ARG 7)
 
+L2STATRF        7       Empty input file (ARG 1). Created blank extension.
 L2STATRF	6	Failed to write checksum for output file (ARG 4)
 L2STATRF	5	Failed to write error codes file to header of output file (ARG 4)
 L2STATRF	4	Failed to write STARTDATE additional key to header of output file (ARG 4)
 L2STATRF	3	Failed to write CALIBRATION additional key to header of output file (ARG 4)
-L2STATRF	2	Failed to get L2_FITS_KEYS_TO_ACTION_FILE environment variable, unable to write headers from headers file (ARG 2)
+L2STATRF	2	Failed to get L2_FITS_KEYS_TO_OMIT_FILE environment variable, unable to write headers from headers file (ARG 2)
 L2STATRF	1	Failed to get L2_FRRF_BLURB_FILE environment variable
 L2STATRF	0	No errors encountered
 L2STATRF	-1	Failed on command line

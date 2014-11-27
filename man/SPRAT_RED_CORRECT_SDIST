@@ -31,6 +31,6 @@ rebin process.
 
 Example: 
 
-spcorrect input_trimmed.fits linear 1 out.fits
+spcorrect input_tr.fits linear 1 out.fits
 
 ###################################################################################################

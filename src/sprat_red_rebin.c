@@ -391,7 +391,7 @@ int main (int argc, char *argv []) {
 		double output_f_pixels [num_bins];
 		memset(output_f_pixels, 0, sizeof(double)*(num_bins));
 
-		double this_pre_rebin_fibre_flux, this_post_rebin_fibre_flux;
+		double this_pre_rebin_row_flux, this_post_rebin_row_flux;
 
 		double conservation_factor;	
 
@@ -405,11 +405,11 @@ int main (int argc, char *argv []) {
 
 				// 2.	Calculate pre-rebin total fluxes
 
-				this_pre_rebin_fibre_flux = 0.0;
+				this_pre_rebin_row_flux = 0.0;
 
 				for (ii=first_element_index; ii<=last_element_index; ii++) {
 
-					this_pre_rebin_fibre_flux += input_f_pixels[ii];
+					this_pre_rebin_row_flux += input_f_pixels[ii];
 
 				}
 
@@ -449,19 +449,19 @@ int main (int argc, char *argv []) {
 
 				// 4.	Calculate post-rebin total fluxes
 
-				this_post_rebin_fibre_flux = 0.0;
+				this_post_rebin_row_flux = 0.0;
 
 				for (ii=0; ii<num_bins; ii++) {
 
-					this_post_rebin_fibre_flux += output_f_pixels[ii];
+					this_post_rebin_row_flux += output_f_pixels[ii];
 
 				}
 
 				// 5.	Conserve flux if applicable
 
-				conservation_factor = this_pre_rebin_fibre_flux/this_post_rebin_fibre_flux;
+				conservation_factor = this_pre_rebin_row_flux/this_post_rebin_row_flux;
 
-				// printf("%f\t%f\t%f\n", this_pre_rebin_fibre_flux, this_post_rebin_fibre_flux, conservation_factor);	// DEBUG
+				// printf("%f\t%f\t%f\n", this_pre_rebin_row_flux, this_post_rebin_row_flux, conservation_factor);	// DEBUG
 
 				for (ii=0; ii<num_bins; ii++) {
 
