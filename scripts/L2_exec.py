@@ -53,7 +53,9 @@ def print_notification(message):
     print "* " + message
     print
   
-def read_ini(path):
+def read_ini(err, path):
+    if not os.path.exists(path):
+        err.set_code(28)
     ini = ConfigParser.ConfigParser()
     ini.read(path)
     cfg = {}
@@ -62,6 +64,14 @@ def read_ini(path):
         for option in ini.options(section):
             cfg[section][option] = str(ini.get(section, option))  
     return cfg
+  
+def rename_dat_files(suffix):
+    for i in os.listdir("."):
+        if i.endswith(".dat"):
+            if not i.startswith("p_"):
+                filename = os.path.splitext(os.path.basename(i))[0]
+                ext = os.path.splitext(os.path.basename(i))[1]
+                move(i, "p_" + filename + "_" + suffix + ext)    
   
 def rewrite_error_codes_file(error_codes_file, old_header_key="", new_header_key="", add_to_desc="", omit=False):
     with open("new_error_codes", "w") as f_new:
@@ -79,15 +89,54 @@ def rewrite_error_codes_file(error_codes_file, old_header_key="", new_header_key
                         desc        = line.split('\t')[2].strip('\n')       
                         f_new.write(new_header_key + "\t" + code + "\t" + desc + " " + add_to_desc + "\n")
     os.remove(error_codes_file)
-    move("new_error_codes", error_codes_file)
+    move("new_error_codes", error_codes_file) 
+                
+def search_lookup_table(lookup_table_path, this_DATEOBS, this_CCDXBIN, this_CCDYBIN):
+  
+    a_path = []
+    a_from_date = []
+    a_from_time = []
+    a_to_date = []
+    a_to_time = []
+    a_binning = []
+    with open(lookup_table_path) as f:
+        for line in f:
+            if line != "\n":
+                this_path = line.split('\t')[0].strip('\n').strip()
+                this_binning = line.split('\t')[1].strip('\n').strip()
+                this_from_date = line.split('\t')[2].strip('\n').strip()
+                this_from_time = line.split('\t')[3].strip('\n').strip()
+                a_path.append(this_path)
+                a_from_date.append(this_from_date)
+                a_from_time.append(this_from_time)
+                a_binning.append(this_binning)
+                
+                this_to_date = line.split('\t')[4].strip('\n').strip()
+                if ("now" in this_to_date):
+                    today = date.today()
+                    this_to_date = today.strftime("%d/%m/%y")
+                    this_to_time = time.strftime("%H:%M:%S")
+                else:
+                    this_to_date = line.split('\t')[4].strip('\n').strip()
+                    this_to_time = line.split('\t')[5].strip('\n').strip()
+                
+                a_to_date.append(this_to_date)
+                a_to_time.append(this_to_time)
+                 
+    this_file_datetime   = time.strptime(this_DATEOBS, "%Y-%m-%dT%H:%M:%S.%f")
+    this_file_binning    = this_CCDXBIN + "x" + this_CCDYBIN
     
-def rename_dat_files(suffix):
-    for i in os.listdir("."):
-        if i.endswith(".dat"):
-            if not i.startswith("p_"):
-                filename = os.path.splitext(os.path.basename(i))[0]
-                ext = os.path.splitext(os.path.basename(i))[1]
-                move(i, "p_" + filename + "_" + suffix + ext)   
+    chosen_entry = None
+    for i in range(len(a_path)):
+        this_entry_from_time = time.strptime(a_from_date[i] + " " + a_from_time[i], "%d/%m/%y %H:%M:%S")
+        this_entry_to_time = time.strptime(a_to_date[i] + " " + a_to_time[i], "%d/%m/%y %H:%M:%S")
+        this_entry_binning = a_binning[i]
+        
+        if this_file_datetime >= this_entry_from_time and this_file_datetime <= this_entry_to_time and this_file_binning == this_entry_binning:
+            chosen_entry = a_path[i]
+            break     
+            
+    return chosen_entry
     
 def chk_ref_run(f_ref, f_cont):
   
@@ -98,8 +147,7 @@ def chk_ref_run(f_ref, f_cont):
             os.remove("tmp.fits")
         if os.path.exists("spfind_peaks.dat"):
             os.remove("spfind_peaks.dat")         
-  
-    cfg = read_ini("/mnt/NAS/devel/SPRAT/sprat_l2_pipeline/scripts/config.ini")
+     
     err = errors()
 
     # input sanity checks
@@ -109,6 +157,47 @@ def chk_ref_run(f_ref, f_cont):
         err.set_code(3)   
     elif not os.path.exists(f_cont):
         err.set_code(4) 
+        
+    # -----------------------------------
+    # - DETERMINE SUITABLE CONFIG FILES -
+    # -----------------------------------
+    
+    print_routine("Finding suitable config file.")
+    print 
+    
+    f_ref_fits = pyfits.open(f_ref)
+    try:
+        f_ref_fits_hdr_GRATROT = int(f_ref_fits[0].header['GRATROT'].strip())
+        f_ref_fits_hdr_DATEOBS = f_ref_fits[0].header['DATE-OBS'].strip()
+        f_ref_fits_hdr_CCDXBIN = str(f_ref_fits[0].header['CCDXBIN']).strip()
+        f_ref_fits_hdr_CCDYBIN = str(f_ref_fits[0].header['CCDYBIN']).strip()
+    except KeyError:
+        f_ref_fits.close()
+        err.set_code(16)
+    except ValueError:
+        f_ref_fits.close()
+        err.set_code(17)
+    f_ref_fits.close()        
+
+    if f_ref_fits_hdr_GRATROT == 0:     # red
+        grating = "red"
+    elif f_ref_fits_hdr_GRATROT == 1:   # blue
+        grating = "blue"
+    else:
+        err.set_code(18)   
+        
+    config_tab_path      = L2_CONFIG_DIR + "/lookup_tables/" + grating + "/config.tab"
+   
+    ## config
+    chosen_config_entry = search_lookup_table(config_tab_path, f_ref_fits_hdr_DATEOBS, f_ref_fits_hdr_CCDXBIN, f_ref_fits_hdr_CCDYBIN)
+    if chosen_config_entry is None:
+        print_notification("Failed.") 
+        err.set_code(29)
+        
+    chosen_config_file_path = L2_CONFIG_DIR + "/configs/" + grating + "/" + chosen_config_entry
+
+    print_notification("Success. Using file " + chosen_config_file_path)    
+    cfg = read_ini(err, chosen_config_file_path)            
         
     # -------------------------
     # - CLIP SPECTRA (SPCLIP) -
@@ -126,7 +215,7 @@ def chk_ref_run(f_ref, f_cont):
     print output.stdout.read() 
     output.wait()
     if output.returncode != 0:
-        err.set_code(20)
+        err.set_code(20, is_fatal=False)
     
     # ---------------------------------------------
     # - FIND PEAKS OF REFERENCE SPECTRUM (SPFIND) -
@@ -144,7 +233,7 @@ def chk_ref_run(f_ref, f_cont):
     print output.stdout.read()  
     output.wait()
     if output.returncode != 0:
-        err.set_code(21)    
+        err.set_code(21, is_fatal=False)    
        
     # get error codes from file
     rtn_codes = []
@@ -164,7 +253,6 @@ def chk_ref_run(f_ref, f_cont):
 
 def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
 
-    cfg = read_ini("/mnt/NAS/devel/SPRAT/sprat_l2_pipeline/scripts/config.ini")
     err = errors()
 
     # input sanity checks
@@ -238,17 +326,19 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
         
     st_unix = time.time()    
     
-    # ------------------------------------
-    # - DETERMINE SUITABLE ARC REFERENCE -
-    # ------------------------------------  
+    # ----------------------------------------------------------
+    # - DETERMINE SUITABLE ARC REFERENCE FILE AND CONFIG FILES -
+    # ----------------------------------------------------------
     
-    print_routine("Finding suitable arc reference file.")
+    print_routine("Finding suitable arc reference and config files.")
     print 
     
     f_arc_fits = pyfits.open(f_arc)
     try:
         f_arc_fits_hdr_GRATROT = int(f_arc_fits[0].header['GRATROT'].strip())
         f_arc_fits_hdr_DATEOBS = f_arc_fits[0].header['DATE-OBS'].strip()
+        f_arc_fits_hdr_CCDXBIN = str(f_arc_fits[0].header['CCDXBIN']).strip()
+        f_arc_fits_hdr_CCDYBIN = str(f_arc_fits[0].header['CCDYBIN']).strip()       
     except KeyError:
         f_arc_fits.close()
         err.set_code(16)
@@ -264,51 +354,29 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     else:
         err.set_code(18)   
         
-    path = L2_CONFIG_DIR + "/lookup_tables/" + grating + "/arc.tab"
+    arc_tab_path         = L2_CONFIG_DIR + "/lookup_tables/" + grating + "/arc.tab"
+    config_tab_path      = L2_CONFIG_DIR + "/lookup_tables/" + grating + "/config.tab"
    
-    a_path = []
-    a_from_date = []
-    a_from_time = []
-    a_to_date = []
-    a_to_time = []
-    with open(path) as f:
-        for line in f:
-            if line != "\n":
-                this_path = line.split('\t')[0].strip('\n').strip()
-                this_from_date = line.split('\t')[1].strip('\n').strip()
-                this_from_time = line.split('\t')[2].strip('\n').strip()
-                a_path.append(this_path)
-                a_from_date.append(this_from_date)
-                a_from_time.append(this_from_time)
-                
-                this_to_date = line.split('\t')[3].strip('\n').strip()
-                if ("now" in this_to_date):
-                    today = date.today()
-                    this_to_date = today.strftime("%d/%m/%y")
-                    this_to_time = time.strftime("%H:%M:%S")
-                else:
-                    this_to_date = line.split('\t')[3].strip('\n').strip()
-                    this_to_time = line.split('\t')[4].strip('\n').strip()
-                
-                a_to_date.append(this_to_date)
-                a_to_time.append(this_to_time)
-                 
-    this_arc_datetime = time.strptime(f_arc_fits_hdr_DATEOBS, "%Y-%m-%dT%H:%M:%S.%f")
-  
-    chosen_arc_file_path = None
-    for i in range(len(a_path)):
-        this_from_time = time.strptime(a_from_date[i] + " " + a_from_time[i], "%d/%m/%y %H:%M:%S")
-        this_to_time = time.strptime(a_to_date[i] + " " + a_to_time[i], "%d/%m/%y %H:%M:%S")
-        
-        if this_arc_datetime >= this_from_time and this_arc_datetime <= this_to_time:
-            chosen_arc_file_path = L2_CONFIG_DIR + "/reference_arcs/" + grating + "/" + a_path[i]
-            break
-
-    if chosen_arc_file_path is None:
+    ## arc
+    chosen_arc_entry = search_lookup_table(arc_tab_path, f_arc_fits_hdr_DATEOBS, f_arc_fits_hdr_CCDXBIN, f_arc_fits_hdr_CCDYBIN)
+    if chosen_arc_entry is None:
         print_notification("Failed.") 
-        err.set_code(19)   
+        err.set_code(19)
         
+    chosen_arc_file_path = L2_CONFIG_DIR + "/reference_arcs/" + grating + "/" + chosen_arc_entry
+  
     print_notification("Success. Using file " + chosen_arc_file_path)
+    
+    ## config
+    chosen_config_entry = search_lookup_table(config_tab_path, f_arc_fits_hdr_DATEOBS, f_arc_fits_hdr_CCDXBIN, f_arc_fits_hdr_CCDYBIN)
+    if chosen_config_entry is None:
+        print_notification("Failed.") 
+        err.set_code(29)
+        
+    chosen_config_file_path = L2_CONFIG_DIR + "/configs/" + grating + "/" + chosen_config_entry
+
+    print_notification("Success. Using file " + chosen_config_file_path)    
+    cfg = read_ini(err, chosen_config_file_path)    
          
     # -------------------------
     # - CLIP SPECTRA (SPCLIP) -
