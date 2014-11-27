@@ -20,8 +20,6 @@ L2_TEST_DIR 	        = os.environ['L2_TEST_DIR']
 L2_SCRIPT_DIR	        = os.environ['L2_SCRIPT_DIR']
 L2_MAN_DIR	        = os.environ['L2_MAN_DIR']
 L2_CONFIG_DIR           = os.environ['L2_CONFIG_DIR']
-L2_SUCCESS_LOG_PATH     = os.environ['L2_SUCCESS_LOG_PATH']
-L2_FAIL_LOG_PATH        = os.environ['L2_FAIL_LOG_PATH']
 
 clip            = L2_BIN_DIR + "/spclip"
 find            = L2_BIN_DIR + "/spfind"
