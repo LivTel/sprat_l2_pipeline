@@ -20,6 +20,9 @@ L2_TEST_DIR 	        = os.environ['L2_TEST_DIR']
 L2_SCRIPT_DIR	        = os.environ['L2_SCRIPT_DIR']
 L2_MAN_DIR	        = os.environ['L2_MAN_DIR']
 L2_CONFIG_DIR           = os.environ['L2_CONFIG_DIR']
+L2_REFERENCE_ARCS_DIR   = os.environ['L2_REFERENCE_ARCS_DIR']
+L2_INI_DIR              = os.environ['L2_INI_DIR']
+L2_LOOKUP_TABLES_DIR    = os.environ['L2_LOOKUP_TABLES_DIR']
 
 clip            = L2_BIN_DIR + "/spclip"
 find            = L2_BIN_DIR + "/spfind"
@@ -184,7 +187,7 @@ def chk_ref_run(f_ref, f_cont):
     else:
         err.set_code(18)   
         
-    config_tab_path      = L2_CONFIG_DIR + "/lookup_tables/" + grating + "/config.tab"
+    config_tab_path      = L2_LOOKUP_TABLES_DIR + "/" + grating + "/config.tab"
    
     ## config
     chosen_config_entry = search_lookup_table(config_tab_path, f_ref_fits_hdr_DATEOBS, f_ref_fits_hdr_CCDXBIN, f_ref_fits_hdr_CCDYBIN)
@@ -192,7 +195,7 @@ def chk_ref_run(f_ref, f_cont):
         print_notification("Failed.") 
         err.set_code(29)
         
-    chosen_config_file_path = L2_CONFIG_DIR + "/configs/" + grating + "/" + chosen_config_entry
+    chosen_config_file_path = L2_INI_DIR + "/" + grating + "/" + chosen_config_entry
 
     print_notification("Success. Using file " + chosen_config_file_path)    
     cfg = read_ini(err, chosen_config_file_path)            
@@ -352,8 +355,8 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     else:
         err.set_code(18)   
         
-    arc_tab_path         = L2_CONFIG_DIR + "/lookup_tables/" + grating + "/arc.tab"
-    config_tab_path      = L2_CONFIG_DIR + "/lookup_tables/" + grating + "/config.tab"
+    arc_tab_path      = L2_LOOKUP_TABLES_DIR + "/" + grating + "/arc.tab"
+    config_tab_path      = L2_LOOKUP_TABLES_DIR + "/" + grating + "/config.tab"
    
     ## arc
     chosen_arc_entry = search_lookup_table(arc_tab_path, f_arc_fits_hdr_DATEOBS, f_arc_fits_hdr_CCDXBIN, f_arc_fits_hdr_CCDYBIN)
@@ -361,7 +364,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
         print_notification("Failed.") 
         err.set_code(19)
         
-    chosen_arc_file_path = L2_CONFIG_DIR + "/reference_arcs/" + grating + "/" + chosen_arc_entry
+    chosen_arc_file_path = L2_REFERENCE_ARCS_DIR + "/" + grating + "/" + chosen_arc_entry
   
     print_notification("Success. Using file " + chosen_arc_file_path)
     
@@ -371,7 +374,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
         print_notification("Failed.") 
         err.set_code(29)
         
-    chosen_config_file_path = L2_CONFIG_DIR + "/configs/" + grating + "/" + chosen_config_entry
+    chosen_config_file_path = L2_INI_DIR + "/" + grating + "/" + chosen_config_entry
 
     print_notification("Success. Using file " + chosen_config_file_path)    
     cfg = read_ini(err, chosen_config_file_path)    
