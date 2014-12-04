@@ -40,7 +40,8 @@ def execute(f_in, hdu, f_out, plt_title, legend=False, leg_title="", save=True, 
   if not hold:
       plt.clf() 
   if legend:
-      plt.legend(loc='upper right')
+      leg = plt.legend(loc="upper left", fontsize=10) 
+      leg.get_frame().set_alpha(0.5)
   
   return 0
 

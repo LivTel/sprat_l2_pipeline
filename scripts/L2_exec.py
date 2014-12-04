@@ -779,7 +779,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     fig.add_subplot(212)
     a_ps_execute(in_target_filename, "SPEC_NONSS", "", "", leg_title="SPEC_NONSS", save=False, hold=True) 
     a_ps_execute(in_target_filename, "SPEC_SS", "",  "", legend=True, leg_title="SPEC_SS", save=False, hold=True)
-    plt.savefig(montage_plot)
+    plt.savefig(montage_plot, bbox_inches="tight")
     
     if os.path.exists(montage_plot):
         print_notification("Success.")

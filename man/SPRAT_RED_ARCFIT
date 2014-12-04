@@ -40,7 +40,6 @@ fit parameters.
 
 Example:
 
-sparcfit arc_ext.fits 4 4 1 1 arc.lis 3 3 100 4  
-         
+sparcfit arc_ext.fits 4 4 1 1 arc.lis 3 3 100 4      
 
 ###################################################################################################
