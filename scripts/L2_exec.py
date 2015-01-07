@@ -796,7 +796,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     in_target_filename_LSS_NONSS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
     in_target_filename_SPEC_NONSS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ".fits"
     in_target_filename_SPEC_SS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ss_suffix + ".fits"
-    
+
     out_target_filename = target[:-1] + "2.fits"
     
     ## make L1 extension
@@ -890,8 +890,8 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     a_pi_execute(in_target_filename, "L1_IMAGE", "", "", save=False, hold=True)
 
     fig.add_subplot(212)
-    a_ps_execute(in_target_filename, "SPEC_NONSS", "", "", leg_title="SPEC_NONSS", save=False, hold=True) 
-    a_ps_execute(in_target_filename, "SPEC_SS", "",  "", legend=True, leg_title="SPEC_SS", save=False, hold=True)
+    a_ps_execute(in_target_filename, "SPEC_SS", "",  "", leg_title="SPEC_SS", save=False, hold=True)
+    a_ps_execute(in_target_filename, "SPEC_NONSS", "", "", legend=True, leg_title="SPEC_NONSS", save=False, hold=True) 
     plt.savefig(montage_plot, bbox_inches="tight")
     
     if os.path.exists(montage_plot):
