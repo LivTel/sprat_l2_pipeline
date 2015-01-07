@@ -364,7 +364,7 @@ def chk_ref_run(f_ref, f_cont):
     err.set_code(0)    
     
 
-def full_run(f_target, f_ref, f_contre, f_arc, work_dir, clobber):
+def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
 
     err = errors()
 
