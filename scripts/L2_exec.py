@@ -345,7 +345,7 @@ def chk_ref_run(f_ref, f_cont):
         err.set_code(7, is_fatal=False)   
     elif rtn != 0:
         print_notification("Failed.") 
-        #_cleanup()
+        _cleanup()
         err.set_code(8)     
     
     # get error codes from file
