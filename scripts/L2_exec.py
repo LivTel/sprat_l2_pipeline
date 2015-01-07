@@ -141,22 +141,38 @@ def search_lookup_table(lookup_table_path, this_DATEOBS, this_CCDXBIN, this_CCDY
     
 def chk_ref_run(f_ref, f_cont):
   
+    out_ref_tr_filename  = "tmp.fits"  
+    out_ref_cor_filename = "tmp2.fits"      
+    ref_pre_sdist_plot   = "ref_pre_sdist_plot.png"   
+    ref_post_sdist_plot  = "ref_post_sdist_plot.png"
+  
     def _cleanup():
         if os.path.exists("error_codes"):
             os.remove("error_codes")
-        if os.path.exists("tmp.fits"):
-            os.remove("tmp.fits")
+        if os.path.exists(out_ref_tr_filename):
+            os.remove(out_ref_tr_filename)
+        if os.path.exists(out_ref_cor_filename):
+            os.remove(out_ref_cor_filename)            
         if os.path.exists("spfind_peaks.dat"):
-            os.remove("spfind_peaks.dat")         
+            os.remove("spfind_peaks.dat")    
+        if os.path.exists("sptrace_traces.dat"):
+            os.remove("sptrace_traces.dat")  
+        if os.path.exists(ref_pre_sdist_plot):
+            os.remove(ref_pre_sdist_plot)
+        if os.path.exists(ref_post_sdist_plot):
+            os.remove(ref_post_sdist_plot)            
      
     err = errors()
 
     # input sanity checks
     if not all([f_ref, f_cont]):
+        _cleanup()
         err.set_code(1)
     elif not os.path.exists(f_ref):
+        _cleanup()
         err.set_code(3)   
     elif not os.path.exists(f_cont):
+        _cleanup()
         err.set_code(4) 
         
     # -----------------------------------
@@ -174,9 +190,11 @@ def chk_ref_run(f_ref, f_cont):
         f_ref_fits_hdr_CCDYBIN = str(f_ref_fits[0].header['CCDYBIN']).strip()
     except KeyError:
         f_ref_fits.close()
+        _cleanup()
         err.set_code(16)
     except ValueError:
         f_ref_fits.close()
+        _cleanup()
         err.set_code(17)
     f_ref_fits.close()        
 
@@ -185,6 +203,7 @@ def chk_ref_run(f_ref, f_cont):
     elif f_ref_fits_hdr_GRATROT == 1:   # blue
         grating = "blue"
     else:
+        _cleanup()
         err.set_code(18)   
         
     config_tab_path      = L2_LOOKUP_TABLES_DIR + "/" + grating + "/config.tab"
@@ -193,6 +212,7 @@ def chk_ref_run(f_ref, f_cont):
     chosen_config_entry = search_lookup_table(config_tab_path, f_ref_fits_hdr_DATEOBS, f_ref_fits_hdr_CCDXBIN, f_ref_fits_hdr_CCDYBIN)
     if chosen_config_entry is None:
         print_notification("Failed.") 
+        _cleanup()
         err.set_code(29)
         
     chosen_config_file_path = L2_INI_DIR + "/" + grating + "/" + chosen_config_entry
@@ -208,11 +228,10 @@ def chk_ref_run(f_ref, f_cont):
     
     in_ref_filename = f_ref
     in_cont_filename = f_cont
-    out_ref_filename = "tmp.fits"
 
     output = Popen([clip, in_cont_filename, in_ref_filename, cfg['spclip']['bin_size_px'], cfg['spclip']['bg_percentile'], cfg['spclip']['clip_sigma'], cfg['spclip']['thresh_sigma'], \
       cfg['spclip']['scan_window_size_px'], cfg['spclip']['scan_window_nsigma'], cfg['spclip']['min_spectrum_width_px'], cfg['spclip']['force_bottom_px'], cfg['spclip']['force_top_px'], \
-        out_ref_filename], stdout=PIPE)   
+        out_ref_tr_filename], stdout=PIPE)   
     print output.stdout.read() 
     output.wait()
     if output.returncode != 0:
@@ -224,8 +243,8 @@ def chk_ref_run(f_ref, f_cont):
     
     print_routine("Find peaks of reference spectrum (spfind)")   
     
-    # use previous filename as input
-    in_ref_filename = out_ref_filename
+    # use previous file as input
+    in_ref_filename = out_ref_tr_filename
 
     output = Popen([find, in_ref_filename, cfg['spfind_ref']['bin_size_px'], cfg['spfind_ref']['bg_percentile'], cfg['spfind_ref']['clip_sigma'], \
       cfg['spfind_ref']['median_filter_width_px'], cfg['spfind_ref']['min_snr'], cfg['spfind_ref']['min_spatial_width_px'], cfg['spfind_ref']['finding_window_lo_px'], \
@@ -234,8 +253,101 @@ def chk_ref_run(f_ref, f_cont):
     print output.stdout.read()  
     output.wait()
     if output.returncode != 0:
-        err.set_code(21, is_fatal=False)    
-       
+        err.set_code(21, is_fatal=False)   
+        
+    # ----------------------------------------------
+    # - FIND SDIST OF REFERENCE SPECTRUM (SPTRACE) -
+    # ----------------------------------------------
+    
+    print_routine("Find sdist of reference spectrum (sptrace)") 
+    
+    output = Popen([trace, cfg['sptrace']['polynomial_order']], stdout=PIPE)
+    print output.stdout.read()  
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(22, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATTR", "L2STATT1", add_to_desc="(ref uncorrected)")    
+    
+    # ---------------------------------------------------------
+    # - PLOT TRACE OF REFERENCE SPECTRUM PRE SDIST CORRECTION -
+    # ---------------------------------------------------------
+
+    print_routine("Plot trace of reference spectrum pre sdist correction") 
+    print
+    
+    a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_pre_sdist_plot, "Reference pre SDIST correction", \
+      cfg['general']['max_curvature_post_cor']) 
+    
+    if os.path.exists(ref_pre_sdist_plot):
+        print_notification("Success.")
+    else:
+        print_notification("Failed.") 
+        err.set_code(6, is_fatal=False)
+        
+    # -----------------------------------------
+    # - CORRECT SPECTRA FOR SDIST (SPCORRECT) -
+    # -----------------------------------------
+    
+    print_routine("Correct spectra for sdist (spcorrect)")      
+
+    output = Popen([correct, in_ref_filename, cfg['spcorrect']['interpolation_type'], cfg['spcorrect']['conserve_flux'], out_ref_cor_filename], stdout=PIPE)
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(23, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATCO", "L2STATOT", add_to_desc="(ref)")
+    
+    # ---------------------------------------------
+    # - FIND PEAKS OF REFERENCE SPECTRUM (SPFIND) -
+    # ---------------------------------------------
+    
+    print_routine("Find peaks of reference spectrum (spfind)")       
+    
+    in_ref_filename = out_ref_cor_filename
+
+    output = Popen([find, in_ref_filename, cfg['spfind_ref']['bin_size_px'], cfg['spfind_ref']['bg_percentile'], cfg['spfind_ref']['clip_sigma'], \
+      cfg['spfind_ref']['median_filter_width_px'], cfg['spfind_ref']['min_snr'], cfg['spfind_ref']['min_spatial_width_px'], cfg['spfind_ref']['finding_window_lo_px'], \
+        cfg['spfind_ref']['finding_window_hi_px'], cfg['spfind_ref']['max_centering_num_px'], cfg['spfind_ref']['centroid_half_window_size_px'], \
+          cfg['spfind_ref']['min_used_bins']], stdout=PIPE)
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(21, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATFI", omit=True)    
+    
+    # ----------------------------------------------
+    # - FIND SDIST OF REFERENCE SPECTRUM (SPTRACE) -
+    # ----------------------------------------------
+    
+    print_routine("Find sdist of reference spectrum (sptrace)")       
+    
+    output = Popen([trace, cfg['sptrace']['polynomial_order']], stdout=PIPE)
+    print output.stdout.read() 
+    output.wait()
+    if output.returncode != 0:
+        err.set_code(22, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2STATTR", omit=True)
+
+    # ----------------------------------------------------------------------------------------------------------
+    # - PLOT TRACE OF SPECTRUM POST SDIST CORRECTION AND CHECK RETURN CODE FOR SIGNIFICANT REMAINING CURVATURE -
+    # ----------------------------------------------------------------------------------------------------------
+    
+    print_routine("Plot trace of spectrum post sdist correction and check for curvature (l2pp)") 
+    print
+    
+    rtn = a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_post_sdist_plot, "Reference post SDIST correction", \
+      cfg['general']['max_curvature_post_cor']) 
+    
+    if os.path.exists(ref_post_sdist_plot) and rtn == 0:
+        print_notification("Success.")
+    elif not os.path.exists(ref_post_sdist_plot):
+        print_notification("Failed.") 
+        err.set_code(7, is_fatal=False)   
+    elif rtn != 0:
+        print_notification("Failed.") 
+        #_cleanup()
+        err.set_code(8)     
+    
     # get error codes from file
     rtn_codes = []
     with open(cfg['general']['error_codes_file']) as f:
@@ -244,7 +356,7 @@ def chk_ref_run(f_ref, f_cont):
                 rtn_codes.append(int(line.split('\t')[1]))
 
     for i in rtn_codes:
-        if i != 0:
+        if i < 0:
             _cleanup()  
             err.set_code(13)            
              
@@ -252,7 +364,7 @@ def chk_ref_run(f_ref, f_cont):
     err.set_code(0)    
     
 
-def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
+def full_run(f_target, f_ref, f_contre, f_arc, work_dir, clobber):
 
     err = errors()
 
@@ -569,7 +681,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     # - PLOT TRACE OF SPECTRUM POST SDIST CORRECTION AND CHECK RETURN CODE FOR SIGNIFICANT REMAINING CURVATURE -
     # ----------------------------------------------------------------------------------------------------------
     
-    print_routine("Plot trace of spectrum post sdist correction (l2pp)") 
+    print_routine("Plot trace of spectrum post sdist correction and check for curvature (l2pp)") 
     print
     
     in_ref_filename = ref + ref_suffix + trim_suffix + cor_suffix + ".fits"
@@ -577,9 +689,9 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     rtn = a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_post_sdist_plot, "Reference post SDIST correction", \
       cfg['general']['max_curvature_post_cor']) 
     
-    if os.path.exists(ref_pre_sdist_plot) and rtn == 0:
+    if os.path.exists(ref_post_sdist_plot) and rtn == 0:
         print_notification("Success.")
-    elif not os.path.exists(ref_pre_sdist_plot):
+    elif not os.path.exists(ref_post_sdist_plot):
         print_notification("Failed.") 
         err.set_code(7, is_fatal=False)   
     elif rtn != 0:
@@ -776,6 +888,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     fig.suptitle("Raster image of L1_IMAGE and SPEC_* extensions for file " + in_target_filename, fontsize=12)
     fig.add_subplot(211)
     a_pi_execute(in_target_filename, "L1_IMAGE", "", "", save=False, hold=True)
+
     fig.add_subplot(212)
     a_ps_execute(in_target_filename, "SPEC_NONSS", "", "", leg_title="SPEC_NONSS", save=False, hold=True) 
     a_ps_execute(in_target_filename, "SPEC_SS", "",  "", legend=True, leg_title="SPEC_SS", save=False, hold=True)
@@ -804,6 +917,7 @@ if __name__ == "__main__":
     print_header()
     
     parser = OptionParser()
+
     parser.add_option('--t', dest='f_target', action='store', default=L2_TEST_DIR + "/1H0323/v_e_20141115_14_1_0_1.fits", help="path to target file")
     parser.add_option('--r', dest='f_ref', action='store', default=L2_TEST_DIR + "/1H0323/v_e_20141115_14_1_0_1.fits", help="path to reference file")
     parser.add_option('--c', dest='f_cont', action='store', default=L2_TEST_DIR + "/1H0323/v_w_20141121_2_1_0_1.fits", help="path to continuum file")

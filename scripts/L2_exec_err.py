@@ -34,8 +34,7 @@ class errors():
             26  :       "WARNING. spextract call gave non-zero return.",
             27  :       "WARNING. spreformat call gave non-zero return.",
             28  :       "CRITICAL. Couldn't find config file.",
-            29  :       "CRITICAL. Failed to find suitable config file for given exposure datetime and binning.",            
-            
+            29  :       "CRITICAL. Failed to find suitable config file for given exposure datetime and binning."                    
         }
         
     def set_code(self, code, is_fatal=True):
