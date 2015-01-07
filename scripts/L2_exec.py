@@ -275,8 +275,11 @@ def chk_ref_run(f_ref, f_cont):
     print_routine("Plot trace of reference spectrum pre sdist correction") 
     print
     
-    a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_pre_sdist_plot, "Reference pre SDIST correction", \
-      cfg['general']['max_curvature_post_cor']) 
+    try:
+        a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_pre_sdist_plot, "Reference pre SDIST correction", \
+        cfg['general']['max_curvature_post_cor']) 
+    except IOError:
+        pass
     
     if os.path.exists(ref_pre_sdist_plot):
         print_notification("Success.")
@@ -335,8 +338,11 @@ def chk_ref_run(f_ref, f_cont):
     print_routine("Plot trace of spectrum post sdist correction and check for curvature (l2pp)") 
     print
     
-    rtn = a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_post_sdist_plot, "Reference post SDIST correction", \
-      cfg['general']['max_curvature_post_cor']) 
+    try:
+        rtn = a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_post_sdist_plot, "Reference post SDIST correction", \
+        cfg['general']['max_curvature_post_cor']) 
+    except IOError:
+        pass
     
     if os.path.exists(ref_post_sdist_plot) and rtn == 0:
         print_notification("Success.")
@@ -586,9 +592,12 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     
     in_ref_filename = ref + ref_suffix + trim_suffix + ".fits"
     
-    a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_pre_sdist_plot, "Reference pre SDIST correction", \
+    try:
+        a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_pre_sdist_plot, "Reference pre SDIST correction", \
       cfg['general']['max_curvature_post_cor']) 
-    
+    except IOError:
+        pass
+
     if os.path.exists(ref_pre_sdist_plot):
         print_notification("Success.")
     else:
@@ -686,8 +695,11 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     
     in_ref_filename = ref + ref_suffix + trim_suffix + cor_suffix + ".fits"
     
-    rtn = a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_post_sdist_plot, "Reference post SDIST correction", \
+    try:
+        rtn = a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_post_sdist_plot, "Reference post SDIST correction", \
       cfg['general']['max_curvature_post_cor']) 
+    except IOError:
+        pass
     
     if os.path.exists(ref_post_sdist_plot) and rtn == 0:
         print_notification("Success.")
@@ -848,7 +860,10 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     # use previously defined output filename from spreformat
     in_target_filename = out_target_filename  
     
-    a_ps_execute(in_target_filename, "SPEC_NONSS", SPEC_NONSS_plot, "SPEC_NONSS")
+    try:
+        a_ps_execute(in_target_filename, "SPEC_NONSS", SPEC_NONSS_plot, "SPEC_NONSS")
+    except KeyError:
+        pass
         
     if os.path.exists(SPEC_NONSS_plot):
         print_notification("Success.")
@@ -866,7 +881,10 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     # use previously defined output filename from spreformat
     in_target_filename = out_target_filename   
         
-    a_ps_execute(in_target_filename, "SPEC_SS", SPEC_SS_plot, "SPEC_SS")
+    try:
+        a_ps_execute(in_target_filename, "SPEC_SS", SPEC_SS_plot, "SPEC_SS")
+    except KeyError:
+        pass
         
     if os.path.exists(SPEC_SS_plot):
         print_notification("Success.")
@@ -890,8 +908,11 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     a_pi_execute(in_target_filename, "L1_IMAGE", "", "", save=False, hold=True)
 
     fig.add_subplot(212)
-    a_ps_execute(in_target_filename, "SPEC_SS", "",  "", leg_title="SPEC_SS", save=False, hold=True)
-    a_ps_execute(in_target_filename, "SPEC_NONSS", "", "", legend=True, leg_title="SPEC_NONSS", save=False, hold=True) 
+    try:
+        a_ps_execute(in_target_filename, "SPEC_SS", "",  "", leg_title="SPEC_SS", save=False, hold=True)
+        a_ps_execute(in_target_filename, "SPEC_NONSS", "", "", legend=True, leg_title="SPEC_NONSS", save=False, hold=True) 
+    except KeyError:
+        pass
     plt.savefig(montage_plot, bbox_inches="tight")
     
     if os.path.exists(montage_plot):
