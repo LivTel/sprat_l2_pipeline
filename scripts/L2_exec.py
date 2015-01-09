@@ -141,39 +141,46 @@ def search_lookup_table(lookup_table_path, this_DATEOBS, this_CCDXBIN, this_CCDY
     
 def chk_ref_run(f_ref, f_cont):
   
+     # get basename of files
+    ref                 = os.path.splitext(os.path.basename(f_ref))[0]
+    cont                = os.path.splitext(os.path.basename(f_cont))[0]
+  
     out_ref_tr_filename  = "tmp.fits"  
     out_ref_cor_filename = "tmp2.fits"      
     ref_pre_sdist_plot   = "ref_pre_sdist_plot.png"   
     ref_post_sdist_plot  = "ref_post_sdist_plot.png"
   
-    def _cleanup():
-        if os.path.exists("error_codes"):
-            os.remove("error_codes")
-        if os.path.exists(out_ref_tr_filename):
-            os.remove(out_ref_tr_filename)
-        if os.path.exists(out_ref_cor_filename):
-            os.remove(out_ref_cor_filename)            
-        if os.path.exists("spfind_peaks.dat"):
-            os.remove("spfind_peaks.dat")    
-        if os.path.exists("sptrace_traces.dat"):
-            os.remove("sptrace_traces.dat")  
-        if os.path.exists(ref_pre_sdist_plot):
-            os.remove(ref_pre_sdist_plot)
-        if os.path.exists(ref_post_sdist_plot):
-            os.remove(ref_post_sdist_plot)            
-     
     err = errors()
 
     # input sanity checks
     if not all([f_ref, f_cont]):
-        _cleanup()
         err.set_code(1)
     elif not os.path.exists(f_ref):
-        _cleanup()
         err.set_code(3)   
     elif not os.path.exists(f_cont):
-        _cleanup()
         err.set_code(4) 
+        
+    # move files to working directory, redefine paths and change to working directory
+    try:
+        if not os.path.exists(work_dir):
+            os.mkdir(work_dir)
+            copyfile(f_ref, work_dir + "/" + ref + ref_suffix + ".fits")
+            copyfile(f_cont, work_dir + "/" + cont + cont_suffix + ".fits")
+        else:
+            if clobber:
+                for i in os.listdir(work_dir):
+                    os.remove(work_dir + "/" + i)
+                copyfile(f_ref, work_dir + "/" + ref + ref_suffix + ".fits")
+                copyfile(f_cont, work_dir + "/" + cont + cont_suffix + ".fits")
+            else:
+                err.set_code(14)
+    except OSError:
+        err.set_code(15)
+    
+    f_ref = ref + ref_suffix + ".fits"
+    f_cont = cont + cont_suffix + ".fits"
+
+    os.chdir(work_dir)        
         
     # -----------------------------------
     # - DETERMINE SUITABLE CONFIG FILES -
@@ -190,11 +197,9 @@ def chk_ref_run(f_ref, f_cont):
         f_ref_fits_hdr_CCDYBIN = str(f_ref_fits[0].header['CCDYBIN']).strip()
     except KeyError:
         f_ref_fits.close()
-        _cleanup()
         err.set_code(16)
     except ValueError:
         f_ref_fits.close()
-        _cleanup()
         err.set_code(17)
     f_ref_fits.close()        
 
@@ -203,7 +208,6 @@ def chk_ref_run(f_ref, f_cont):
     elif f_ref_fits_hdr_GRATROT == 1:   # blue
         grating = "blue"
     else:
-        _cleanup()
         err.set_code(18)   
         
     config_tab_path      = L2_LOOKUP_TABLES_DIR + "/" + grating + "/config.tab"
@@ -212,7 +216,6 @@ def chk_ref_run(f_ref, f_cont):
     chosen_config_entry = search_lookup_table(config_tab_path, f_ref_fits_hdr_DATEOBS, f_ref_fits_hdr_CCDXBIN, f_ref_fits_hdr_CCDYBIN)
     if chosen_config_entry is None:
         print_notification("Failed.") 
-        _cleanup()
         err.set_code(29)
         
     chosen_config_file_path = L2_INI_DIR + "/" + grating + "/" + chosen_config_entry
@@ -351,7 +354,6 @@ def chk_ref_run(f_ref, f_cont):
         err.set_code(7, is_fatal=False)   
     elif rtn != 0:
         print_notification("Failed.") 
-        _cleanup()
         err.set_code(8)     
     
     # get error codes from file
@@ -363,10 +365,8 @@ def chk_ref_run(f_ref, f_cont):
 
     for i in rtn_codes:
         if i < 0:
-            _cleanup()  
             err.set_code(13)            
              
-    _cleanup()
     err.set_code(0)   	# this is a bit of a bodge, it disregards the current error code!  
     
 
