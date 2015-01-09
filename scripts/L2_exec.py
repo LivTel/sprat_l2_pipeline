@@ -342,7 +342,7 @@ def chk_ref_run(f_ref, f_cont):
         rtn = a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_post_sdist_plot, "Reference post SDIST correction", \
         cfg['general']['max_curvature_post_cor']) 
     except IOError:
-        pass
+        rtn = -1
     
     if os.path.exists(ref_post_sdist_plot) and rtn == 0:
         print_notification("Success.")
@@ -367,7 +367,7 @@ def chk_ref_run(f_ref, f_cont):
             err.set_code(13)            
              
     _cleanup()
-    err.set_code(0)    
+    err.set_code(0)   	# this is a bit of a bodge, it disregards the current error code!  
     
 
 def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
@@ -697,9 +697,9 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     
     try:
         rtn = a_pp_execute(in_ref_filename, cfg['general']['spfind_output_file'], cfg['general']['sptrace_output_file'], ref_post_sdist_plot, "Reference post SDIST correction", \
-      cfg['general']['max_curvature_post_cor']) 
+        cfg['general']['max_curvature_post_cor']) 
     except IOError:
-        pass
+        rtn = -1
     
     if os.path.exists(ref_post_sdist_plot) and rtn == 0:
         print_notification("Success.")
@@ -931,7 +931,18 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     exec_time = fi_unix - st_unix
     print_notification("Execution time: " + str(exec_time) + "s.")
     
-    err.set_code(0)    
+    # make sure no negative routine error codes
+    rtn_codes = []
+    with open(cfg['general']['error_codes_file']) as f:
+        for line in f:
+            if line.startswith("L2"):
+                rtn_codes.append(int(line.split('\t')[1]))
+
+    for i in rtn_codes:
+        if i < 0: 
+            err.set_code(13)    
+
+    err.set_code(0) 	# this is a bit of a bodge, it disregards the current error code!
 	        
 if __name__ == "__main__":
   
@@ -944,7 +955,7 @@ if __name__ == "__main__":
     parser.add_option('--c', dest='f_cont', action='store', default=L2_TEST_DIR + "/1H0323/v_w_20141121_2_1_0_1.fits", help="path to continuum file")
     parser.add_option('--a', dest='f_arc', action='store', default=L2_TEST_DIR + "/1H0323/v_a_20141115_15_1_0_1.fits", help="path to arc file")
     parser.add_option('--dir', dest='work_dir', action='store', default="test", help="path to working dir")
-    parser.add_option('--rc', dest='ref_chk', action='store_true', help="perform reference frame check")
+    parser.add_option('--rc', dest='ref_chk', action='store_true', help="perform reference frame check only")
     parser.add_option('--o', dest='clobber', action='store_true')
     (options, args) = parser.parse_args()
 

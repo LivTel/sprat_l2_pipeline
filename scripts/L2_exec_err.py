@@ -4,6 +4,7 @@ import time
 class errors():
     def __init__(self):
         self.current_code = 0
+        self.codes = []
         self.err_dict = {
             0   :       "SUCCESS.",
             1   :       "CRITICAL. Input files are undefined.",
@@ -18,7 +19,7 @@ class errors():
             10  :       "WARNING. Couldn't make SPEC_NONSS plot.",
             11  :       "WARNING. Couldn't make SPEC_SS plot.",
             12  :       "WARNING. Couldn't make montage plot.",
-            13  :       "CRITICAL. Reference check failed.",
+            13  :       "CRITICAL. Negative error codes exist in error_codes file.",
             14  :       "CRITICAL. Working directory not empty and clobber not set.",
             15  :       "CRITICAL. Unable to create working directory.",
             16  :       "CRITICAL. Failed to find GRATROT and/or DATE-OBS key.",
