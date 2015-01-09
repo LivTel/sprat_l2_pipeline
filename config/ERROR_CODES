@@ -6,6 +6,7 @@
 
 # key		code	comment	
 
+L2STATCL        3       File consistency failure (Bits per pixel)
 L2STATCL	2	No significant difference between calculated background mean level and frame mean
 L2STATCL	1	Failed to get L2_SPT_BLURB_FILE environment variable
 L2STATCL	0	No errors encountered
@@ -16,7 +17,6 @@ L2STATCL	-4	Failed to open continuum FITS file (ARG 1)
 L2STATCL	-5	Input frame must have 2 axes
 L2STATCL	-6	Failed to get image parameters of input frame
 L2STATCL	-7	Failed to open input FITS file (ARG 2)
-L2STATCL	-8	File consistency failure (Bits per pixel)
 L2STATCL	-9	File consistency failure (Number of axes)
 L2STATCL	-10	File consistency failure (Dimension of first axis)
 L2STATCL	-11	File consistency failure (Dimension of second axis)

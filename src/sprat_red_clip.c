@@ -182,17 +182,7 @@ int main(int argc, char *argv []) {
 		if (cont_f_bitpix != in_f_bitpix) { 	// if a = b and b = c then a must = c
 
 			printf("FAIL\n"); 
-
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATCL", -8, "Status flag for L2 spclip routine", ERROR_CODES_INITIAL_FILE_WRITE_ACCESS);
-
-			free(cont_f);
-			free(in_f);					
-			free(out_f);
-			
-			if(fits_close_file(cont_f_ptr, &cont_f_status)) fits_report_error (stdout, cont_f_status); 
-			if(fits_close_file(in_f_ptr, &in_f_status)) fits_report_error (stdout, in_f_status);
-
-			return 1; 
+                        RETURN_FLAG = 3;
 
 		} else { 
 
