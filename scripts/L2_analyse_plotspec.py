@@ -2,6 +2,7 @@
   - Produces a plot of the final spectrum.
 '''
 
+import matplotlib
 from matplotlib import pyplot as plt
 import pyfits
 import sys
@@ -34,7 +35,14 @@ def execute(f_in, hdu, f_out, plt_title, legend=False, leg_title="", save=True, 
   plt.title(plt_title)
   plt.xlabel("Wavelength ($\AA$)")
   plt.ylabel("Intensity (counts)")
- 
+  if not isinstance(data[0], np.ndarray):    # this occurs if the hdu contains no data..   
+      ax = plt.gca()
+      ax.spines['bottom'].set_color('red')
+      ax.spines['top'].set_color('red') 
+      ax.spines['right'].set_color('red')
+      ax.spines['left'].set_color('red')
+      plt.annotate("NO DATA", xy=(0.5,0.5), xycoords="axes fraction", fontsize=42, horizontalalignment='center', verticalalignment='center')
+
   if save:
       plt.savefig(f_out)
   if not hold:

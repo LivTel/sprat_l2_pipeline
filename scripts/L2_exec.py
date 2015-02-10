@@ -356,16 +356,20 @@ def chk_ref_run(f_ref, f_cont):
         print_notification("Failed.") 
         err.set_code(8)     
     
-    # get error codes from file
-    rtn_codes = []
+    # make sure no negative routine error codes for essential routines
+    rtn_keys    = []    
+    rtn_codes   = []
     with open(cfg['general']['error_codes_file']) as f:
         for line in f:
             if line.startswith("L2"):
+                rtn_keys.append(str(line.split('\t')[0]))
                 rtn_codes.append(int(line.split('\t')[1]))
 
-    for i in rtn_codes:
-        if i < 0:
-            err.set_code(13)            
+    for idx, i in enumerate(rtn_keys):
+        if i == "L2STATF2" or i == "L2STATX1" or i=="L2STATX2":
+            continue                                                    # skip 1D extraction related error codes.
+        if rtn_codes[idx] < 0: 
+            err.set_code(13)             
              
     err.set_code(0)   	# this is a bit of a bodge, it disregards the current error code!  
     
@@ -931,15 +935,19 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     exec_time = fi_unix - st_unix
     print_notification("Execution time: " + str(exec_time) + "s.")
     
-    # make sure no negative routine error codes
-    rtn_codes = []
+    # make sure no negative routine error codes for essential routines
+    rtn_keys    = []    
+    rtn_codes   = []
     with open(cfg['general']['error_codes_file']) as f:
         for line in f:
             if line.startswith("L2"):
+                rtn_keys.append(str(line.split('\t')[0]))
                 rtn_codes.append(int(line.split('\t')[1]))
 
-    for i in rtn_codes:
-        if i < 0: 
+    for idx, i in enumerate(rtn_keys):
+        if i == "L2STATF2" or i == "L2STATX1" or i=="L2STATX2":
+            continue                                                    # skip 1D extraction related error codes.
+        if rtn_codes[idx] < 0: 
             err.set_code(13)    
 
     err.set_code(0) 	# this is a bit of a bodge, it disregards the current error code!

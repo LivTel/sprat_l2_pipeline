@@ -18,7 +18,7 @@ Description:
 
 Candidate arc lines are identified in the [arc_file] file by:
 
-1.      Coallapsing the frame along the spatial axis and finding peaks with the find_peaks function. 
+1.      Collapsing the frame along the spatial axis and finding peaks with the find_peaks function. 
         The [min_dist], [half_aperture_num_pix], [derivative_tol] and [derivative_tol_ref_px] 
         parameters have their usual meanings as stated in the spfind blurb.
 

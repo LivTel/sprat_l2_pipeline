@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_find.c
- Last Modified Date:     	03/10/14
+ Last Modified Date:     	10/02/15
 
 ************************************************************************/
 
@@ -189,7 +189,7 @@ int main(int argc, char *argv []) {
 		printf("\nFinding peaks");
 		printf("\n-------------------------------------\n");	
 		double peaks[disp_nelements_binned];
-		int num_bins_contain_target_flux = 0;
+		int num_bins_used = 0;
 		for (ii=0; ii<disp_nelements_binned; ii++) {
 
 			// 1a.	Establish if any target flux is in this bin
@@ -252,10 +252,9 @@ int main(int argc, char *argv []) {
 			}
 			printf("\nNum pixels (target):\t\t%d", num_pixels_contain_target_flux);
 			
-			printf("\nIs bin used:\t\t\t");
+			printf("\nDoes bin contain target flux?\t");
 			if (num_pixels_contain_target_flux >= min_spatial_width_px) {
 				printf("Yes\n");
-				num_bins_contain_target_flux++;
 			} else {
 				printf("No\n");
 				peaks[ii] = -1;
@@ -301,6 +300,7 @@ int main(int argc, char *argv []) {
 			if (found_turnover) {
 				printf("Yes\n");
 				printf("End peak index:\t\t\t%d\n", this_pk_idx);	
+                                num_bins_used++;
 			} else {
 				printf("No\n");
 				peaks[ii] = -1;
@@ -346,9 +346,9 @@ int main(int argc, char *argv []) {
 			
 		}	
 		
-		printf("\nNum bins with target flux:\t%d\n", num_bins_contain_target_flux);		
+		printf("\nNum bins used:\t%d\n", num_bins_used);		
 		
-		if (num_bins_contain_target_flux < min_used_bins) {
+		if (num_bins_used < min_used_bins) {
 			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFI", -8, "Status flag for L2 spfind routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 			free(target_f);
