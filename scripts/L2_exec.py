@@ -865,7 +865,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     in_target_filename = out_target_filename  
     
     try:
-        a_ps_execute(in_target_filename, "SPEC_NONSS", SPEC_NONSS_plot, "SPEC_NONSS")
+        a_ps_execute(in_target_filename, "SPEC_NONSS", SPEC_NONSS_plot, "SPEC_NONSS", "green")
     except KeyError:
         pass
         
@@ -886,7 +886,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     in_target_filename = out_target_filename   
         
     try:
-        a_ps_execute(in_target_filename, "SPEC_SS", SPEC_SS_plot, "SPEC_SS")
+        a_ps_execute(in_target_filename, "SPEC_SS", SPEC_SS_plot, "SPEC_SS", "blue")
     except KeyError:
         pass
         
@@ -913,8 +913,8 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
 
     fig.add_subplot(212)
     try:
-        a_ps_execute(in_target_filename, "SPEC_SS", "",  "", leg_title="SPEC_SS", save=False, hold=True)
-        a_ps_execute(in_target_filename, "SPEC_NONSS", "", "", legend=True, leg_title="SPEC_NONSS", save=False, hold=True) 
+        a_ps_execute(in_target_filename, "SPEC_NONSS", "",  "", "green", leg_title="SPEC_NONSS", save=False, hold=True)
+        a_ps_execute(in_target_filename, "SPEC_SS", "", "", "blue", legend=True, leg_title="SPEC_SS", save=False, hold=True) 
     except KeyError:
         pass
     plt.savefig(montage_plot, bbox_inches="tight")

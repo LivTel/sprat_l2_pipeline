@@ -11,7 +11,7 @@ from optparse import OptionParser
 
 PLOT_PADDING = 20
 
-def execute(f_in, hdu, f_out, plt_title, legend=False, leg_title="", save=True, hold=False):
+def execute(f_in, hdu, f_out, plt_title, color, legend=False, leg_title="", save=True, hold=False):
   hdulist = pyfits.open(f_in)
   data = hdulist[hdu].data
   hdrs = hdulist[hdu].header
@@ -27,10 +27,10 @@ def execute(f_in, hdu, f_out, plt_title, legend=False, leg_title="", save=True, 
   y = data.reshape(NAXIS1)
         
   # plot
-  y_min = min(y) - PLOT_PADDING
-  y_max = max(y) + PLOT_PADDING
+  y_min = 0 # min(y) - PLOT_PADDING
+  y_max = max(y)*2 # max(y) + PLOT_PADDING
                   
-  plt.plot(x, y, label=leg_title)
+  plt.plot(x, y, label=leg_title, color=color)
   plt.ylim([y_min, y_max])
   plt.title(plt_title)
   plt.xlabel("Wavelength ($\AA$)")
