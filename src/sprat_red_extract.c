@@ -361,8 +361,8 @@ int main(int argc, char *argv []) {
                         
                         ap_lower_lo = floor(y-target_half_aperture_px-0.5) - sky_window_half_aperture_px - 1;
                         ap_lower_hi = floor(y-target_half_aperture_px-0.5) - 1;
-                        ap_upper_lo = floor(y-target_half_aperture_px+0.5) + 1;
-                        ap_upper_hi = floor(y-target_half_aperture_px+0.5) + sky_window_half_aperture_px + 1;
+                        ap_upper_lo = floor(y+target_half_aperture_px+0.5) + 1;
+                        ap_upper_hi = floor(y+target_half_aperture_px+0.5) + sky_window_half_aperture_px + 1;
                         
                         int n_ap_values = (ap_lower_hi-ap_lower_lo) + (ap_upper_hi-ap_upper_lo) + 2;
                         
