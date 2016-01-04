@@ -29,7 +29,7 @@ int main(int argc, char *argv []) {
 
 	}
 
-	if (argc != 13) {
+	if (argc != 15) {
 
 		if(populate_env_variable(SPF_BLURB_FILE, "L2_SPF_BLURB_FILE")) {
 
@@ -61,6 +61,8 @@ int main(int argc, char *argv []) {
 		int max_centering_num_px		= strtol(argv[10], NULL, 0);		
 		int centroid_half_window_size_px	= strtol(argv[11], NULL, 0);
 		int min_used_bins			= strtol(argv[12], NULL, 0);
+		int window_x_lo				= strtol(argv[13], NULL, 0);
+		int window_x_hi				= strtol(argv[14], NULL, 0);
 		
 		// ***********************************************************************
 		// Open target file (ARG 1), get parameters and perform any data format 
@@ -112,7 +114,7 @@ int main(int argc, char *argv []) {
 		// ***********************************************************************
 		// Set the range limits
 
-		int cut_x [2] = {1, target_f_naxes[0]};
+		int cut_x [2] = {window_x_lo, window_x_hi};
 		int cut_y [2] = {1, target_f_naxes[1]};
 
 		// ***********************************************************************
@@ -246,6 +248,7 @@ int main(int argc, char *argv []) {
 			// 3.	Ascertain if this bin contains target flux
 			int num_pixels_contain_target_flux = 0;
 			for (jj=0; jj<spat_nelements-1; jj++) {
+printf("%f\t%f\n", this_spat_values_smoothed[jj], final_mean + final_sd*min_SNR);
 				if (this_spat_values_smoothed[jj] > final_mean + final_sd*min_SNR) {
 					num_pixels_contain_target_flux++;
 				}
@@ -300,7 +303,6 @@ int main(int argc, char *argv []) {
 			if (found_turnover) {
 				printf("Yes\n");
 				printf("End peak index:\t\t\t%d\n", this_pk_idx);	
-                                num_bins_used++;
 			} else {
 				printf("No\n");
 				peaks[ii] = -1;
@@ -337,6 +339,17 @@ int main(int argc, char *argv []) {
 			
 			double fitted_peak_idx = -coeffs[1]/(2*coeffs[2]);
 			printf("Fitted peak index:\t\t%f\n", fitted_peak_idx);
+
+			// 8.	Ensure fitted peak location is within finding window
+			printf("Is fitted peak within window?\t");
+			if (fitted_peak_idx > finding_window_lo_px && fitted_peak_idx < finding_window_hi_px) {
+				printf("Yes\n");
+                                num_bins_used++;
+			} else {
+				printf("No\n");
+				peaks[ii] = -1;
+				continue;
+			}
 
 			peaks[ii] = fitted_peak_idx;	
 			
@@ -390,7 +403,7 @@ int main(int argc, char *argv []) {
 			if (peaks[ii] == -1)
 				continue;
 			
-			fprintf(outputfile, "%f\t%f\n", ii*bin_size_px + (double)bin_size_px/2., peaks[ii]);
+			fprintf(outputfile, "%f\t%f\n", cut_x[0]+(ii*bin_size_px) + (double)bin_size_px/2., peaks[ii]);	
 		}
 		
 		fprintf(outputfile, "%d", EOF);		

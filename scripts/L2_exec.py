@@ -252,7 +252,7 @@ def chk_ref_run(f_ref, f_cont):
     output = Popen([find, in_ref_filename, cfg['spfind_ref']['bin_size_px'], cfg['spfind_ref']['bg_percentile'], cfg['spfind_ref']['clip_sigma'], \
       cfg['spfind_ref']['median_filter_width_px'], cfg['spfind_ref']['min_snr'], cfg['spfind_ref']['min_spatial_width_px'], cfg['spfind_ref']['finding_window_lo_px'], \
         cfg['spfind_ref']['finding_window_hi_px'], cfg['spfind_ref']['max_centering_num_px'], cfg['spfind_ref']['centroid_half_window_size_px'], \
-          cfg['spfind_ref']['min_used_bins']], stdout=PIPE)
+          cfg['spfind_ref']['min_used_bins'], cfg['spfind_ref']['window_x_lo'], cfg['spfind_ref']['window_x_hi']], stdout=PIPE)
     print output.stdout.read()  
     output.wait()
     if output.returncode != 0:
@@ -314,7 +314,7 @@ def chk_ref_run(f_ref, f_cont):
     output = Popen([find, in_ref_filename, cfg['spfind_ref']['bin_size_px'], cfg['spfind_ref']['bg_percentile'], cfg['spfind_ref']['clip_sigma'], \
       cfg['spfind_ref']['median_filter_width_px'], cfg['spfind_ref']['min_snr'], cfg['spfind_ref']['min_spatial_width_px'], cfg['spfind_ref']['finding_window_lo_px'], \
         cfg['spfind_ref']['finding_window_hi_px'], cfg['spfind_ref']['max_centering_num_px'], cfg['spfind_ref']['centroid_half_window_size_px'], \
-          cfg['spfind_ref']['min_used_bins']], stdout=PIPE)
+          cfg['spfind_ref']['min_used_bins'], cfg['spfind_ref']['window_x_lo'], cfg['spfind_ref']['window_x_hi']], stdout=PIPE)
     print output.stdout.read() 
     output.wait()
     if output.returncode != 0:
@@ -567,7 +567,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     output = Popen([find, in_ref_filename, cfg['spfind_ref']['bin_size_px'], cfg['spfind_ref']['bg_percentile'], cfg['spfind_ref']['clip_sigma'], \
       cfg['spfind_ref']['median_filter_width_px'], cfg['spfind_ref']['min_snr'], cfg['spfind_ref']['min_spatial_width_px'], cfg['spfind_ref']['finding_window_lo_px'], \
         cfg['spfind_ref']['finding_window_hi_px'], cfg['spfind_ref']['max_centering_num_px'], cfg['spfind_ref']['centroid_half_window_size_px'], \
-          cfg['spfind_ref']['min_used_bins']], stdout=PIPE)
+          cfg['spfind_ref']['min_used_bins'], cfg['spfind_ref']['window_x_lo'], cfg['spfind_ref']['window_x_hi']], stdout=PIPE)
     print output.stdout.read() 
     output.wait()
     if output.returncode != 0:
@@ -670,7 +670,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     output = Popen([find, in_ref_filename, cfg['spfind_ref']['bin_size_px'], cfg['spfind_ref']['bg_percentile'], cfg['spfind_ref']['clip_sigma'], \
       cfg['spfind_ref']['median_filter_width_px'], cfg['spfind_ref']['min_snr'], cfg['spfind_ref']['min_spatial_width_px'], cfg['spfind_ref']['finding_window_lo_px'], \
         cfg['spfind_ref']['finding_window_hi_px'], cfg['spfind_ref']['max_centering_num_px'], cfg['spfind_ref']['centroid_half_window_size_px'], \
-          cfg['spfind_ref']['min_used_bins']], stdout=PIPE)
+          cfg['spfind_ref']['min_used_bins'], cfg['spfind_ref']['window_x_lo'], cfg['spfind_ref']['window_x_hi']], stdout=PIPE)
     print output.stdout.read() 
     output.wait()
     if output.returncode != 0:
@@ -761,7 +761,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     output = Popen([find, in_target_filename, cfg['spfind_target']['bin_size_px'], cfg['spfind_target']['bg_percentile'], cfg['spfind_target']['clip_sigma'], \
       cfg['spfind_target']['median_filter_width_px'], cfg['spfind_target']['min_snr'], cfg['spfind_target']['min_spatial_width_px'], cfg['spfind_target']['finding_window_lo_px'], \
         cfg['spfind_target']['finding_window_hi_px'], cfg['spfind_target']['max_centering_num_px'], cfg['spfind_target']['centroid_half_window_size_px'], \
-          cfg['spfind_target']['min_used_bins']], stdout=PIPE)
+          cfg['spfind_target']['min_used_bins'], cfg['spfind_target']['window_x_lo'], cfg['spfind_target']['window_x_hi']], stdout=PIPE)
     print output.stdout.read() 
     output.wait()
     if output.returncode != 0:
