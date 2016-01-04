@@ -248,7 +248,6 @@ int main(int argc, char *argv []) {
 			// 3.	Ascertain if this bin contains target flux
 			int num_pixels_contain_target_flux = 0;
 			for (jj=0; jj<spat_nelements-1; jj++) {
-printf("%f\t%f\n", this_spat_values_smoothed[jj], final_mean + final_sd*min_SNR);
 				if (this_spat_values_smoothed[jj] > final_mean + final_sd*min_SNR) {
 					num_pixels_contain_target_flux++;
 				}
