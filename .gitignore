@@ -58,9 +58,7 @@ target/
 # ~
 *~
 
-# bin
 bin/
-
-# test
 test/
+lib/
 
