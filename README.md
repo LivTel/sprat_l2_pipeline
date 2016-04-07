@@ -40,7 +40,7 @@ Other non-routine options include [**max\_curvature\_post\_cor**] and [**operati
 
 **Unless the instrumental setup has significantly changed and the positions of the arc lines have shifted on the detector dramatically, this procedure should not be required. The pipeline has a degree of built-in robustness to temperature dependent changes in arc line position.**
 
-Arc calibration file lookup tables (`arc.tab`) are kept in `config/lookup_tables` with the subdirectories `blue` and `red` for each throughput optimised configuration. This file provides a record of: arc calibration file location (relative to `config/configs/[red||blue]`), binning mode, date active from, time active from, date active to and time active to. The last two fields can be replaced by a single value, "now", signifying that the file can be used up to the current date/time, e.g.
+Arc calibration file lookup tables (`arc.tab`) are kept in `config/lookup_tables` with the subdirectories `blue` and `red` for each throughput optimised configuration. This file provides a record of: arc calibration file location (relative to `reference_arcs/[red||blue]`), binning mode, date active from, time active from, date active to and time active to. The last two fields can be replaced by a single value, "now", signifying that the file can be used up to the current date/time, e.g.
 
 `181014/arc.lis	1x1	18/10/14	12:00:00	now`
 
