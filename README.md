@@ -1,6 +1,8 @@
 sprat\_l2\_pipeline
 =================
 
+I could not find any clear description of whether I should clone, fork or branch this code in order to make changes. All the docs seem to assume you know what clone, fork and branch mean. I have forked it, made a change to this readme. If I understand correctly, I now create a "pull request" to propose this change to be merged back into the master. I am less clear who gets that pull request. RMB? CJM? Presumably whoever does get it should reject it because we do not want this rambling message to go into the master source. My objective was just to find out if this is the correct mechanism for me to maintain sprat-l2-pipeline. 
+
 # Overview
 
 This package provides a reduction pipeline to reduce data taken with the SPRAT spectrograph. Its operation is similar 
