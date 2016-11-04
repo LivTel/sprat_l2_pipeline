@@ -732,6 +732,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, work_dir, clobber):
     output.wait()
     if output.returncode != 0:
         err.set_code(24, is_fatal=False)      
+    rewrite_error_codes_file(cfg['general']['error_codes_file'], "L2ARCMAT", "L2ARCMAT", add_to_desc="(target NONSS)")
     
     # -------------------
     # - REBIN (sprebin) -

@@ -9,12 +9,12 @@
 # User defined environment #
 ############################
 
-setenv L2_BASE_DIR "/home/rmb/devel/SPRAT/sprat_l2_pipeline"					# rmb/desktop
-#setenv L2_BASE_DIR "/space/home/eng/rmb/sprat_l2_pipeline"                                     # eng/ltdevsrv
+#setenv L2_BASE_DIR "/home/rmb/devel/SPRAT/sprat_l2_pipeline"					# rmb/desktop
+setenv L2_BASE_DIR "/space/home/dev/src/sprat_l2_pipeline"                                     # eng/ltdevsrv
 #setenv L2_BASE_DIR "/home/rmb/tmp/sprat_l2_pipeline"						# rmb/laptop
 #setenv L2_BASE_DIR "/usr/local/bin/sprat_l2_pipeline"						# eng/lt-qc
 
-setenv LD_LIBRARY_PATH /usr/lib:/usr/lib64:/usr/lib/gsl						# all
+setenv LD_LIBRARY_PATH /usr/lib64:/usr/lib:/usr/lib/gsl						# all
 
 # DO NOT ALTER PAST THIS LINE
 # ----------------------------------------------------------------------------------- #

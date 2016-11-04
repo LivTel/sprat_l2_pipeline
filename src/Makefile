@@ -29,15 +29,15 @@ RM		= /bin/rm -i
 # $(LIBS) flag #
 ################
 
-LIBS		= -L$(L2_LIB_DIR)#						rmb/desktop,laptop
-#LIBS		= -L/space/home/dev/src/cfitsio3310 -L$(L2_LIB_DIR)#		lt/ltdevsrv
+#LIBS		= -L$(L2_LIB_DIR)#						rmb/desktop,laptop
+LIBS		= -L/space/home/dev/src/cfitsio3310 -L$(L2_LIB_DIR)#		lt/ltdevsrv
 
 ####################
 # $(INCLUDES) flag #
 ####################
 
-INCLUDES	= -I/usr/include/cfitsio -I/usr/include/gsl#			rmb/desktop,laptop
-#INCLUDES	= -I/space/home/dev/src/cfitsio3310 -I/usr/include/gsl#		lt/ltdevsrv
+#INCLUDES	= -I/usr/include/cfitsio -I/usr/include/gsl#			rmb/desktop,laptop
+INCLUDES	= -I/space/home/dev/src/cfitsio3310 -I/usr/include/gsl#		lt/ltdevsrv
 
 ################
 # make default #

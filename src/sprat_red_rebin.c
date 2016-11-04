@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_rebin.c
- Last Modified Date:     	18/10/14
+ Last Modified Date:     	03/11/2016
 
 ************************************************************************/
 
@@ -314,8 +314,12 @@ int main (int argc, char *argv []) {
 		printf("\nWavelength boundaries");
 		printf("\n---------------------\n");
 
+		// Write to logfile and FITS header
 		printf("\nInherent minimum wavelength:\t%.2f Å", smallest_wav);
 		printf("\nInherent maximum wavelength:\t%.2f Å\n", largest_wav);
+                write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "ARCFIT", "L2MINLAM", smallest_wav, "[A] Min wavelength in primary image", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+                write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "ARCFIT", "L2MAXLAM", largest_wav, "[A] Min wavelength in primary image", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+
 
 		if (start_wav < smallest_wav) {         // Comparing doubles but accuracy isn't a necessity so don't need gsl_fcmp function
 		  

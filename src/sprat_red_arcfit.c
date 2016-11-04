@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:                          sprat_red_arcfit.c
- Last Modified Date:            10/10/14
+ Last Modified Date:            03/11/2016
 
 ************************************************************************/
 
@@ -292,6 +292,8 @@ int main (int argc, char *argv []) {
 
                 double matched_line_diffs [num_peaks];
                 memset(matched_line_diffs, 0, sizeof(double)*num_peaks);  
+		double sum_x, sum_y, sum_xx, sum_yy, sum_xy;				// Linear regression on the arc matching for diagnostics, not for calibration
+		double regression_alpha,regression_beta;				// Linear regression on the arc matching for diagnostics, not for calibration
 
                 int duplicate_index;
                 
@@ -367,11 +369,19 @@ int main (int argc, char *argv []) {
 
                 }
 
+		// Write number matched in both log file and FITS header
                 printf("Number of matched lines:\t\t\t\t%d\n", matched_line_count);
+                write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "ARCFIT", "L2ARCMAT", matched_line_count, "Number of arc lines matched in fit", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+                write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "ARCFIT", "L2ARC", ext_arc_f, "Filename of arc", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+
 
                 printf("\nIndex\tList wavelength\tList centroid\tAv. channel\tChannel difference\n");           // Channel difference is the difference between the reference arc list pixel location and the identified pixel location
                 printf("\t(Å)\t\t(px)\t\t(px)\t\t(px)\n\n");    
 
+		// Perform a linear regression between the CCD X coordinate and the offset between where the line was found and where it was expected in the arclis
+		// This is not used at all in the actual wavelength calibration. In is however a useful diagnostic to keep an eye on how the arc is
+		// changing over time.
+		sum_x = sum_y = sum_xx = sum_yy = sum_xy = 0;
                 for (ii=0; ii<num_peaks; ii++) {
 
                         if (matched_line_indexes[ii] == -1) {   // this line was unmatched
@@ -383,9 +393,24 @@ int main (int argc, char *argv []) {
 
                                 printf("%d\t%.2f\t\t%.2f\t\t%.2f\t\t%.2f\n", ii, arc_peak_wavelengths[matched_line_indexes[ii]], arc_peak_centroids[matched_line_indexes[ii]], peak_centroids[ii], matched_line_diffs[ii]);
 
+				//mean_matched_line_diffs += (matched_line_diffs[ii] / matched_line_count);
+				sum_x += arc_peak_centroids[matched_line_indexes[ii]];
+				sum_y += matched_line_diffs[ii];
+				sum_xx += pow(arc_peak_centroids[matched_line_indexes[ii]], 2);
+				sum_yy += pow(matched_line_diffs[ii], 2);
+				sum_xy += (arc_peak_centroids[matched_line_indexes[ii]] * matched_line_diffs[ii]);
+
                         }
 
                 }
+
+		// Linear regression parameters alpha and beta characterise the fit
+		regression_beta = ((matched_line_count * sum_xy) - (sum_x * sum_y)) / ((matched_line_count * sum_xx) - pow(sum_x,2));
+		regression_alpha = (sum_y/matched_line_count) - (regression_beta * sum_x/matched_line_count);
+
+                write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "ARCFIT", "L2ARCOFF", (sum_y/matched_line_count), "[] Mean offset of arc from expected", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+                write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "ARCFIT", "L2ARCALF", regression_alpha, "[] Debug diagnostic on arc matching, alpha", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+                write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "ARCFIT", "L2ARCBET", regression_beta, "[] Debug diagnostic on arc matching, beta", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
 
 
                 // 7.   And do they sample the distribution well?

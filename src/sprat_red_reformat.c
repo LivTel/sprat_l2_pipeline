@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_reformat.c
- Last Modified Date:     	18/10/14
+ Last Modified Date:     	03/11/2016
 
 ************************************************************************/
 
@@ -509,6 +509,12 @@ int main (int argc, char *argv []) {
 
 			}
 
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "ARCFIT", 4, &output_f_status) == 1) {
+
+				RETURN_FLAG = 6;
+
+			}
+
 		} else if (!strcmp(operation, "SPEC_NONSS")) {
 
 			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "SPEC_CALIBRATION", 2, &output_f_status) == 1) {
@@ -529,6 +535,12 @@ int main (int argc, char *argv []) {
 
 			}	
 
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "ARCFIT", 4, &output_f_status) == 1) {
+
+				RETURN_FLAG = 6;
+
+			}
+
 		} else if (!strcmp(operation, "SPEC_SS")) {
 
                         if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "SPEC_CALIBRATION", 2, &output_f_status) == 1) {
@@ -548,6 +560,12 @@ int main (int argc, char *argv []) {
                                 RETURN_FLAG = 5;
 
                         }       
+
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "ARCFIT", 4, &output_f_status) == 1) {
+
+				RETURN_FLAG = 6;
+
+			}
 
                 } 
 
