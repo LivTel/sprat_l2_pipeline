@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:                          sprat_red_arcfit.c
- Last Modified Date:            03/11/2016
+ Last Modified Date:            22/11/2016
 
 ************************************************************************/
 
@@ -393,7 +393,6 @@ int main (int argc, char *argv []) {
 
                                 printf("%d\t%.2f\t\t%.2f\t\t%.2f\t\t%.2f\n", ii, arc_peak_wavelengths[matched_line_indexes[ii]], arc_peak_centroids[matched_line_indexes[ii]], peak_centroids[ii], matched_line_diffs[ii]);
 
-				//mean_matched_line_diffs += (matched_line_diffs[ii] / matched_line_count);
 				sum_x += arc_peak_centroids[matched_line_indexes[ii]];
 				sum_y += matched_line_diffs[ii];
 				sum_xx += pow(arc_peak_centroids[matched_line_indexes[ii]], 2);

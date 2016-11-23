@@ -1,7 +1,7 @@
 # DO NOT MODIFY FORMAT
 #
 # File:				ERROR_CODES
-# Last Modified Date:     	14/10/14
+# Last Modified Date:     	20/11/2016
 #
 
 # key		code	comment	
@@ -129,6 +129,29 @@ L2STATRE        -15     Failed to close dispersion solutions file
 L2STATRE        -16     Failed to close [SPREBIN_OUTPUTF_REBIN_WAVFITS_FILE] file
 L2STATRE        -17     Failed to close input FITS file (ARG 1)
 L2STATRE        -18     Failed to close output FITS file (ARG 7)
+
+L2STATFL        1       Failed to get L2_FLCOR_BLURB_FILE environment variable
+L2STATFL        0       No errors encountered
+L2STATFL        -1      Failed on command line
+L2STATFL        -2      Input frame must have 2 axes, though NAXES[2] could be unity
+L2STATFL        -3      Failed to get image parameters of input frame
+L2STATFL        -4      Failed to open input FITS file (ARG 1)
+L2STATFL        -5      Throughput FITS NAXES[1] must exactly match the input frame and NAXES[2]==1
+L2STATFL        -6      Failed to get image parameters of throughput frame
+L2STATFL        -7      Failed to open flux correction FITS file (ARG 3)
+#L2STATFL        -8      Desired ending wavelength (ARG 3) is outside of inherent wavelength boundaries
+L2STATFL        -9      Failed to read row of flux correction frame
+L2STATFL        -10     Failed to read row of target frame
+L2STATFL        -11     Failed to create [XXX SPREBIN_OUTPUTF_REBIN_WAVFITS_FILE] output file
+L2STATFL        -12     Failed to write output img
+L2STATFL        -13     Failed to create output img
+L2STATFL        -14     Failed to create output FITS file (ARG 4)
+L2STATFL        -15     Failed to close [XXX SPREBIN_OUTPUTF_REBIN_WAVFITS_FILE] log file
+L2STATFL        -16     Failed to close flux correction FITS file (ARG 3)
+L2STATFL        -17     Failed to close input FITS file (ARG 1)
+L2STATFL        -18     Failed to close output FITS file (ARG 4)
+#L2STATFL	-19	Failed to read WCS parameters from input spectrum
+#L2STATFL	-20	Failed to read WCS parameters from flux correction spectrum
 
 L2STATRF        7       Empty input file (ARG 1). Created blank extension.
 L2STATRF	6	Failed to write checksum for output file (ARG 4)

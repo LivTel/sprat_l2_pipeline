@@ -11,7 +11,7 @@ from optparse import OptionParser
 
 PLOT_PADDING = 20
 
-def execute(f_in, hdu, f_out, plt_title, color, legend=False, leg_title="", save=True, hold=False):
+def execute(f_in, hdu, f_out, plt_title, color, linewidth=1, yLabel="", legend=False, telluric=False, leg_title="", save=True, hold=False):
   hdulist = pyfits.open(f_in)
   data = hdulist[hdu].data
   hdrs = hdulist[hdu].header
@@ -27,21 +27,27 @@ def execute(f_in, hdu, f_out, plt_title, color, legend=False, leg_title="", save
   y = data.reshape(NAXIS1)
         
   # plot
-  y_min = 0 # min(y) - PLOT_PADDING
-  y_max = max(y)*2 # max(y) + PLOT_PADDING
+  y_min = 0 			# min(y) - PLOT_PADDING
+  y_max = max(y)*2 		# max(y) + PLOT_PADDING
+
+  # Trap and prevent the "axis max == axis min" error from pyplot
+  if y_max == 0:
+    y_max = 1
                   
-  plt.plot(x, y, label=leg_title, color=color)
+  plt.plot(x, y, label=leg_title, color=color, linewidth=linewidth)
   plt.ylim([y_min, y_max])
   plt.title(plt_title)
   plt.xlabel("Wavelength ($\AA$)")
-  plt.ylabel("Intensity (counts)")
+  plt.ylabel(yLabel)
+
   if not isinstance(data[0], np.ndarray):    # this occurs if the hdu contains no data..   
       ax = plt.gca()
       ax.spines['bottom'].set_color('red')
       ax.spines['top'].set_color('red') 
       ax.spines['right'].set_color('red')
       ax.spines['left'].set_color('red')
-      plt.annotate("NO DATA", xy=(0.5,0.5), xycoords="axes fraction", fontsize=42, horizontalalignment='center', verticalalignment='center')
+      plt.annotate("No 1D extraction\nSee FITS extension LSS_NONSS", xy=(0.5,0.5), xycoords="axes fraction", fontsize=24, horizontalalignment='center', verticalalignment='center')
+      telluric = False
 
   if save:
       plt.savefig(f_out)
@@ -50,7 +56,12 @@ def execute(f_in, hdu, f_out, plt_title, color, legend=False, leg_title="", save
   if legend:
       leg = plt.legend(loc="upper left", fontsize=10) 
       leg.get_frame().set_alpha(0.5)
-  
+
+  if telluric:
+	coords_to_annote = [(7623.325,0.95*y_max),(7186.487,0.95*y_max),(6874.286,0.95*y_max),(6281.727,0.95*y_max)]
+	for coords in coords_to_annote:
+		plt.annotate('$\oplus$', xy=coords, xycoords='data', fontsize=12,color='black', horizontalalignment='center', verticalalignment='center')
+
   return 0
 
 if __name__ == "__main__":
@@ -68,5 +79,3 @@ if __name__ == "__main__":
   
   execute(f_in, hdu, f_out, plt_title)
   
-
-                  

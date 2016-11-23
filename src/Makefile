@@ -43,7 +43,7 @@ INCLUDES	= -I/space/home/dev/src/cfitsio3310 -I/usr/include/gsl#		lt/ltdevsrv
 # make default #
 ################
 
-all: sprat_red_clip sprat_red_find sprat_red_trace_sdist sprat_red_correct_sdist sprat_red_arcfit sprat_red_rebin sprat_red_extract sprat_red_reformat
+all: sprat_red_clip sprat_red_find sprat_red_trace_sdist sprat_red_correct_sdist sprat_red_arcfit sprat_red_rebin sprat_red_flcor sprat_red_extract sprat_red_reformat
 
 #################
 # make routines #
@@ -72,6 +72,10 @@ sprat_red_arcfit: sprat_red_arcfit.c libsprat
 sprat_red_rebin: sprat_red_rebin.c libsprat
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) sprat_red_rebin.c -lsprat -lgsl -lgslcblas -lcfitsio -lm -o sprebin
 	$(MV) sprebin $(L2_BIN_DIR)	
+	
+sprat_red_flcor: sprat_red_flcor.c libsprat
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) sprat_red_flcor.c -lsprat -lgsl -lgslcblas -lcfitsio -lm -o spflcor
+	$(MV) spflcor $(L2_BIN_DIR)	
 	
 sprat_red_extract: sprat_red_extract.c libsprat
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) sprat_red_extract.c -lsprat -lgsl -lgslcblas -lcfitsio -lm -o spextract

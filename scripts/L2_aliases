@@ -1,8 +1,8 @@
 
-##################################
-# L2_aliases 			 #
-# Last Modified Date:   14/10/14 #
-##################################
+####################################
+# L2_aliases 			   #
+# Last Modified Date:   20/11/2016 #
+####################################
 
 ################
 # Core aliases #
@@ -15,6 +15,7 @@ alias spcorrect $L2_BIN_DIR/spcorrect
 alias sparcfit $L2_BIN_DIR/sparcfit
 alias sprebin $L2_BIN_DIR/sprebin
 alias spextract $L2_BIN_DIR/spextract
+alias spflcor $L2_BIN_DIR/spflcor
 alias spreformat $L2_BIN_DIR/spreformat
 
 ##################

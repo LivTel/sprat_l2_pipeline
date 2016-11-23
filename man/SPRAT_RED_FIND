@@ -2,6 +2,7 @@
 
 Usage:	spfind input_file
 	       bin_size_px
+	       detrend_median_width_px
 	       bg_percentile
 	       clip_sigma
 	       median_filter_width_px	
@@ -21,14 +22,28 @@ An automatic peak finding and centroiding routine for long-slit spectra.
 
 Description:
 
-The data is first binned along the dispersion axis (defined as x) with a bin size of [bin_size]
-between the INTEGER limits [window_x_lo] and [window_x_hi]. For each bin, an initial estimate of 
-the mean/sd is found using the [bg_percentile]th lowest valued pixels. This mean/sd is then used 
-in an iterative sigma clip with sigma [clip_sigma] to filter out target flux and obtain a truer 
-background mean/sd.
+The data are first binned along the dispersion axis (defined as x) with a bin size of [bin_size]
+between the INTEGER limits [window_x_lo] and [window_x_hi]. Each bin is optionally detrended
+along the spatial length of the slit with a [detrend_median_width_px] median filter. This allows
+remove of slit-filling diffuse emission around the target before attempting to find the point source
+at the slit centre. Set [detrend_median_width_px] to zero for no detrending, which is the case
+for tracing the reference object.
 
-The derivatives for each bin are found, and a median filter of width [median_filter_width_px] 
-pixels applied to smooth any erroneous data (e.g. cosmic rays, bad pixels). Bins containing 
+A median filter of half-width [median_filter_width_px] pixels applied to smooth any erroneous data 
+(e.g. cosmic rays, bad pixels).
+
+If [detrend_median_width_px] has been set, the final detected object must be wider than 
+[median_filter_width_px] but narrower than [detrend_median_width_px]. To find a very extended
+source, you may need to set [detrend_median_width_px] = 0.
+
+Both median filters are defined as half width ('radius') of the boxcar.
+
+For each bin, an initial estimate of the mean/sd is found using the [bg_percentile]th lowest 
+valued pixels. This mean/sd is then used in an iterative sigma clip with sigma [clip_sigma] to 
+filter out target flux and obtain a truer background mean/sd. ([bg_percentile] is defined as
+a simple fraction of the sorted pixel vaules. E.g, the median pixel value is for 0.5.)
+
+The derivatives for each bin are found. Bins containing 
 target flux are then identified by searching for data values which are greater than the product 
 of the background sigma and [min_SNR]. If [min_spatial_width_px] values satisfying this criteria 
 exist, then the bin is flagged as usable.
@@ -45,6 +60,6 @@ passed to the [SPFIND_OUTPUTF_PEAKS_FILE] file.
 
 Example: 
 
-spfind input_tr.fits 50 0.1 3 3 100 4 50 150 7 3 5 300 800
+spfind input_tr.fits 50 0 0.1 3 3 100 4 50 150 7 3 5 300 800
 
 ###################################################################################################

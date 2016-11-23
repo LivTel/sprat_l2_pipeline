@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_rebin.c
- Last Modified Date:     	03/11/2016
+ Last Modified Date:     	22/11/2016
 
 ************************************************************************/
 
@@ -508,7 +508,7 @@ int main (int argc, char *argv []) {
 
 		if (!outputfile) { 
 
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRE", -11, "Status flag for L2 frrebin routine", ERROR_CODES_FILE_WRITE_ACCESS);
+			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRE", -11, "Status flag for L2 sprebin routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
 			free(input_f);
 			free(interpolation_type);

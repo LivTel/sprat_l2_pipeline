@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_find.c
- Last Modified Date:     	10/02/15
+ Last Modified Date:     	22/11/2016
 
 ************************************************************************/
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv []) {
 
 	}
 
-	if (argc != 15) {
+	if (argc != 16) {
 
 		if(populate_env_variable(SPF_BLURB_FILE, "L2_SPF_BLURB_FILE")) {
 
@@ -51,18 +51,19 @@ int main(int argc, char *argv []) {
 		
 		char *target_f				= strdup(argv[1]);	
 		int bin_size_px				= strtol(argv[2], NULL, 0);
-		double bg_percentile			= strtod(argv[3], NULL);
-		double clip_sigma			= strtod(argv[4], NULL);
-		int median_filter_width_px		= strtol(argv[5], NULL, 0);	
-		double min_SNR				= strtod(argv[6], NULL);
-		int min_spatial_width_px		= strtol(argv[7], NULL, 0);
-                int finding_window_lo_px                = strtol(argv[8], NULL, 0);
-                int finding_window_hi_px                = strtol(argv[9], NULL, 0);                
-		int max_centering_num_px		= strtol(argv[10], NULL, 0);		
-		int centroid_half_window_size_px	= strtol(argv[11], NULL, 0);
-		int min_used_bins			= strtol(argv[12], NULL, 0);
-		int window_x_lo				= strtol(argv[13], NULL, 0);
-		int window_x_hi				= strtol(argv[14], NULL, 0);
+		int detrend_median_width_px		= strtol(argv[3], NULL, 0);	
+		double bg_percentile			= strtod(argv[4], NULL);
+		double clip_sigma			= strtod(argv[5], NULL);
+		int median_filter_width_px		= strtol(argv[6], NULL, 0);	
+		double min_SNR				= strtod(argv[7], NULL);
+		int min_spatial_width_px		= strtol(argv[8], NULL, 0);
+                int finding_window_lo_px                = strtol(argv[9], NULL, 0);
+                int finding_window_hi_px                = strtol(argv[10], NULL, 0);                
+		int max_centering_num_px		= strtol(argv[11], NULL, 0);		
+		int centroid_half_window_size_px	= strtol(argv[12], NULL, 0);
+		int min_used_bins			= strtol(argv[13], NULL, 0);
+		int window_x_lo				= strtol(argv[14], NULL, 0);
+		int window_x_hi				= strtol(argv[15], NULL, 0);
 		
 		// ***********************************************************************
 		// Open target file (ARG 1), get parameters and perform any data format 
@@ -164,7 +165,7 @@ int main(int argc, char *argv []) {
 		
 		// FIND VALUES OF PEAK CENTROID ALONG DISPERSION AXIS
 		// ***********************************************************************		
-		// 1.	Bin array according to bin width given by [bin_size_px]
+		// Bin array according to bin width given by [bin_size_px]
 			
 		int disp_nelements = nxelements, spat_nelements = nyelements;
 		
@@ -178,8 +179,16 @@ int main(int argc, char *argv []) {
 		for (jj=0; jj<spat_nelements; jj++) {
 			this_bin_value = 0;
 			bin_number = 0;
-			for (ii=0; ii<disp_nelements; ii++) {
-				if (ii % bin_size_px == 0 && ii != 0) {
+			// With very large binning you may get very few elements across the image. At the most
+			// extreme, if binning>half the image size then you just get one. This occurs when we use
+			// extreme binning to find faint objects in the final object extraction. For a very red
+			// object, if we start binning from ii==0 we never see the object which is all in the red
+			// end of the spectrum.
+			// Instead, we always centre the bins on the detector so that any detector not used is
+			// always at the two ends.
+			int start_ii = floor(fmax(0,(disp_nelements-(disp_nelements_binned*bin_size_px))/2));
+			for (ii=start_ii; ii<disp_nelements; ii++) {
+				if ((ii-start_ii) % bin_size_px == 0 && (ii-start_ii) != 0) {
 					this_frame_values_binned[jj][bin_number] = this_bin_value;
 					bin_number++;
 					this_bin_value = 0;
@@ -194,14 +203,50 @@ int main(int argc, char *argv []) {
 		int num_bins_used = 0;
 		for (ii=0; ii<disp_nelements_binned; ii++) {
 
-			// 1a.	Establish if any target flux is in this bin
-			// 	First find the mean/sd of the [bg_percentile]th lowest valued pixels as an initial parameters for sigma clip			
+			// Make a working copy of a single spatial column in this_spat_values[]
 			double this_spat_values[spat_nelements];
 			double this_spat_values_sorted[spat_nelements];
 			for (jj=0; jj<spat_nelements; jj++) {
 				this_spat_values[jj] = this_frame_values_binned[jj][ii];
 			}			
-			memcpy(this_spat_values_sorted, this_spat_values, sizeof(double)*spat_nelements);	
+
+
+			// 1. Optionally detrend the data along the spatial length of the slit. 
+			// This was added to allow finding a faint target embedded in a bright background. 
+			// e.g., a SN embedded in a galaxy halo. It is expected only to be used on the target
+			// file rather than the reference image. The point of the reference image is only to
+			// use the data if the reference star is bright and well isolated so it makes no sense
+			// to try and extract it from a nebulosity. 
+			// Even with this function, finding objects is going to be hit and miss. We do not know the
+			// size of the science target so we cannot fine tune these parameters. With this filter 
+			// enabled we will try to find things that are larger then the cosmic ray filter
+			// median_filter_width_px but smaller than detrend_median_width_px. Very extended science
+			// targets will get filtered out by the detrend if it is set too small.
+			//
+			// Set (detrend_median_width_px = 0) on the command line for no detrending
+			if (detrend_median_width_px != 0 ) {
+			  double this_spat_values_detrend[spat_nelements];			
+			  memset(this_spat_values_detrend, 0, sizeof(double)*spat_nelements);
+			  median_filter(this_spat_values, this_spat_values_detrend, spat_nelements, detrend_median_width_px);
+			  for (jj=0; jj<(int)(detrend_median_width_px); jj++) 
+				this_spat_values_detrend[jj] = this_spat_values_detrend[1+(int)(detrend_median_width_px)];
+			  for (jj=spat_nelements-(int)(detrend_median_width_px); jj<spat_nelements; jj++) 
+				this_spat_values_detrend[jj] = this_spat_values_detrend[spat_nelements-(int)(detrend_median_width_px)-1];
+
+			  for (jj=0; jj<spat_nelements; jj++) {
+			    this_spat_values[jj] -= this_spat_values_detrend[jj];
+			  }
+			}
+
+			// 2.	Smooth array with median filter. Primarily intended to remove CRs
+			double this_spat_values_smoothed[spat_nelements];			
+			memset(this_spat_values_smoothed, 0, sizeof(double)*spat_nelements);
+			median_filter(this_spat_values, this_spat_values_smoothed, spat_nelements, median_filter_width_px);
+
+			// 3.	Establish if any target flux is in this bin
+			//
+			// 3a. First find the mean/sd of the [bg_percentile]th lowest valued pixels as an initial parameters for sigma clip			
+			memcpy(this_spat_values_sorted, this_spat_values_smoothed, sizeof(double)*spat_nelements);	
 			gsl_sort(this_spat_values_sorted, 1, spat_nelements);
 			
 			int bg_nelements = (int)floor(spat_nelements*bg_percentile);
@@ -228,24 +273,21 @@ int main(int argc, char *argv []) {
 			double start_mean = gsl_stats_mean(bg_values, 1, bg_nelements);
 			double start_sd	  = gsl_stats_sd(bg_values, 1, bg_nelements);
 
-			// 1b.	Iterative sigma clip around dataset with the initial guess
+			// 3b.	Iterative sigma clip around dataset with the initial guess
 			int retain_indexes[spat_nelements];
 			double final_mean, final_sd;
 			int final_num_retained_indexes;
 			
+			if (detrend_median_width_px) 
+			  printf("\nSlit already detrended with detrend_median_width_px = %d", detrend_median_width_px);	
 			printf("\nBin:\t\t\t\t%d", ii);	
 			printf("\nStart mean:\t\t\t%f", start_mean);
 			printf("\nStart SD:\t\t\t%f", start_sd);
-			iterative_sigma_clip(this_spat_values, spat_nelements, clip_sigma, retain_indexes, start_mean, start_sd, &final_mean, &final_sd, &final_num_retained_indexes, FALSE);
+			iterative_sigma_clip(this_spat_values_smoothed, spat_nelements, clip_sigma, retain_indexes, start_mean, start_sd, &final_mean, &final_sd, &final_num_retained_indexes, FALSE);
 			printf("\nFinal mean:\t\t\t%f", final_mean);
 			printf("\nFinal SD:\t\t\t%f", final_sd);
 			
-			// 2.	Smooth array with median filter
-			double this_spat_values_smoothed[spat_nelements];			
-			memset(this_spat_values_smoothed, 0, sizeof(double)*spat_nelements);
-			median_filter(this_spat_values, this_spat_values_smoothed, spat_nelements, median_filter_width_px);
-			
-			// 3.	Ascertain if this bin contains target flux
+			// 3c.	Ascertain if this bin contains target flux
 			int num_pixels_contain_target_flux = 0;
 			for (jj=0; jj<spat_nelements-1; jj++) {
 				if (this_spat_values_smoothed[jj] > final_mean + final_sd*min_SNR) {
@@ -263,19 +305,19 @@ int main(int argc, char *argv []) {
 				continue;
 			}
 			
-			// 3.	Take derivatives
+			// 4.	Take derivatives
 			double this_spat_values_der[spat_nelements-1];
 			memset(this_spat_values_der, 0, sizeof(double)*spat_nelements-1);
 			for (jj=1; jj<spat_nelements; jj++) {
 				this_spat_values_der[jj-1] = this_frame_values_binned[jj][ii] - this_frame_values_binned[jj-1][ii];
 			}
 			
-			// 4.	Smooth derivatives
+			// 5.	Smooth derivatives
 			double this_spat_values_der_smoothed[spat_nelements-1];	
 			memcpy(this_spat_values_der_smoothed, this_spat_values_der, sizeof(double)*spat_nelements-1);
 			median_filter(this_spat_values_der, this_spat_values_der_smoothed, spat_nelements-1, median_filter_width_px);				
 			
-			// 5.	Pick most positive gradient from window, retaining proper index   
+			// 6.	Pick most positive gradient from window, retaining proper index   
                         double this_spat_values_der_smoothed_windowed[spat_nelements-1]; 
                         memcpy(this_spat_values_der_smoothed_windowed, this_spat_values_der_smoothed, sizeof(double)*spat_nelements-1);
                         for (jj=0; jj<spat_nelements; jj++) {
@@ -288,7 +330,7 @@ int main(int argc, char *argv []) {
 			size_t this_pk_idx = gsl_stats_max_index(this_spat_values_der_smoothed_windowed, 1, spat_nelements-1);
 			printf("Start peak index:\t\t%d\n", this_pk_idx);	
 			
-			// 6.	Using this index, walk through centering window [max_centering_num_px] and find derivative turnover point
+			// 7.	Using this index, walk through centering window [max_centering_num_px] and find derivative turnover point
 			printf("Found turnover:\t\t\t");			
 			bool found_turnover = FALSE;
 			for (jj=this_pk_idx; jj<this_pk_idx+max_centering_num_px; jj++) {
@@ -308,7 +350,7 @@ int main(int argc, char *argv []) {
 				continue;
 			}
 
-			// 7.	Get parabolic centroid using the full centroid window [centroid_half_window_size_px]
+			// 8.	Get parabolic centroid using the full centroid window [centroid_half_window_size_px]
 			double this_pk_window_idxs[1 + (2*centroid_half_window_size_px)];
 			double this_pk_window_vals[1 + (2*centroid_half_window_size_px)];
 			
@@ -339,7 +381,7 @@ int main(int argc, char *argv []) {
 			double fitted_peak_idx = -coeffs[1]/(2*coeffs[2]);
 			printf("Fitted peak index:\t\t%f\n", fitted_peak_idx);
 
-			// 8.	Ensure fitted peak location is within finding window
+			// 9.	Ensure fitted peak location is within finding window
 			printf("Is fitted peak within window?\t");
 			if (fitted_peak_idx > finding_window_lo_px && fitted_peak_idx < finding_window_hi_px) {
 				printf("Yes\n");

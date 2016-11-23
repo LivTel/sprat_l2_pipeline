@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:                          sprat_red_extract.c
- Last Modified Date:            09/10/14
+ Last Modified Date:            22/11/2016
 
 ************************************************************************/
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv []) {
                 if(!fits_open_file(&input_f_ptr, input_f, IMG_READ_ACCURACY, &input_f_status)) {
 
                         if(!populate_img_parameters(input_f, input_f_ptr, input_f_maxdim, &input_f_bitpix, &input_f_naxis, input_f_naxes, &input_f_status, "INPUT FRAME")) {
-
+				
                                 if (input_f_naxis != 2) {       // any data format checks here
 
                                         write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATEX", -2, "Status flag for L2 spextract routine", ERROR_CODES_FILE_WRITE_ACCESS);

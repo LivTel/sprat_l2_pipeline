@@ -56,9 +56,15 @@ The parameters available at run-time can be found by invoking the pipeline with 
 
 `[rmb@rmb-tower scripts]$ python L2_exec.py --h`
 
-The `--f` flag specifies the target frame to be reduced, the `--r` flag specifies a reference file that is used to 
+The `--t` flag specifies the target frame to be reduced, the `--r` flag specifies a reference file that is used to 
 remove spectral curvature; it should be of a bright target taken at roughly the same alt/az as the target observation 
 (reference and target frames must suffer the same flexure, otherwise this correction doesn't make sense).
+
+The `--f` flag pecifies the flux correction calibration file. Currently it is mandatory, but we should add the option
+not to perform this step. The flux correction file is a 2D NAXIS1x1 array (not a 1D vector) where NAXIS1 exactly
+matches the extracted rebinned output of this pipeline. Wavelength calibration is not read and is assumed to match
+the science data. The data are multiplied by (flcor/EXPTIME) to yield mJy.
+
 The `--c` flag is only used if the spectrum position is to be automatically found, rather than using hardcoded limits - 
 see `man/SPRAT_RED_CLIP` for more details about the [**force\_***] parameters.
 

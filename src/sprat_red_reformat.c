@@ -1,7 +1,7 @@
 /************************************************************************
 
  File:				sprat_red_reformat.c
- Last Modified Date:     	03/11/2016
+ Last Modified Date:     	22/11/2016
 
 ************************************************************************/
 
@@ -57,7 +57,7 @@ int main (int argc, char *argv []) {
 		// ***********************************************************************
 		// Check operation choice is recognised
 
-		if (strcmp(operation, "L1_IMAGE") && strcmp(operation, "LSS_NONSS") && strcmp(operation, "SPEC_NONSS") && strcmp(operation, "SPEC_SS")) {
+		if (strcmp(operation, "L1_IMAGE") && strcmp(operation, "LSS_NONSS") && strcmp(operation, "SPEC_NONSS") && strcmp(operation, "SPEC_SS") && strcmp(operation, "FLAMBDA_SS") && strcmp(operation, "FLCOR_SS") ) {
 
 			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -2, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
@@ -262,7 +262,7 @@ int main (int argc, char *argv []) {
 
 			RETURN_FLAG = 7;
 			
-		} else if (!strcmp(operation, "L1_IMAGE") || !strcmp(operation, "LSS_NONSS") || !strcmp(operation, "SPEC_NONSS") || !strcmp(operation, "SPEC_SS")) { 
+		} else if (!strcmp(operation, "L1_IMAGE") || !strcmp(operation, "LSS_NONSS") || !strcmp(operation, "SPEC_NONSS") || !strcmp(operation, "SPEC_SS") || !strcmp(operation, "FLAMBDA_SS") || !strcmp(operation, "FLCOR_SS")) { 
 
 			// COPY DATA FROM INPUT FILE TO OUTPUT FILE 			    (COPY) 
 			// ***********************************************************************
@@ -567,7 +567,73 @@ int main (int argc, char *argv []) {
 
 			}
 
+		} else if (!strcmp(operation, "FLAMBDA_SS")) {
+
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "SPEC_CALIBRATION", 2, &output_f_status) == 1) {
+
+				RETURN_FLAG = 3;
+			
+			}
+
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "STARTDATE", 2, &output_f_status) == 1) {
+
+				RETURN_FLAG = 4;
+
+			}
+
+			if (write_error_codes_file_to_header(ERROR_CODES_FILE, output_f_ptr, &output_f_status) == 1) {
+
+				RETURN_FLAG = 5;
+
+			}	
+
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "ARCFIT", 4, &output_f_status) == 1) {
+
+				RETURN_FLAG = 6;
+
+			}
+
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "FLCOR_CALIBRATION", 2, &output_f_status) == 1) {
+
+				RETURN_FLAG = 7;
+
+			}
+
+		} else if (!strcmp(operation, "FLCOR_SS")) {
+
+                        if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "SPEC_CALIBRATION", 2, &output_f_status) == 1) {
+
+                                RETURN_FLAG = 3;
+                        
+                        }
+
+                        if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "STARTDATE", 2, &output_f_status) == 1) {
+
+                                RETURN_FLAG = 4;
+
+                        }
+
+                        if (write_error_codes_file_to_header(ERROR_CODES_FILE, output_f_ptr, &output_f_status) == 1) {
+
+                                RETURN_FLAG = 5;
+
+                        }       
+
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "ARCFIT", 4, &output_f_status) == 1) {
+
+				RETURN_FLAG = 6;
+
+			}
+
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "FLCOR_CALIBRATION", 2, &output_f_status) == 1) {
+
+				RETURN_FLAG = 7;
+
+			}
+
                 } 
+
+
 
 		// ***********************************************************************
 		// Write checksums

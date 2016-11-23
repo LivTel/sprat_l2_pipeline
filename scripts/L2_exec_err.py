@@ -35,7 +35,11 @@ class errors():
             26  :       "WARNING. spextract call gave non-zero return.",
             27  :       "WARNING. spreformat call gave non-zero return.",
             28  :       "CRITICAL. Couldn't find config file.",
-            29  :       "CRITICAL. Failed to find suitable config file for given exposure datetime and binning."                    
+            29  :       "CRITICAL. Failed to find suitable config file for given exposure datetime and binning.",
+	    30  :       "WARNING. spflcor call gave non-zero return on either FLCOR or FLAMBDA.",
+            31  :       "WARNING. ACQFAUTO or EXPTIME keywrds required for flux calibration not found.", 
+            32  :       "WARNING. Couldn't make FLCOR_SS plot.",
+            33  :       "CRITICAL. Flux correction file doesn't exist."
         }
         
     def set_code(self, code, is_fatal=True):
