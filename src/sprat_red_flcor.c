@@ -441,9 +441,15 @@ int main (int argc, char *argv []) {
 
 		// 6.	Write these values to the [ADDITIONAL_KEYS_FILE] file
 
-		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "FLCOR_CALIBRATION", "L2FLCOR", flcor_f, "Filename of throughput calibration", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "NORMFLUX_CALIBRATION", "L2FLCOR", flcor_f,            "Filename of throughput calibration", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "NORMFLUX_CALIBRATION", "LABEL",   "Normalized Flux",  "Description data values in array", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+		//write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "NORMFLUX_CALIBRATION", "BUNIT",   "",               "Units for data values", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
 
-
+		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE,     "FLUX_CALIBRATION", "L2FLCOR", flcor_f,            "Filename of throughput calibration", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE,     "FLUX_CALIBRATION", "LABEL",   "Flux",             "Description data values in array", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+		//10**-16 W/m**2/A and 10**-13 erg/s/cm2/A are the same
+		//write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE,     "FLUX_CALIBRATION", "BUNIT",   "10**-16 W/m**2/A", "Units for data values", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE,     "FLUX_CALIBRATION", "BUNIT",   "erg/(s*cm**2*Angstrom)", "Units for data values", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
 
 
 		// ***********************************************************************

@@ -34,11 +34,11 @@ resample [flcor_file] to match [input_file] before applying the correction.
 The flux calibration [flcor_file] as read from disk converts from 
 	ADU / sec on sprat
 to
-	flux density in W/m2/A
+	flux density in erg/s/cm2/A
 I.e., Simply multiplying a 1sec SPRAT SPEC_SS by the transformation curve will yield the 
 full calibration.
 
-The calibration is only correct at the time it is forst constructed. As the telescope primary
+The calibration is only correct at the time it is first constructed. As the telescope primary
 mirror degrades over time, the absolute calibration will drift. Assuming the degradation
 is perfectly grey, [flcor_file] is divided by [tel_thput] before use.  Whenever a new flcor 
 calibration is created [tel_thput] gets reset to unity and [flcor_file] used as is. 
@@ -63,7 +63,6 @@ acq_image_counts != 0
 	acquisition camera is SPRAT set acq_wav_min = acq_wav_min = 0 to sum the entire SPEC_SS.
 
 [input_file] and [flcor_file] must both have the same [input_start_wav] and [input_dispersion].
-
 
 input_exptime is not currently used.
 

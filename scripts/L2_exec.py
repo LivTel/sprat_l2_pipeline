@@ -413,11 +413,13 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
     # Plots without the throughput correction
     SPEC_NONSS_plot	        = os.path.splitext(os.path.basename(output_target))[0] + "_SPEC_NONSS.png"
     SPEC_SS_plot                = os.path.splitext(os.path.basename(output_target))[0] + "_SPEC_SS.png"
-    spec_montage_plot1                = os.path.splitext(os.path.basename(output_target))[0] + "_spec_output_1.png"  
+    #plot1 has ADU and flux as two axes on a single plot
+    #spec_montage_plot1                = os.path.splitext(os.path.basename(output_target))[0] + "_spec_output_1.png"  
+    #plot2 has two sets of axes, one each for ADU and flux
     spec_montage_plot2                = os.path.splitext(os.path.basename(output_target))[0] + "_spec_output_2.png"  
     # Plots with the flux calibration
-    FLCOR_SS_plot               = os.path.splitext(os.path.basename(output_target))[0] + "_FLCOR_SS.png"
-    FLAMBDA_SS_plot               = os.path.splitext(os.path.basename(output_target))[0] + "_FLAMBDA_SS.png"
+    FLUX_plot               = os.path.splitext(os.path.basename(output_target))[0] + "_FLUX.png"
+    NORMFLUX_plot               = os.path.splitext(os.path.basename(output_target))[0] + "_NORMFLUX.png"
 
     # move files to working directory, redefine paths and change to working directory
     try:
@@ -890,8 +892,8 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
     in_target_filename_LSS_NONSS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ".fits"
     in_target_filename_SPEC_NONSS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ".fits"
     in_target_filename_SPEC_SS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ss_suffix + ".fits"
-    in_target_filename_FLCOR_SS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ss_suffix + flcor_suffix + ".fits"
-    in_target_filename_FLAMBDA_SS = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ss_suffix + flambda_suffix + ".fits"
+    in_target_filename_FLUX = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ss_suffix + flcor_suffix + ".fits"
+    in_target_filename_NORMFLUX = target + target_suffix + trim_suffix + cor_suffix + reb_suffix + ext_suffix + ss_suffix + flambda_suffix + ".fits"
 
     out_target_filename = target[:-1] + "2.fits"
     
@@ -907,10 +909,10 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
           in_f = in_target_filename_SPEC_NONSS
         elif op.strip() == "SPEC_SS":
           in_f = in_target_filename_SPEC_SS
-        elif op.strip() == "FLCOR_SS":
-          in_f = in_target_filename_FLCOR_SS
-        elif op.strip() == "FLAMBDA_SS":
-          in_f = in_target_filename_FLAMBDA_SS
+        elif op.strip() == "FLUX":
+          in_f = in_target_filename_FLUX
+        elif op.strip() == "NORMFLUX":
+          in_f = in_target_filename_NORMFLUX
         else:
           continue
         
@@ -981,42 +983,44 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
         err.set_code(11, is_fatal=False)   
 
     # ----------------------------------------------
-    # - GENERATE RASTER PLOT OF FLCOR_SS extension -
+    # - GENERATE RASTER PLOT OF FLUX extension -
     # ----------------------------------------------  
     
-    print_routine("Plot extensions of output file FLCOR_SS (l2ps)")   
+    print_routine("Plot extensions of output file FLUX (l2ps)")   
     print
     
     # use previously defined output filename from spreformat
     in_target_filename = out_target_filename   
         
     try:
-        a_ps_execute(in_target_filename, "FLCOR_SS", FLCOR_SS_plot, "FLCOR_SS", "magenta", 1, "Flux density ($\mathrm{10^{-16}\/Wm^{-2}\AA^{-1}}$)" )
+        # 10**-16 W/m**2/A and 10**-13 erg/s/cm2/A are the same
+        #a_ps_execute(in_target_filename, "FLUX", FLUX_plot, "FLUX", "magenta", 1, "Flux density ($\mathrm{10^{-16}\/Wm^{-2}\AA^{-1}}$)" )
+        a_ps_execute(in_target_filename, "FLUX", FLUX_plot, "FLUX", "magenta", 1, "Flux density ($\mathrm{erg\,s^{-1}cm^{-2}\AA^{-1}}$)" )
     except KeyError:
         pass
         
-    if os.path.exists(FLCOR_SS_plot):
+    if os.path.exists(FLUX_plot):
         print_notification("Success.")
     else:
         print_notification("Failed.") 
         err.set_code(32, is_fatal=False)   
 
     # ----------------------------------------------
-    # - GENERATE RASTER PLOT OF FLAMBDA_SS extension -
+    # - GENERATE RASTER PLOT OF NORMFLUX extension -
     # ----------------------------------------------  
     
-    print_routine("Plot extensions of output file FLAMBDA_SS (l2ps)")   
+    print_routine("Plot extensions of output file NORMFLUX (l2ps)")   
     print
     
     # use previously defined output filename from spreformat
     in_target_filename = out_target_filename   
         
     try:
-        a_ps_execute(in_target_filename, "FLAMBDA_SS", FLAMBDA_SS_plot, "FLAMBDA_SS", "magenta", 1, "Flux density $\mathrm{(F_\lambda)}$", telluric=True )
+        a_ps_execute(in_target_filename, "NORMFLUX", NORMFLUX_plot, "NORMFLUX", "magenta", 1, "Flux density $\mathrm{(F_\lambda)}$", telluric=True )
     except KeyError:
         pass
         
-    if os.path.exists(FLAMBDA_SS_plot):
+    if os.path.exists(NORMFLUX_plot):
         print_notification("Success.")
     else:
         print_notification("Failed.") 
@@ -1039,72 +1043,73 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
     hdulist.close()
     
 # Montage Plot 1
-
-    fig = plt.figure(figsize=(11,8))
-    fig.suptitle("Raster image of L1_IMAGE and extracted spectra for file " + in_target_filename + "\n" + OBJECT, fontsize=12)
-    fig.add_subplot(211)
-    a_pi_execute(in_target_filename, "L1_IMAGE", "", "", save=False, hold=True)
-
-    fig.add_subplot(212)
-    try:
-	(xx,yy) = a_ps_getxy(in_target_filename, "SPEC_NONSS")
-	y_min = 0 		# min(y) - PLOT_PADDING
-	y_max = max(yy)*2 	# max(y) + PLOT_PADDING
-	if y_max == y_min:
-	  y_max = 1
-	ax1 = plt.gca()
-	ax1.plot(xx, yy, label="SPEC_NONSS", color='green', linewidth=1)
-	ax1.set_ylim([y_min, y_max])
-	ax1.set_ylabel("Intensity (counts)")
-	ax1.set_xlabel("Wavelength ($\AA$)")
-
-	(xx,yy) = a_ps_getxy(in_target_filename, "SPEC_SS")
-	y_max = max(yy)*2 
-	ax1.plot(xx, yy, label="SPEC_SS", color='blue', linewidth=1)
-	ax1.set_ylim([y_min, y_max])
-
-	if not int(float(f_target_fits_hdr_ACQFLUX)) == 0:
-	  # Over plot the full flux calibration
-	  ax2 = ax1.twinx()
-	  (xx,yy) = a_ps_getxy(in_target_filename, "FLCOR_SS")
-	  y_max = max(yy)*2
-	  ax2.plot(xx, yy, label="FLCOR_SS", color='magenta', linewidth=2)
-	  ax2.set_ylim([y_min, y_max])
-	  ax2.set_ylabel( r'Flux density ($\mathrm{10^{-16}\/Wm^{-2}\AA^{-1}}$)' ,color='magenta')
-	  if OBJECT == "GD50":
-		(xx,yy) = a_ps_getxy(L2_STANDARDS_DIR+"/gd50_oke90_Wm2A_9A_img.fits", 0)
-		ax2.plot(xx, yy, label="OKE90", color='red', linewidth=1)
-	  if OBJECT == "BDp33_2642_zpol":
-		(xx,yy) = a_ps_getxy(L2_STANDARDS_DIR+"/bdp33d2642_oke90_Wm2A_9A_img.fits", 0)
-		ax2.plot(xx, yy, label="OKE90", color='red', linewidth=1)
-	  if OBJECT == "G191B2B":
-		(xx,yy) = a_ps_getxy(L2_STANDARDS_DIR+"/g191b2b_oke90_Wm2A_9A_img.fits", 0)
-		ax2.plot(xx, yy, label="OKE90", color='red', linewidth=1)
-	else:
-	  # Over plot the normalised Flambda version
-	  ax2 = ax1.twinx()
-	  (xx,yy) = a_ps_getxy(in_target_filename, "FLAMBDA_SS")
-	  y_max = max(yy)*2
-	  ax2.plot(xx, yy, label="FLAMBDA_SS", color='magenta', linewidth=2)
-	  ax2.set_ylim([y_min, y_max])
-	  ax2.set_ylabel(r'Flux density ($F_\lambda$)',color='magenta')
-
-	ax1.legend(loc="upper left", fontsize=10)
-	# legend opacity
-
-
-    except KeyError:
-        pass
-    plt.savefig(spec_montage_plot1, bbox_inches="tight")
-    
-    if os.path.exists(spec_montage_plot1):
-        print_notification("Success.")
-    else:
-        print_notification("Failed.") 
-        err.set_code(12, is_fatal=False)   
-
+#plot1 has ADU and flux as two axes on a single plot
+#
+#    fig = plt.figure(figsize=(11,8))
+#    fig.suptitle("Raster image of L1_IMAGE and extracted spectra for file " + in_target_filename + "\n" + OBJECT, fontsize=12)
+#    fig.add_subplot(211)
+#    a_pi_execute(in_target_filename, "L1_IMAGE", "", "", save=False, hold=True)
+#
+#    fig.add_subplot(212)
+#    try:
+#	(xx,yy) = a_ps_getxy(in_target_filename, "SPEC_NONSS")
+#	y_min = 0 		# min(y) - PLOT_PADDING
+#	y_max = max(yy)*2 	# max(y) + PLOT_PADDING
+#	if y_max == y_min:
+#	  y_max = 1
+#	ax1 = plt.gca()
+#	ax1.plot(xx, yy, label="SPEC_NONSS", color='green', linewidth=1)
+#	ax1.set_ylim([y_min, y_max])
+#	ax1.set_ylabel("Intensity (counts)")
+#	ax1.set_xlabel("Wavelength ($\AA$)")
+#
+#	(xx,yy) = a_ps_getxy(in_target_filename, "SPEC_SS")
+#	y_max = max(yy)*2 
+#	ax1.plot(xx, yy, label="SPEC_SS", color='blue', linewidth=1)
+#	ax1.set_ylim([y_min, y_max])
+#
+#	if not int(float(f_target_fits_hdr_ACQFLUX)) == 0:
+#	  # Over plot the full flux calibration
+#	  ax2 = ax1.twinx()
+#	  (xx,yy) = a_ps_getxy(in_target_filename, "FLUX")
+#	  y_max = max(yy)*2
+#	  ax2.plot(xx, yy, label="FLUX", color='magenta', linewidth=2)
+#	  ax2.set_ylim([y_min, y_max])
+#	  ax2.set_ylabel( r'Flux density ($\mathrm{10^{-16}\/Wm^{-2}\AA^{-1}}$)' ,color='magenta')
+#	  if OBJECT == "GD50":
+#		(xx,yy) = a_ps_getxy(L2_STANDARDS_DIR+"/gd50_oke90_Wm2A_9A_img.fits", 0)
+#		ax2.plot(xx, yy, label="OKE90", color='red', linewidth=1)
+#	  if OBJECT == "BDp33_2642_zpol":
+#		(xx,yy) = a_ps_getxy(L2_STANDARDS_DIR+"/bdp33d2642_oke90_Wm2A_9A_img.fits", 0)
+#		ax2.plot(xx, yy, label="OKE90", color='red', linewidth=1)
+#	  if OBJECT == "G191B2B":
+#		(xx,yy) = a_ps_getxy(L2_STANDARDS_DIR+"/g191b2b_oke90_Wm2A_9A_img.fits", 0)
+#		ax2.plot(xx, yy, label="OKE90", color='red', linewidth=1)
+#	else:
+#	  # Over plot the normalised Flambda version
+#	  ax2 = ax1.twinx()
+#	  (xx,yy) = a_ps_getxy(in_target_filename, "NORMFLUX")
+#	  y_max = max(yy)*2
+#	  ax2.plot(xx, yy, label="NORMFLUX", color='magenta', linewidth=2)
+#	  ax2.set_ylim([y_min, y_max])
+#	  ax2.set_ylabel(r'Flux density ($F_\lambda$)',color='magenta')
+#
+#	ax1.legend(loc="upper left", fontsize=10)
+#	# legend opacity
+#
+#
+#    except KeyError:
+#        pass
+#    plt.savefig(spec_montage_plot1, bbox_inches="tight")
+#    
+#    if os.path.exists(spec_montage_plot1):
+#        print_notification("Success.")
+#    else:
+#        print_notification("Failed.") 
+#        err.set_code(12, is_fatal=False)   
 
 # Montage Plot 2
+#plot2 has two sets of axes, one each for ADU and flux
 
     fig = plt.figure(figsize=(8,11))
     fig.suptitle("Raster image of L1 IMAGE and extracted spectra\n " + in_target_filename + "   " + OBJECT, fontsize=12)
@@ -1123,22 +1128,30 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
 	if not int(float(f_target_fits_hdr_ACQFLUX)) == 0:
 
   	  if OBJECT == "GD50":
-        	a_ps_execute(L2_STANDARDS_DIR+"/gd50_oke90_Wm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+        	a_ps_execute(L2_STANDARDS_DIR+"/gd50_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
 	  if OBJECT == "BD_28_4211":
-        	a_ps_execute(L2_STANDARDS_DIR+"/bdp28d4211_oke90_Wm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+        	a_ps_execute(L2_STANDARDS_DIR+"/bdp28d4211_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
 	  if OBJECT == "BDp33_2642_zpol":
-        	a_ps_execute(L2_STANDARDS_DIR+"/bdp33d2642_oke90_Wm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+        	a_ps_execute(L2_STANDARDS_DIR+"/bdp33d2642_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
 	  if OBJECT == "G191B2B":
-        	a_ps_execute(L2_STANDARDS_DIR+"/g191b2b_oke90_Wm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+        	a_ps_execute(L2_STANDARDS_DIR+"/g191b2b_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
 	  if OBJECT == "LB1240":
-        	a_ps_execute(L2_STANDARDS_DIR+"/lb1240_oke74_Wm2A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE74", save=False, hold=True)
+        	a_ps_execute(L2_STANDARDS_DIR+"/lb1240_oke74_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE74", save=False, hold=True)
 	  if OBJECT == "HD19445" or OBJECT == "HD19445_m8" :
-        	a_ps_execute(L2_STANDARDS_DIR+"/hd19445_oke83_Wm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE83", save=False, hold=True)
+        	a_ps_execute(L2_STANDARDS_DIR+"/hd19445_oke83_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE83", save=False, hold=True)
 	  if OBJECT == "GD108":
-        	a_ps_execute(L2_STANDARDS_DIR+"/gd108_oke90_Wm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+        	a_ps_execute(L2_STANDARDS_DIR+"/gd108_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
 	  if OBJECT == "Feige34":
-        	a_ps_execute(L2_STANDARDS_DIR+"/feige34_oke90_Wm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
-          a_ps_execute(in_target_filename, "FLCOR_SS", "", "", "blue", 1, r'Flux density ($\mathrm{10^{-16}\/Wm^{-2}\AA^{-1}}$)', telluric=True, legend=True, leg_title="FLCOR_SS", save=False, hold=True)
+        	a_ps_execute(L2_STANDARDS_DIR+"/feige34_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+	  if OBJECT == "G60_54":
+        	a_ps_execute(L2_STANDARDS_DIR+"/g60_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+	  if OBJECT == "G193_74":
+        	a_ps_execute(L2_STANDARDS_DIR+"/g193_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+	  if OBJECT == "BDp75_325":
+        	a_ps_execute(L2_STANDARDS_DIR+"/bd75d325_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+
+          #a_ps_execute(in_target_filename, "FLUX", "", "", "blue", 1, r'Flux density ($\mathrm{10^{-16}\/Wm^{-2}\AA^{-1}}$)', telluric=True, legend=True, leg_title="FLUX", save=False, hold=True)
+          a_ps_execute(in_target_filename, "FLUX", "", "", "blue", 1, r'Flux density ($\mathrm{erg\,s^{-1}cm^{-2}\AA^{-1}}$)', telluric=True, legend=True, leg_title="FLUX", save=False, hold=True)
 
 	else:
 
@@ -1148,7 +1161,14 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
         	a_ps_execute(L2_STANDARDS_DIR+"/bdp33d2642_oke90_flam_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
 	  if OBJECT == "G191B2B":
         	a_ps_execute(L2_STANDARDS_DIR+"/g191b2b_oke90_flam_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
-          a_ps_execute(in_target_filename, "FLAMBDA_SS", "", "", "blue", 1, "Flux density ($F_\lambda$)", telluric=True, legend=True, leg_title="FLAMBDA_SS", save=False, hold=True)
+	  if OBJECT == "G60_54":
+		a_ps_execute(L2_STANDARDS_DIR+"/g60_oke90_flam_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+	  if OBJECT == "G193_74":
+		a_ps_execute(L2_STANDARDS_DIR+"/g193_oke90_flam_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+	  if OBJECT == "BDp75_325":
+		a_ps_execute(L2_STANDARDS_DIR+"/bd75d325_oke90_flam_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
+
+          a_ps_execute(in_target_filename, "NORMFLUX", "", "", "blue", 1, "Flux density ($F_\lambda$)", telluric=True, legend=True, leg_title="NORMFLUX", save=False, hold=True)
 
     except KeyError:
         pass

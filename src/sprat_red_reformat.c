@@ -57,7 +57,7 @@ int main (int argc, char *argv []) {
 		// ***********************************************************************
 		// Check operation choice is recognised
 
-		if (strcmp(operation, "L1_IMAGE") && strcmp(operation, "LSS_NONSS") && strcmp(operation, "SPEC_NONSS") && strcmp(operation, "SPEC_SS") && strcmp(operation, "FLAMBDA_SS") && strcmp(operation, "FLCOR_SS") ) {
+		if (strcmp(operation, "L1_IMAGE") && strcmp(operation, "LSS_NONSS") && strcmp(operation, "SPEC_NONSS") && strcmp(operation, "SPEC_SS") && strcmp(operation, "NORMFLUX") && strcmp(operation, "FLUX") ) {
 
 			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATRF", -2, "Status flag for L2 spreformat routine", ERROR_CODES_FILE_WRITE_ACCESS);
 
@@ -262,7 +262,7 @@ int main (int argc, char *argv []) {
 
 			RETURN_FLAG = 7;
 			
-		} else if (!strcmp(operation, "L1_IMAGE") || !strcmp(operation, "LSS_NONSS") || !strcmp(operation, "SPEC_NONSS") || !strcmp(operation, "SPEC_SS") || !strcmp(operation, "FLAMBDA_SS") || !strcmp(operation, "FLCOR_SS")) { 
+		} else if (!strcmp(operation, "L1_IMAGE") || !strcmp(operation, "LSS_NONSS") || !strcmp(operation, "SPEC_NONSS") || !strcmp(operation, "SPEC_SS") || !strcmp(operation, "NORMFLUX") || !strcmp(operation, "FLUX")) { 
 
 			// COPY DATA FROM INPUT FILE TO OUTPUT FILE 			    (COPY) 
 			// ***********************************************************************
@@ -567,7 +567,7 @@ int main (int argc, char *argv []) {
 
 			}
 
-		} else if (!strcmp(operation, "FLAMBDA_SS")) {
+		} else if (!strcmp(operation, "NORMFLUX")) {
 
 			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "SPEC_CALIBRATION", 2, &output_f_status) == 1) {
 
@@ -593,13 +593,13 @@ int main (int argc, char *argv []) {
 
 			}
 
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "FLCOR_CALIBRATION", 2, &output_f_status) == 1) {
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "NORMFLUX_CALIBRATION", 2, &output_f_status) == 1) {
 
 				RETURN_FLAG = 7;
 
 			}
 
-		} else if (!strcmp(operation, "FLCOR_SS")) {
+		} else if (!strcmp(operation, "FLUX")) {
 
                         if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "SPEC_CALIBRATION", 2, &output_f_status) == 1) {
 
@@ -625,7 +625,7 @@ int main (int argc, char *argv []) {
 
 			}
 
-			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "FLCOR_CALIBRATION", 2, &output_f_status) == 1) {
+			if (write_additional_keys_file_to_header(ADDITIONAL_KEYS_FILE, output_f_ptr, "FLUX_CALIBRATION", 2, &output_f_status) == 1) {
 
 				RETURN_FLAG = 7;
 
