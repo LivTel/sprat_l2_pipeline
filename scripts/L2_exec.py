@@ -1141,7 +1141,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
         	a_ps_execute(L2_STANDARDS_DIR+"/hd19445_oke83_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE83", save=False, hold=True)
 	  if OBJECT == "GD108":
         	a_ps_execute(L2_STANDARDS_DIR+"/gd108_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
-	  if OBJECT == "Feige34":
+	  if OBJECT == "Feige34" or OBJECT == "feige34":
         	a_ps_execute(L2_STANDARDS_DIR+"/feige34_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
 	  if OBJECT == "G60_54":
         	a_ps_execute(L2_STANDARDS_DIR+"/g60_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
