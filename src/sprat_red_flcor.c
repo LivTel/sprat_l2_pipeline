@@ -80,6 +80,19 @@ int main (int argc, char *argv []) {
                         return 1;
                 }
 
+
+                // Create [SPFLCOR_OUTPUTF] log output file
+                FILE *outputfile;
+                outputfile = fopen(SPFLCOR_OUTPUTF, FILE_WRITE_ACCESS);
+
+                if (!outputfile) {
+                        write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFL", -11, "Status flag for L2 spflcor routine", ERROR_CODES_FILE_WRITE_ACCESS);
+                        free(input_f);
+                        free(flcor_f);
+                        free(output_f);
+                        return 1;
+                }
+
 		// ***********************************************************************
 		// Open input file (ARG 1), get parameters and perform any data format 
                 // checks 
@@ -336,10 +349,19 @@ int main (int argc, char *argv []) {
  					ptr_output++;
 				  }
 				  spec_renormalize /= (norm_range_high - norm_range_low);
-				  if (spec_renormalize != 0)
+				  fprintf(outputfile, "Mean ADU in renormalization region = %e\n", spec_renormalize);
+				  if (spec_renormalize == 0) {
+				    spec_renormalize = 1.0; 	// Do nothing. This is essentially wrong and yields a spectrum with
+								// mean value 0 instead of 1, but it is very unlikely to actually happen
+				  } else if (spec_renormalize < 0) {
+				    spec_renormalize = -1.0 / spec_renormalize; // You would imagine this should never happen since it means -ve flux in the spectrum
+										// however if there is no detected continuum, it is possible (even likely)
+										// that noise gives a -ve mean. Forcing spec_renormalize to be positive 
+										// prevents the spectrum inverting itself on normalization. The result is 
+										// arguably junk, but only as much as any spectrum with no detected continuum.
+				  } else {
 				    spec_renormalize = 1.0 / spec_renormalize;
-				  else
-				    spec_renormalize = 1;
+                                  }
 
 				} else {
 
@@ -405,27 +427,7 @@ int main (int argc, char *argv []) {
 		}
 
 
-
-		// 5.	Create [SPFLCOR_OUTPUTF] log output file and print
-		// 	a few parameters
-
-		FILE *outputfile;
-		outputfile = fopen(SPFLCOR_OUTPUTF, FILE_WRITE_ACCESS);
-
-		if (!outputfile) { 
-
-			write_key_to_file(ERROR_CODES_FILE, REF_ERROR_CODES_FILE, "L2STATFL", -11, "Status flag for L2 spflcor routine", ERROR_CODES_FILE_WRITE_ACCESS);
-
-			free(input_f);
-			free(flcor_f);
-			free(output_f);
-
-			if(fits_close_file(input_f_ptr, &input_f_status)) fits_report_error (stdout, input_f_status); 
-			if(fits_close_file(flcor_f_ptr, &flcor_f_status)) fits_report_error (stdout, flcor_f_status); 
-
-			return 1;
-
-		}
+		// 5.	Log parameters into [SPFLCOR_OUTPUTF] 
 
 		char timestr [80];
 		memset(timestr, '\0', sizeof(char)*80);
