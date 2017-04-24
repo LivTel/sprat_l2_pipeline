@@ -369,8 +369,11 @@ def chk_ref_run(f_ref, f_cont):
                 rtn_codes.append(int(line.split('\t')[1]))
 
     for idx, i in enumerate(rtn_keys):
-        if i == "L2STATF2" or i == "L2STATX1" or i=="L2STATX2":
-            continue                                                    # skip 1D extraction related error codes.
+        if i == "L2STATF2" or i == "L2STATX1" or i=="L2STATX2" or i=="L2STATFL":
+            continue                                    # skip 1D extraction related error codes.
+							# I.e., do not signfiy overall failure if the -ve error
+							# codes only relate to 1D extractions. The 1D extraction can have
+							# have a critical failure, but we still want to publish the reduced 2D spectrum	
         if rtn_codes[idx] < 0: 
             err.set_code(13)             
              
@@ -778,6 +781,8 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
     # ---------------------------------------------------------------
     print_routine("Find peaks of target spectrum (spfind)")        
     in_target_filename = target + target_suffix + trim_suffix + cor_suffix + ".fits"
+    # It is not obvious to me why we use the _cor.fits here instead of the _cor_reb.fits. In fact the Y axis of both ought to be the
+    # same so it does not really make any difference, but using the rebinned file seems more intuitiuve to me (RJS).
 
     output = Popen([find, in_target_filename, cfg['spfind_target']['bin_size_px'], cfg['spfind_target']['detrend_median_width_px'], cfg['spfind_target']['bg_percentile'], cfg['spfind_target']['clip_sigma'], \
       cfg['spfind_target']['median_filter_width_px'], cfg['spfind_target']['min_snr'], cfg['spfind_target']['min_spatial_width_px'], cfg['spfind_target']['finding_window_lo_px'], \
