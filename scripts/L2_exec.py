@@ -1132,6 +1132,8 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
     try:
 	if not int(float(f_target_fits_hdr_ACQFLUX)) == 0:
 
+          if OBJECT == "Hilt102":
+		a_ps_execute(L2_STANDARDS_DIR+"/hiltner102_stone_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="IRAF IRScal", save=False, hold=True)
   	  if OBJECT == "GD50":
         	a_ps_execute(L2_STANDARDS_DIR+"/gd50_oke90_ergscm2A_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE90", save=False, hold=True)
 	  if OBJECT == "BD_28_4211":
@@ -1160,6 +1162,8 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
 
 	else:
 
+	  if OBJECT == "Hilt102":
+        	a_ps_execute(L2_STANDARDS_DIR+"/hiltner102_stone_flam_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE83", save=False, hold=True)
 	  if OBJECT == "HD19445" or OBJECT == "HD19445_m8":
         	a_ps_execute(L2_STANDARDS_DIR+"/hd19445_oke83_flam_9A_img.fits", 0, "", "", "red", 1, "", legend=True, leg_title="OKE83", save=False, hold=True)
 	  if OBJECT == "BDp33_2642_zpol":
