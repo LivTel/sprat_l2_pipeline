@@ -57,8 +57,12 @@ target/
 
 # ~
 *~
+~*
 
 bin/
 test/
 lib/
 
+# Mac
+.DS*
+._.DS*
