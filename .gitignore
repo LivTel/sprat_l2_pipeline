@@ -66,3 +66,6 @@ lib/
 # Mac
 .DS*
 ._.DS*
+
+# Everything in the temporary file
+output_test/*
