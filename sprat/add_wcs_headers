@@ -1,0 +1,13 @@
+foreach fn ()
+  fits_add_keyword_value $fn CTYPE1 STRING "Wavelength"
+  fits_add_keyword_value $fn CUNIT1 STRING "Angstroms"
+  fits_add_keyword_value $fn CRVAL1 DOUBLE 4020
+  fits_add_keyword_value $fn CRPIX1 DOUBLE 1
+  fits_add_keyword_value $fn CTYPE2 STRING "a2"
+  fits_add_keyword_value $fn CUNIT2 STRING "Pixels"
+  fits_add_keyword_value $fn CRVAL2 DOUBLE 1
+  fits_add_keyword_value $fn CRPIX2 DOUBLE 1
+  fits_add_keyword_value $fn CDELT1 DOUBLE 9.2
+  fits_add_keyword_value $fn CDELT2 DOUBLE 1
+end
+

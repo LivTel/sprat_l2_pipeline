@@ -1,14 +1,19 @@
-from matplotlib import pyplot as plt
-import pyfits
-import sys
-import numpy as np
-from optparse import OptionParser
 import os
-from subprocess import Popen, PIPE
-from shutil import copyfile, move
+import sys
+import pyfits
 import time
-from datetime import date
 import ConfigParser
+from datetime import date
+from shutil import copyfile, move
+from optparse import OptionParser
+from subprocess import Popen, PIPE
+
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+
+from matplotlib import pyplot as plt
+
 
 from L2_exec_err import errors
 from L2_analyse_plotpeaks import execute as a_pp_execute

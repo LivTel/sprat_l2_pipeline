@@ -46,6 +46,10 @@ RUN pip install backports.functools-lru-cache \
   && pip install numpy pyfits matplotlib
 
 # Copy over and make the SPRAT L2 pipeline
+RUN mkdir $WORKSPACE/output_test
+ADD sprat $WORKSPACE/sprat
 ADD sprat_l2_pipeline $WORKSPACE/sprat_l2_pipeline
-RUN tcsh -c "source $WORKSPACE/sprat_l2_pipeline/scripts/L2_setup && cd $WORKSPACE/sprat_l2_pipeline/src && make all && python $WORKSPACE/sprat_l2_pipeline/scripts/L2_exec.py"
+RUN tcsh -c "source $WORKSPACE/sprat_l2_pipeline/scripts/L2_setup && cd $WORKSPACE/sprat_l2_pipeline/src && make all"
+
+ENTRYPOINT ["tcsh", "-c", "source /space/home/dev/src/sprat_l2_pipeline/scripts/L2_setup && python /space/home/dev/src/sprat_l2_pipeline/scripts/L2_exec.py --r=/space/home/dev/src/sprat/Reference/v_s_20180627_51_1_0_1.fits --c=/space/home/dev/src/sprat/Continuum/v_w_20141121_1_1_0_1.fits --a=/space/home/dev/src/sprat/Arc/v_a_20180627_54_1_0_1.fits --f=/space/home/dev/src/sprat/FluxCorrection/red_cal0_1.fits --dir=/space/home/dev/src/output_test --o"]
 
