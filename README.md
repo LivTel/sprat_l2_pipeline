@@ -1,7 +1,4 @@
 # Dockerised sprat_l2_pipeline
-=================
-
-## This is a dockerised SPRAT L2 Pipeline that is run as an executable.
 
 The Docker contains a centos:7.5.1804, the docker configurations are set at Dockerfile. It is installed with
 
@@ -14,4 +11,4 @@ The Docker contains a centos:7.5.1804, the docker configurations are set at Dock
 * backports.functools-lru-cache, numpy, pyfits, matplotlib
 * SPRAT L2 pipeline (comiled inside the docker)
 
-The docker is run as an excutable by calling tcsh script to run the pipeline with ENTRYPOINT.
+The shell script builds and starts the sprat_l2_pipeline docker image (sprat_l2_pipeline_image) and run it detached interactively (`-id`see definitions at https://docs.docker.com/engine/reference/commandline/run/#options). The container (sprat_l2_pipeline_container) mounts the docker volume to share input and output paths between the container and the host (`-v` flag). The pipeline is executed through `docker exec sprat_l2_pipeline_container tcsh -c "python (...)"`. After all the data reduction, the docker container is stopped and removed while the docker image stays on disk.
