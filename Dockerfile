@@ -7,7 +7,7 @@ WORKDIR $WORKSPACE
 ARG DDIR=$WORKSPACE/downloads
 
 # Update docker image
-RUN yum check-update && yum upgrade -y
+RUN yum -y upgrade
 
 # Install tools
 RUN yum install -y gcc gcc-c++ kernel-devel wget git curl make tcsh \

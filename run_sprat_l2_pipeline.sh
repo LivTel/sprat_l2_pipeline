@@ -6,14 +6,21 @@ if [ "$(docker ps -q -f name=$CURRENT_PATH/output_test/)" ]; then
     rm $CURRENT_PATH/output_test/*
 fi
 
-# If an argument "complete_build" is providied, remove and rebuild the docker image
-if [ "$1" = "complete_build" ]; then
-    docker rmi sprat_l2_pipeline_image
-    docker build -t sprat_l2_pipeline_image .
+# If docker image does not exist, build one
+if [[ "$(docker images -q sprat_l2_pipeline_image)" == "" ]]; then
+  docker build -t sprat_l2_pipeline_image .
 fi
 
 # If an argument "build" is providied, rebuild the docker image
 if [ "$1" = "build" ]; then
+    docker build -t sprat_l2_pipeline_image .
+fi
+
+# If an argument "complete_build" is providied, remove and rebuild the docker image
+if [ "$1" = "complete_build" ]; then
+    docker stop sprat_l2_pipeline_container
+    docker rm sprat_l2_pipeline_container
+    docker rmi sprat_l2_pipeline_image
     docker build -t sprat_l2_pipeline_image .
 fi
 
