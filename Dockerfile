@@ -2,9 +2,9 @@ FROM centos:7.5.1804
 LABEL author="MCL <c.y.lam@ljmu.ac.uk>"
 
 # Add the working directory and temporary download space
-ARG WORKSPACE=/space/home/dev/src
+ENV WORKSPACE=/space/home/dev/src
 WORKDIR $WORKSPACE
-ARG DDIR=$WORKSPACE/downloads
+ENV DDIR=$WORKSPACE/downloads
 
 # Update docker image
 RUN yum -y upgrade
@@ -14,7 +14,7 @@ RUN yum install -y gcc gcc-c++ kernel-devel wget git curl make tcsh \
   && yum install -y python-devel libxslt-devel libffi-devel openssl-devel
 
 # Download and install gsl
-RUN wget -P $DDIR/ http://mirror.switch.ch/ftp/mirror/gnu/gsl/gsl-2.5.tar.gz \
+RUN wget -P $DDIR/ https://ftp.gnu.org/gnu/gsl/gsl-2.5.tar.gz \
   && mkdir $DDIR/gsl \
   && tar -xf $DDIR/gsl-2.5.tar.gz -C $DDIR/gsl --strip 1 \
   && cd $DDIR/gsl/ \

@@ -47,7 +47,7 @@ if [[ ("$1" = "start") || ("$2" = "start") ]]; then
 else
     # Run the pipeline as executable
     # This should be modified to take a list of file names
-    docker exec sprat_l2_pipeline_container tcsh -c "python sprat_l2_pipeline/scripts/L2_exec.py --r=sprat/Reference/v_s_20180627_51_1_0_1.fits --c=sprat/Continuum/v_w_20141121_1_1_0_1.fits --a=sprat/Arc/v_a_20180627_54_1_0_1.fits --f=sprat/FluxCorrection/red_cal0_1.fits --dir=output_test --o"
+    docker exec sprat_l2_pipeline_container tcsh -c "python sprat_l2_pipeline/scripts/L2_exec.py --t=sprat/TestData/v_s_20180627_51_1_0_1.fits --r=sprat/Reference/v_reference_red_1.fits --c=sprat/Continuum/v_w_20141121_1_1_0_1.fits --a=sprat/Arc/v_a_20180627_54_1_0_1.fits --f=sprat/FluxCorrection/red_cal0_1.fits --dir=output_test --o"
 
     # Clean up (takes a few seconds)
     echo "Stopping container"
