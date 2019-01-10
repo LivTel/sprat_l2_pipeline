@@ -45,7 +45,7 @@ if [[ ("$1" = "start") || ("$2" = "start") ]]; then
     echo "To clean up, use the following commands:"
     echo ""
     echo "  docker stop sprat_l2_pipeline_container"
-    echo ""@
+    echo ""
     echo ""
 else
     # Run the pipeline as executable
