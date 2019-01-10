@@ -1,6 +1,20 @@
 FROM centos:7.5.1804
 LABEL author="MCL <c.y.lam@ljmu.ac.uk>"
 
+# install dnf
+RUN yum install -y epel-release
+RUN yum install -y dnf
+
+# Remove the epel-release after sorting out dnf
+RUN yum remove -y epel-release
+
+# Add non-root user "data" inside the container
+RUN dnf install -y sudo \
+  && groupadd -g 600 web \
+  && adduser -u 501 -g 600 data \
+  && echo "user ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/user \
+  && chmod 0440 /etc/sudoers.d/user
+
 # Add the working directory and temporary download space
 ENV WORKSPACE=/space/home/dev/src
 WORKDIR $WORKSPACE
@@ -43,12 +57,19 @@ RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "$DDIR/get-pip.py" \
 # Install Python packages
 # backports.functools-lru-cache is necessary to solve the "missing site-package/six" problem
 RUN pip install backports.functools-lru-cache \
-  && pip install numpy pyfits matplotlib
+  && pip install numpy \
+  && pip install pyfits \
+  && pip install matplotlib
 
 # Copy over and make the SPRAT L2 pipeline
-RUN mkdir $WORKSPACE/output_test
-ADD sprat $WORKSPACE/sprat
 ADD sprat_l2_pipeline $WORKSPACE/sprat_l2_pipeline
 RUN tcsh -c "source $WORKSPACE/sprat_l2_pipeline/scripts/L2_setup && cd $WORKSPACE/sprat_l2_pipeline/src && make all"
+RUN cat $WORKSPACE/sprat_l2_pipeline/scripts/L2_setup >> /etc/csh.cshrc
 
-RUN cat $WORKSPACE/sprat_l2_pipeline/scripts/L2_setup >> ~/.tcshrc
+# Create folders for mounting to the host system
+RUN mkdir $WORKSPACE/output_test
+RUN mkdir $WORKSPACE/sprat
+
+RUN chown -R data:web $WORKSPACE
+
+

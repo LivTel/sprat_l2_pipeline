@@ -29,7 +29,10 @@ fi
 # --name :: provide a name to the container, or a random name will be given
 # -v :: mounting a docker volume [path_on_the_host:path_in_the_container]
 # last argument :: the docker image to be run by the container
-docker run -id --name sprat_l2_pipeline_container -v $CURRENT_PATH/output_test:/space/home/dev/src/output_test sprat_l2_pipeline_image
+docker run -id --name sprat_l2_pipeline_container \
+    -v $CURRENT_PATH/output_test:/space/home/dev/src/output_test \
+    -v $CURRENT_PATH/sprat:/space/home/dev/src/sprat \
+    sprat_l2_pipeline_image
 
 # If an argument "start" is providied, start docker container without invoking the pipeline
 if [[ ("$1" = "start") || ("$2" = "start") ]]; then
@@ -42,12 +45,20 @@ if [[ ("$1" = "start") || ("$2" = "start") ]]; then
     echo "To clean up, use the following commands:"
     echo ""
     echo "  docker stop sprat_l2_pipeline_container"
-    echo "  docker rm sprat_l2_pipeline_container"
+    echo ""@
     echo ""
 else
     # Run the pipeline as executable
     # This should be modified to take a list of file names
-    docker exec sprat_l2_pipeline_container tcsh -c "python sprat_l2_pipeline/scripts/L2_exec.py --t=sprat/TestData/v_s_20180627_51_1_0_1.fits --r=sprat/Reference/v_reference_red_1.fits --c=sprat/Continuum/v_w_20141121_1_1_0_1.fits --a=sprat/Arc/v_a_20180627_54_1_0_1.fits --f=sprat/FluxCorrection/red_cal0_1.fits --dir=output_test --o"
+    docker exec sprat_l2_pipeline_container tcsh -c \
+        "sudo -u data tcsh -c 'python sprat_l2_pipeline/scripts/L2_exec.py \
+        --t=sprat/TestData/v_s_20180627_51_1_0_1.fits \
+        --r=sprat/Reference/v_reference_red_1.fits \
+        --c=sprat/Continuum/v_w_20141121_1_1_0_1.fits \
+        --a=sprat/Arc/v_a_20180627_54_1_0_1.fits \
+        --f=sprat/FluxCorrection/red_cal0_1.fits \
+        --dir=output_test \
+        --o'"
 
     # Clean up (takes a few seconds)
     echo "Stopping container"
