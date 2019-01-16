@@ -1,0 +1,11 @@
+#### sparcfit_wavfits.dat ####
+
+# List of pixel channel to wavelength dispersion solution coefficients and corresponding chi-squared found using the sparcfit program.
+
+# Run Datetime:		16-01-2019 16:14:43
+
+# Arc Filename:		v_a_20190109_47_1_0_1_arc_tr_cor.fits
+# Polynomial Order:	4
+
+1	3.4980160744e+03	3.8161512700e+00	1.5473961358e-03	-1.0944349982e-06	2.8735834900e-10	5.30
+-1

@@ -1,0 +1,61 @@
+#!/usr/bin/env tcsh
+
+##################################
+# L2_setup 			 #
+# Last Modified Date:   20/11/16 #
+##################################
+
+############################
+# User defined environment #
+############################
+
+#setenv L2_BASE_DIR "/home/rmb/devel/SPRAT/sprat_l2_pipeline"					# rmb/desktop
+setenv L2_BASE_DIR "/space/home/dev/src/sprat_l2_pipeline"                                     # eng/ltdevsrv
+#setenv L2_BASE_DIR "/home/rmb/tmp/sprat_l2_pipeline"						# rmb/laptop
+#setenv L2_BASE_DIR "/usr/local/bin/sprat_l2_pipeline"						# eng/lt-qc
+
+setenv LD_LIBRARY_PATH /usr/lib64:/usr/lib:/usr/lib/gsl						# all
+
+# DO NOT ALTER PAST THIS LINE
+# ----------------------------------------------------------------------------------- #
+
+##########################
+# Set up shell variables #
+##########################
+
+setenv L2_BIN_DIR $L2_BASE_DIR/bin
+setenv L2_LIB_DIR $L2_BASE_DIR/lib
+setenv L2_CONFIG_DIR $L2_BASE_DIR/config
+setenv L2_SRC_DIR $L2_BASE_DIR/src
+setenv L2_SCRIPT_DIR $L2_BASE_DIR/scripts
+setenv L2_MAN_DIR $L2_BASE_DIR/man
+setenv L2_TEST_DIR $L2_BASE_DIR/test
+
+setenv L2_REFERENCE_ARCS_DIR $L2_CONFIG_DIR/reference_arcs
+setenv L2_INI_DIR $L2_CONFIG_DIR/configs
+setenv L2_LOOKUP_TABLES_DIR $L2_CONFIG_DIR/lookup_tables
+setenv L2_STANDARDS_DIR $L2_CONFIG_DIR/standards
+
+setenv L2_ERROR_CODES_FILE $L2_CONFIG_DIR/ERROR_CODES
+setenv L2_FITS_KEYS_TO_OMIT_FILE $L2_CONFIG_DIR/FITS_KEYS_TO_OMIT
+
+setenv L2_HEADER_FILE $L2_MAN_DIR/HEADER
+setenv L2_SPC_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_CLIP
+setenv L2_SPF_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_FIND
+setenv L2_SPTS_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_TRACE_SDIST
+setenv L2_SPCS_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_CORRECT_SDIST
+setenv L2_SPA_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_ARCFIT
+setenv L2_SPR_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_REBIN
+setenv L2_SPR_FLCOR_FILE $L2_MAN_DIR/SPRAT_RED_FLCOR
+setenv L2_SPE_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_EXTRACT
+setenv L2_SPRF_BLURB_FILE $L2_MAN_DIR/SPRAT_RED_REFORMAT
+
+################
+# Set up shell #
+################
+
+limit stacksize unlimited
+source $L2_SCRIPT_DIR/L2_aliases
+
+exit(0)
+

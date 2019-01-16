@@ -1,0 +1,38 @@
+str	STARTDATE	L2DATE	16-01-19 16:14:42	when this reduction was performed
+dbl	ARCFIT	L2ARCMAT	16.000000	Number of arc lines matched in fit
+str	ARCFIT	L2ARC	v_a_20190109_47_1_0_1_arc_tr_cor.fits	Filename of arc
+dbl	ARCFIT	L2ARCOFF	1.301002	[] Mean offset of arc from expected
+dbl	ARCFIT	L2ARCALF	2.648788	[] Debug diagnostic on arc matching, alpha
+dbl	ARCFIT	L2ARCBET	-0.002691	[] Debug diagnostic on arc matching, beta
+dbl	ARCFIT	L2MINLAM	3501.833772	[A] Min wavelength in primary image
+dbl	ARCFIT	L2MAXLAM	8169.130640	[A] Min wavelength in primary image
+str	LSS_CALIBRATION	CTYPE1	Wavelength	Type of co-ordinate on axis 1
+str	LSS_CALIBRATION	CUNIT1	Angstroms	Units for axis 1
+dbl	LSS_CALIBRATION	CRVAL1	4020.000000	[pixel] Value at ref. pixel on axis 1
+dbl	LSS_CALIBRATION	CDELT1	9.200000	[pixel] Pixel scale on axis 1
+dbl	LSS_CALIBRATION	CRPIX1	1.000000	[pixel] Reference pixel on axis 1
+str	LSS_CALIBRATION	CTYPE2	a2	Type of co-ordinate on axis 2
+str	LSS_CALIBRATION	CUNIT2	Pixels	Units for axis 2
+dbl	LSS_CALIBRATION	CRVAL2	1.000000	[pixel] Value at ref. pixel on axis 2
+dbl	LSS_CALIBRATION	CDELT2	1.000000	[pixel] Pixel scale on axis 2
+dbl	LSS_CALIBRATION	CRPIX2	1.000000	[pixel] Reference pixel on axis 2
+str	SPEC_CALIBRATION	CTYPE1	Wavelength	Type of co-ordinate on axis 1
+str	SPEC_CALIBRATION	CUNIT1	Angstroms	Units for axis 1
+dbl	SPEC_CALIBRATION	CRVAL1	4020.000000	[pixel] Value at ref. pixel on axis 1
+dbl	SPEC_CALIBRATION	CDELT1	9.200000	[pixel] Pixel scale on axis 1
+dbl	SPEC_CALIBRATION	CRPIX1	1.000000	[pixel] Reference pixel on axis 1
+str	SPEC_CALIBRATION	CTYPE2	a2	Type of co-ordinate on axis 2
+str	SPEC_CALIBRATION	CUNIT2	Pixels	Units for axis 2
+dbl	SPEC_CALIBRATION	CRVAL2	1.000000	[pixel] Value at ref. pixel on axis 2
+dbl	SPEC_CALIBRATION	CDELT2	1.000000	[pixel] Pixel scale on axis 2
+dbl	SPEC_CALIBRATION	CRPIX2	1.000000	[pixel] Reference pixel on axis 2
+str	NORMFLUX_CALIBRATION	L2FLCOR	red_cal0_1_flcor.fits	Filename of throughput calibration
+str	NORMFLUX_CALIBRATION	LABEL	Normalized Flux	Description data values in array
+str	FLUX_CALIBRATION	L2FLCOR	red_cal0_1_flcor.fits	Filename of throughput calibration
+str	FLUX_CALIBRATION	LABEL	Flux	Description data values in array
+str	FLUX_CALIBRATION	BUNIT	erg/(s*cm**2*Angstrom)	Units for data values
+str	NORMFLUX_CALIBRATION	L2FLCOR	red_cal0_1_flcor.fits	Filename of throughput calibration
+str	NORMFLUX_CALIBRATION	LABEL	Normalized Flux	Description data values in array
+str	FLUX_CALIBRATION	L2FLCOR	red_cal0_1_flcor.fits	Filename of throughput calibration
+str	FLUX_CALIBRATION	LABEL	Flux	Description data values in array
+str	FLUX_CALIBRATION	BUNIT	erg/(s*cm**2*Angstrom)	Units for data values
