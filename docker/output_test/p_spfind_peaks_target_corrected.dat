@@ -1,0 +1,9 @@
+#### spfind_peaks.dat ####
+
+# Lists the coordinates of the peaks found using the spfind routine.
+
+# Run filename:	v_s_20190109_37_1_0_1_target_tr_cor.fits
+# Run datetime:	16-01-2019 16:14:43
+
+400.000000	91.777031
+-1

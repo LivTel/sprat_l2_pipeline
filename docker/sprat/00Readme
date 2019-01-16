@@ -1,0 +1,6 @@
+Arc		Arc soectra for wavelengh calibration
+Bias		Bias frames
+Dark		Dark frames. We typically use 600sec
+Flat		Flat fields for use of L1 pipeline. Both imaging and spectral frames
+Continuum	Wlamp spectra with grating and slit IN. Used by L2 pipeline
+Tram		"reference" spectra of a bright high S:N science target. Used by L2 to trace spectrum if science target is very low S:N

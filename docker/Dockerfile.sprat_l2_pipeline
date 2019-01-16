@@ -1,0 +1,28 @@
+FROM l2_pipeline_image
+LABEL author="MCL <c.y.lam@ljmu.ac.uk>"
+
+WORKDIR /space/home/dev/src
+
+# Copy over and make the SPRAT L2 pipeline
+ADD bin sprat_l2_pipeline/bin
+ADD config sprat_l2_pipeline/config
+ADD lib sprat_l2_pipeline/lib
+ADD man sprat_l2_pipeline/man
+ADD scripts sprat_l2_pipeline/scripts
+ADD src sprat_l2_pipeline/src
+
+RUN tcsh -c \
+    "source sprat_l2_pipeline/scripts/L2_setup \
+    && cd sprat_l2_pipeline/src \
+    && make all"
+RUN cat sprat_l2_pipeline/scripts/L2_setup >> /etc/csh.cshrc
+
+# Create folders for mounting to the host system
+RUN tcsh -c "mkdir -p /space/home/dev/src"
+RUN tcsh -c "mkdir -p /data/Dprt/sprat"
+RUN tcsh -c "mkdir -p /data/incoming"
+
+RUN chown -R data:web /data
+RUN chown -R data:web /space/home/dev/src
+
+
