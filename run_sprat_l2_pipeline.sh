@@ -1,19 +1,20 @@
 #!/bin/bash
 CURRENT_PATH=$(pwd)
+DOCKERFILE_PATH=$(pwd)/docker
 
 # clean temporary directory
-if [ "$(docker ps -q -f name=$CURRENT_PATH/output_test/)" ]; then
-    rm $CURRENT_PATH/output_test/*
+if [ "$(docker ps -q -f name=$DOCKERFILE_PATH/output_test/)" ]; then
+    rm $DOCKERFILE_PATH/output_test/*
 fi
 
-# If l2pipeline docker image does not exist, build one
+# If l2_pipeline docker image does not exist, build one
 if [ "$(docker images -q l2_pipeline_image)" == "" ]; then
-  docker build -f Dockerfile.l2pipeline -t l2pipeline_image .
+  docker build -f docker/Dockerfile.l2_pipeline -t l2_pipeline_image .
 fi
 
-# If sprat_l2pipeline docker image does not exist, build one
+# If sprat_l2_pipeline docker image does not exist, build one
 if [ "$(docker images -q sprat_l2_pipeline_image)" == "" ]; then
-  docker build -f Dockerfile.sprat_l2pipeline -t sprat_l2pipeline_image .
+  docker build -f docker/Dockerfile.sprat_l2_pipeline -t sprat_l2_pipeline_image .
 fi
 
 # If orphan container exist, stop and remove it
@@ -27,25 +28,18 @@ fi
 # If an argument "rebuild" is providied, remove and rebuild the docker image
 if [[ ("$1" = "rebuild") || ("$2" = "rebuild") ]]; then
     docker rmi sprat_l2_pipeline_image
-    docker build -t sprat_l2_pipeline_image .
+    docker build -f docker/Dockerfile.sprat_l2_pipeline -t sprat_l2_pipeline_image .
 fi
 
 # -id :: runs a detached container interactively
 # --name :: provide a name to the container, or a random name will be given
 # -v :: mounting a docker volume [path_on_the_host:path_in_the_container]
 # last argument :: the docker image to be run by the container
-#docker run -id --name sprat_l2_pipeline_container \
-#    -v $CURRENT_PATH/output_test:/space/home/dev/src/output_test \
-#    -v /data/Dprt/sprat_docker_test:/space/home/dev/src/sprat \
-#    -v /data/incoming/RJS/SpratDockerTestSet:/space/home/dev/src/incoming \
-#    sprat_l2_pipeline_image
-#
-# RJS version
 docker run -id --name sprat_l2_pipeline_container \
-    -v $CURRENT_PATH/output_test:/space/home/dev/src/output_test \
+    -v $DOCKERFILE_PATH/output_test:/space/home/dev/src/output_test \
     -v /data/Dprt/sprat_docker_test:/data/Dprt/sprat \
     -v /data/incoming/RJS/SpratDockerTestSet:/data/incoming \
-    sprat_l2pipeline_image
+    sprat_l2_pipeline_image
 
 
 # If an argument "start" is providied, start docker container without invoking the pipeline
@@ -66,17 +60,17 @@ else
     # This should be modified to take a list of file names
     docker exec sprat_l2_pipeline_container tcsh -c \
         "sudo -u data tcsh -c 'l2exec \
-        --t=TestData/v_s_20180627_51_1_0_1.fits \
-        --r=Reference/v_reference_red_1.fits \
-        --c=Continuum/v_w_20141121_1_1_0_1.fits \
-        --a=Arc/v_a_20180627_54_1_0_1.fits \
-        --f=FluxCorrection/red_cal0_1.fits \
+        --t=/data/incoming/v_s_20190109_37_1_0_1.fits \
+        --r=/data/Dprt/sprat/Reference/v_reference_red_1.fits \
+        --c=/data/Dprt/sprat/Continuum/v_continuum_red_1.fits \
+        --a=/data/Dprt/sprat/Arc/v_a_20190109_47_1_0_1.fits \
+        --f=/data/Dprt/sprat/FluxCorrection/red_cal0_1.fits \
         --dir=output_test \
         --o'"
 
     # Clean up (takes a few seconds)
-    echo "Stopping container"
-    docker stop sprat_l2_pipeline_container
-    echo "Removing container"
-    docker rm sprat_l2_pipeline_container
+#    echo "Stopping container"
+#    docker stop sprat_l2_pipeline_container
+#    echo "Removing container"
+#    docker rm sprat_l2_pipeline_container
 fi

@@ -1,26 +1,73 @@
-# Dockerised sprat_l2_pipeline
+sprat\_l2\_pipeline
+=================
 
-The Docker contains a centos:7.5.1804, the docker configurations are set at Dockerfile. It is installed with
+# Overview
 
-* gcc, gcc-c++, kernel-devel, wget, git, curl, make, tcsh
-* python-devel, libxslt-devel, libffi-devel, openssl-devel
-* gsl (downloaded from http://mirror.switch.ch/ftp/mirror/gnu/gsl/gsl-2.5.tar.gz and compiled inside the docker)
-* cfitsio (downloaded from https://src.fedoraproject.org/lookaside/pkgs/cfitsio/cfitsio3310.tar.gz/75b6411751c7f308d45b281b7beb92d6/cfitsio3310.tar.gz and compiled inside the docker)
-* pip
-* tkinter and python27-tkinter
-* backports.functools-lru-cache, numpy, pyfits, matplotlib
-* SPRAT L2 pipeline (comiled inside the docker)
+This package provides a reduction pipeline to reduce data taken with the SPRAT spectrograph. Its operation is similar 
+to that of **frodo-l2-pipeline**, except extraction and curvature correction operations have been adjusted/added to cater 
+for the nature of long-slit rather than fibre-fed data. 
 
-The shell script builds and starts the sprat_l2_pipeline docker image (sprat_l2_pipeline_image) and run it detached interactively (`-id`see definitions at https://docs.docker.com/engine/reference/commandline/run/#options). The container (sprat_l2_pipeline_container) mounts the docker volume to share input and output paths between the container and the host (`-v` flag). The pipeline is executed through `docker exec sprat_l2_pipeline_container tcsh -c "python (...)"`. After all the data reduction, the docker container is stopped and removed while the docker image stays on disk.
+The core procedures (`src/`) have been written in C, and are mostly ported from the FRODOSpec codebase. The wrapper for the 
+pipeline, `scripts/L2_exec.py`, is written in Python2.
 
-# How to use it
+# Installation
 
-You may need to configure the shared paths from `Docker -> Preferences -> File Sharing` before the docker volume mounting works.
+1. Clone the repository
 
-To run the pipeline, run `./run_sprat_l2_pipeline.sh`.
+2. Edit `scripts/L2_setup` and set the `L2_BASE_DIR` variable to the root directory of the repository.
 
-To start the container without invoking the pipeline, run `./run_sprat_l2_pipeline.sh start`. To enter the container, run `docker exec -it sprat_l2_pipeline_container [sh/bash/tcsh]`. To clean up afterwards, `docker stop sprat_l2_pipeline_container` and `docker rm sprat_l2_pipeline_container`. 
+3. Set up the environment by sourcing the `scripts/L2_setup` file
 
-To rebuild the image from scratch before running the pipeline, run `./run_sprat_l2_pipeline.sh rebuild`.
+4. Edit `src/Makefile` and set the `LIBS` and `INCLUDES` parameters accordingly. These paths need to include locations of the GSL and CFITSIO headers/libraries. 
 
-To rebuild the image and start the container without invoking the pipeline, run `./run_sprat_l2_pipeline.sh rebuild start`.
+5. Make the binaries and library: `src/make all`
+
+n.b. for LT operations, `L2_BASE_DIR`, `LIBS` and `INCLUDES` should already have a commented option for `lt-qc`.
+
+# Configuration Files
+
+Configuration file lookup tables (`config.tab`) are kept in `config/lookup_tables` under the subdirectories `blue` and `red` for each optimised configuration. The file provides a record of: config file location (relative to `config/configs`), binning mode, date active from, time active from, date active to and time active to. The last two fields can be replaced by a single value, "now", signifying that the file can be used up to the current date/time, e.g.
+
+`181014/config.ini	1x1	18/10/14	12:00:00	now`
+
+This table should be appended to for any change in configuration.
+
+The actual configuration files themselves are normally kept in `config/configs/[blue||red]/[**DATE**]/` but obviously could be kept anywhere, as long as the location is correctly specified in the corresponding lookup table. The bulk of the config parameters may be understood by looking at the routine subheading's `man/` file. 
+
+Other non-routine options include [**max\_curvature\_post\_cor**] and [**operations**]. The former sets the maximum curvature allowed post correction, in pixels. The latter defines the extension order of the resulting output file. Options are **LSS\_NONSS**, **SPEC\_NONSS** and **SPEC\_SS**.
+
+# Arc Calibration Solutions
+
+**Unless the instrumental setup has significantly changed and the positions of the arc lines have shifted on the detector dramatically, this procedure should not be required. The pipeline has a degree of built-in robustness to temperature dependent changes in arc line position.**
+
+Arc calibration file lookup tables (`arc.tab`) are kept in `config/lookup_tables` with the subdirectories `blue` and `red` for each throughput optimised configuration. This file provides a record of: arc calibration file location (relative to `reference_arcs/[red||blue]`), binning mode, date active from, time active from, date active to and time active to. The last two fields can be replaced by a single value, "now", signifying that the file can be used up to the current date/time, e.g.
+
+`181014/arc.lis	1x1	18/10/14	12:00:00	now`
+
+This table should be appended to for any change in configuration.
+
+The actual configuration files themselves are normally kept in `config/reference_arcs/[blue||red]/[**DATE**]/` but obviously could be kept anywhere, as long as the location is correctly specified in the corresponding lookup table. 
+
+The file itself contains a tab-separated list of identified arc lines as `x	lambda` where [**x**] is in pixels, and [**lambda**] is in Angstrom. The x positions should be as they would be post-trimming of the spectrum and after curvature correction. As such, you may need to run the pipeline with the arc as the target and use the intermediate file created (`_target_tr_cor.fits`) to generate a suitable frame to work from. The process of identifiying arc lines is out of the scope of this README, but in short, you will need to collapse the spectrum along the spatial axis, plot it, and cross-match lines visually with that of a known arc lamp spectrum.
+
+# Invoking the Pipeline
+
+The parameters available at run-time can be found by invoking the pipeline with the help (`--h`) flag:
+
+`[rmb@rmb-tower scripts]$ python L2_exec.py --h`
+
+The `--t` flag specifies the target frame to be reduced, the `--r` flag specifies a reference file that is used to 
+remove spectral curvature; it should be of a bright target taken at roughly the same alt/az as the target observation 
+(reference and target frames must suffer the same flexure, otherwise this correction doesn't make sense).
+
+The `--f` flag pecifies the flux correction calibration file. Currently it is mandatory, but we should add the option
+not to perform this step. The flux correction file is a 2D NAXIS1x1 array (not a 1D vector) where NAXIS1 exactly
+matches the extracted rebinned output of this pipeline. Wavelength calibration is not read and is assumed to match
+the science data. The data are multiplied by (flcor/EXPTIME) to yield mJy.
+
+The `--c` flag is only used if the spectrum position is to be automatically found, rather than using hardcoded limits - 
+see `man/SPRAT_RED_CLIP` for more details about the [**force\_***] parameters.
+
+The pipeline can perform a check the validity of the reference file for spectral curvature correction without doing a 
+full reduction by using the `--rc` flag. Clobbering existing files can be allowed with `--o`.
+

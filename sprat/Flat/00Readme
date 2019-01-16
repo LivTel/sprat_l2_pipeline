@@ -1,8 +1,0 @@
-Flat field file names are
-
-v_SLITPOS_GRATPOS_BINNING.fits
-
-So for example
-  v_Clear_blue_1.fits does not have the slit deployed and the grating is in posn blue
-  This would be used for sky imaging (when grating posn is irrelevant) and 
-  slitless spectroscopy with the blue grating tilt.
