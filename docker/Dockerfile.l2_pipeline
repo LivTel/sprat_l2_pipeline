@@ -43,7 +43,7 @@ RUN curl "https://bootstrap.pypa.io/get-pip.py" -o "$DDIR/get-pip.py" \
 # backports.functools-lru-cache is necessary to solve the "missing site-package/six" problem
 RUN pip install backports.functools-lru-cache \
   && pip install numpy \
-  && pip install pyfits \
+  && pip install astropy \
   && pip install matplotlib
 
 # install dnf

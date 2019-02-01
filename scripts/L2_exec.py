@@ -1,12 +1,12 @@
 import os
 import sys
-import pyfits
 import time
 import ConfigParser
 from datetime import date
 from shutil import copyfile, move
 from optparse import OptionParser
 from subprocess import Popen, PIPE
+from astropy.io import fits
 
 import numpy as np
 import matplotlib
@@ -111,6 +111,10 @@ def rewrite_error_codes_file(error_codes_file,
     move("new_error_codes", error_codes_file)
 
 
+def bin_data(data_path):
+    data = fits.open(data_path)[0].data
+
+
 def search_lookup_table(lookup_table_path, this_DATEOBS, this_CCDXBIN,
                         this_CCDYBIN):
 
@@ -212,7 +216,7 @@ def chk_ref_run(f_ref, f_cont):
     print_routine("Finding suitable config file.")
     print
 
-    f_ref_fits = pyfits.open(f_ref)
+    f_ref_fits = fits.open(f_ref)
     try:
         f_ref_fits_hdr_GRATROT = int(f_ref_fits[0].header['GRATROT'].strip())
         f_ref_fits_hdr_DATEOBS = f_ref_fits[0].header['DATE-OBS'].strip()
@@ -237,9 +241,11 @@ def chk_ref_run(f_ref, f_cont):
     f_ref_fits.close()
 
     ## config
+    #chosen_config_entry = search_lookup_table(
+    #    config_tab_path, f_ref_fits_hdr_DATEOBS, f_ref_fits_hdr_CCDXBIN,
+    #    f_ref_fits_hdr_CCDYBIN)
     chosen_config_entry = search_lookup_table(
-        config_tab_path, f_ref_fits_hdr_DATEOBS, f_ref_fits_hdr_CCDXBIN,
-        f_ref_fits_hdr_CCDYBIN)
+        config_tab_path, f_ref_fits_hdr_DATEOBS, f_bin, f_bin)
     if chosen_config_entry is None:
         print_notification("Failed.")
         err.set_code(29)
@@ -421,7 +427,7 @@ def chk_ref_run(f_ref, f_cont):
         0)  # this is a bit of a bodge, it disregards the current error code!
 
 
-def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
+def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber, f_bin):
 
     err = errors()
 
@@ -525,7 +531,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
     print_routine("Finding suitable arc reference and config files.")
     print
 
-    f_arc_fits = pyfits.open(f_arc)
+    f_arc_fits = fits.open(f_arc)
     try:
         f_arc_fits_hdr_GRATROT = int(f_arc_fits[0].header['GRATROT'].strip())
         f_arc_fits_hdr_DATEOBS = f_arc_fits[0].header['DATE-OBS'].strip()
@@ -951,7 +957,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
     # ------------------------------
 
     print_routine("Apply spectral flux calibration (spflcor)")
-    f_target_fits = pyfits.open(f_target)
+    f_target_fits = fits.open(f_target)
     try:
         f_target_fits_hdr_EXPTIME = str(
             f_target_fits[0].header['EXPTIME']).strip()
@@ -1196,7 +1202,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
     # use previously defined output filename from spreformat
     in_target_filename = out_target_filename
 
-    hdulist = pyfits.open(in_target_filename)
+    hdulist = fits.open(in_target_filename)
     hdrs = hdulist[0].header
     OBJECT = hdrs['OBJECT']
     hdulist.close()
@@ -1680,7 +1686,16 @@ if __name__ == "__main__":
         dest='ref_chk',
         action='store_true',
         help="perform reference frame check only")
-    parser.add_option('--o', dest='clobber', action='store_true')
+    parser.add_option(
+        '--o',
+        dest='clobber', 
+        action='store_true')
+    parser.add_option(
+        '--b',
+        dest='f_bin', 
+        action='store_true',
+        default='1',
+        help='binning')
     (options, args) = parser.parse_args()
 
     f_target = options.f_target
@@ -1691,6 +1706,7 @@ if __name__ == "__main__":
     work_dir = options.work_dir
     ref_chk = options.ref_chk
     clobber = options.clobber
+    f_bin = options.f_bin
 
     # DEFINE EXTENSIONS
     target_suffix = "_target"
@@ -1706,6 +1722,6 @@ if __name__ == "__main__":
     flambda_suffix = "_flambda"
 
     if ref_chk:
-        chk_ref_run(f_ref, f_cont)
+        chk_ref_run(f_ref, f_cont, f_bin)
     else:
-        full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber)
+        full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber, f_bin)

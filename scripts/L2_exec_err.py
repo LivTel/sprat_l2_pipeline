@@ -74,7 +74,9 @@ class errors():
             32:
             "WARNING. Couldn't make FLCOR_SS plot.",
             33:
-            "CRITICAL. Flux correction file doesn't exist."
+            "CRITICAL. Flux correction file doesn't exist.",
+            34:
+            "CRITICAL. Requested binning configuration does not exist."
         }
 
     def set_code(self, code, is_fatal=True):
