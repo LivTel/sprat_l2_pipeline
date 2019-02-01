@@ -5,7 +5,7 @@
 import sys
 from optparse import OptionParser
 
-import pyfits
+from astropy.io import fits
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -16,7 +16,7 @@ PLOT_PADDING = 20
 
 
 def execute(f_in, hdu, f_out, plt_title, save=True, hold=False):
-    hdulist = pyfits.open(f_in)
+    hdulist = fits.open(f_in)
     data = hdulist[hdu].data
 
     plt.imshow(
