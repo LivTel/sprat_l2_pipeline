@@ -20,8 +20,8 @@ from binit import bin_image
 if __name__ == "__main__":
 
     f_name = sys.argv[1]
-    bin_x = sys.argv[2]
-    bin_y = sys.argv[3]
-    f_out = f_name.split('.')[0] + '_binned_' + str(bin_x) + '_' + str(bin_y) + '.fits'
+    bin_x = int(sys.argv[2])
+    bin_y = int(sys.argv[3])
+    f_out = f_name.split('.')[0].split('/')[-1] + '_binned_' + str(bin_x) + '_' + str(bin_y) + '.fits'
 
     print(bin_image(f_name, f_out, bin_x, bin_y))

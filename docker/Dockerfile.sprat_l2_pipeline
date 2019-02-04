@@ -5,7 +5,6 @@ WORKDIR /space/home/dev/src
 
 # Copy over and make the SPRAT L2 pipeline
 ADD bin sprat_l2_pipeline/bin
-ADD config sprat_l2_pipeline/config
 ADD lib sprat_l2_pipeline/lib
 ADD man sprat_l2_pipeline/man
 ADD scripts sprat_l2_pipeline/scripts

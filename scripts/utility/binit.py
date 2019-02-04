@@ -1,13 +1,8 @@
 import sys
 import itertools
 import warnings
-import matplotlib
 import numpy as np
 from astropy.io import fits
-
-matplotlib.use('Agg')
-
-from matplotlib import pyplot as plt
 
 
 """
@@ -26,7 +21,7 @@ from matplotlib import pyplot as plt
   C.Y.Lam@ljmu.ac.uk
 """
 
-def bin_image(f_name, output_path, bin_x, bin_y):
+def bin_image(f_name, output_name, bin_x, bin_y):
 
     """
     Parameters
@@ -48,11 +43,13 @@ def bin_image(f_name, output_path, bin_x, bin_y):
 
     # Check bin_x is value and int
     if not isinstance(bin_x, (int)):
+        bin_x = int(bin_x)
         warnings.warn('bin_x is a ' + str(type(bin_x)) + '. It is converted' +
             ' to int.')
 
     # Check bin_y is value and int
     if not isinstance(bin_y, (int)):
+        bin_y = int(bin_y)
         warnings.warn('bin_y is a ' + str(type(bin_y)) + '. It is converted' +
             ' to int.')
 
@@ -91,16 +88,11 @@ def bin_image(f_name, output_path, bin_x, bin_y):
 
     # Add new header keys
     a_new_header = f_header.copy()
-    a_new_header['L2XBIN'] = bin_x
-    a_new_header['L2YBIN'] = bin_y
+    a_new_header['CCDXBIN'] = bin_x
+    a_new_header['CCDYBIN'] = bin_y
 
-    hdu = fits.PrimaryHDU(np.asarray(a_new), header=f[0].header)
+    hdu = fits.PrimaryHDU(np.asarray(a_new.T), header=a_new_header)
     hdu.writeto(output_name)
-
-    if save_fig:
-        fig = plt.figure(1)
-        ax = plt.subplot(211)
-        ax2 = plt.subplot(212)
 
     f.close()
 
