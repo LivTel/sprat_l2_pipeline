@@ -39,7 +39,7 @@ docker run -id --name sprat_l2_pipeline_container \
     -v /data/incoming:/space/home/dev/src/output \
     -v /data/Dprt/sprat:/data/Dprt/sprat \
     -v /data/incoming:/data/incoming \
-    -v /usr/loca/bin/sprat_l2_pipeline/config:/space/home/dev/src/sprat_l2_pipeline/config \
+    -v /usr/local/bin/sprat_l2_pipeline/config:/space/home/dev/src/sprat_l2_pipeline/config \
     sprat_l2_pipeline_image
 
 
