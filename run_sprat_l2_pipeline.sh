@@ -3,8 +3,8 @@ CURRENT_PATH=$(pwd)
 DOCKERFILE_PATH=$(pwd)/docker
 
 # clean temporary directory
-if [ "$(docker ps -q -f name=$DOCKERFILE_PATH/output_test/)" ]; then
-    rm $DOCKERFILE_PATH/output_test/*
+if [ "$(docker ps -q -f name=$DOCKERFILE_PATH/output/)" ]; then
+    rm $DOCKERFILE_PATH/output/*
 fi
 
 # If l2_pipeline docker image does not exist, build one
@@ -66,7 +66,7 @@ else
     #    --c=/data/Dprt/sprat/Continuum/v_continuum_red_1.fits \
     #    --a=/data/Dprt/sprat/Arc/v_a_20190109_47_1_0_1.fits \
     #    --f=/data/Dprt/sprat/FluxCorrection/red_cal0_1.fits \
-    #    --dir=output_test \
+    #    --dir=output \
     #    --o'"
     echo ""
     # Clean up (takes a few seconds)
