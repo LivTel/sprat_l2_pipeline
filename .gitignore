@@ -67,5 +67,4 @@ lib/*
 ._.DS*
 
 # Everything in the temporary file
-output_test/*
-docker/output_test/*
+docker/output/*

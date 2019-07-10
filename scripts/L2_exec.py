@@ -241,11 +241,9 @@ def chk_ref_run(f_ref, f_cont):
     f_ref_fits.close()
 
     ## config
-    #chosen_config_entry = search_lookup_table(
-    #    config_tab_path, f_ref_fits_hdr_DATEOBS, f_ref_fits_hdr_CCDXBIN,
-    #    f_ref_fits_hdr_CCDYBIN)
     chosen_config_entry = search_lookup_table(
-        config_tab_path, f_ref_fits_hdr_DATEOBS, f_bin, f_bin)
+        config_tab_path, f_ref_fits_hdr_DATEOBS, f_ref_fits_hdr_CCDXBIN,
+        f_ref_fits_hdr_CCDYBIN)
     if chosen_config_entry is None:
         print_notification("Failed.")
         err.set_code(29)
@@ -427,7 +425,7 @@ def chk_ref_run(f_ref, f_cont):
         0)  # this is a bit of a bodge, it disregards the current error code!
 
 
-def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber, f_bin):
+def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
 
     err = errors()
 
@@ -1690,12 +1688,6 @@ if __name__ == "__main__":
         '--o',
         dest='clobber', 
         action='store_true')
-    parser.add_option(
-        '--b',
-        dest='f_bin', 
-        action='store_true',
-        default='1',
-        help='binning')
     (options, args) = parser.parse_args()
 
     f_target = options.f_target
@@ -1706,7 +1698,6 @@ if __name__ == "__main__":
     work_dir = options.work_dir
     ref_chk = options.ref_chk
     clobber = options.clobber
-    f_bin = options.f_bin
 
     # DEFINE EXTENSIONS
     target_suffix = "_target"
@@ -1722,6 +1713,6 @@ if __name__ == "__main__":
     flambda_suffix = "_flambda"
 
     if ref_chk:
-        chk_ref_run(f_ref, f_cont, f_bin)
+        chk_ref_run(f_ref, f_cont)
     else:
-        full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber, f_bin)
+        full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber)
