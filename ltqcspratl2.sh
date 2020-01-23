@@ -234,9 +234,9 @@ create_spratl2_container() {
         ;;
         quicklook)
             docker run -id --name sprat_l2_pipeline_quicklook \
-                -v ${2:-/home/data/QL/Reduction}:/space/home/dev/src/output \
+                -v ${2:-/home/data/QL/Reduction/Reduce_sprat}:/space/home/dev/src/output \
                 -v ${3:-/data/Dprt/sprat}:/data/Dprt/sprat \
-                -v ${4:-/home/data/QL/Reduction}:/data/incoming \
+                -v ${4:-/home/data/QL/Reduction/Reduce_sprat}:/data/incoming \
                 -v ${5:-/usr/local/bin/sprat_l2_pipeline/config}:/space/home/dev/src/sprat_l2_pipeline/config \
                 sprat_l2_pipeline_image
         ;;
