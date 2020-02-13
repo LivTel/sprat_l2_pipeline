@@ -25,7 +25,7 @@ list_l2_pipeline_image() {
 
 
 # ------------------------------------------------------------------------------------------------------- #
-# Build l2_pipeline images (type)                                                                         #
+# Build l2_pipeline images (action)                                                                       #
 # This is the base image that contain all the external build tools and libraries, i.e. the numerical part #
 # (action) : build or rebuild                                                                             #
 # ------------------------------------------------------------------------------------------------------- #
@@ -50,14 +50,14 @@ build_l2_pipeline_image(){
             fi
         ;;
         *)
-            echo 'Please choosing from build or rebuild.'
+            echo 'Please choose from build or rebuild.'
         ;;
     esac
 }
 
 
 # --------------------------------------------------------- #
-# Build sprat_l2_pipeline images (type)                     #
+# Build sprat_l2_pipeline images (action)                   #
 # This is the logical part of the sprat l2 pipeline image   #
 # (action) : build or rebuild                               #
 # --------------------------------------------------------- #
@@ -81,7 +81,7 @@ build_sprat_l2_pipeline_image(){
             fi
         ;;
         *)
-            echo 'Please choosing from build or rebuild.'
+            echo 'Please choose from build or rebuild.'
         ;;
     esac
 }
