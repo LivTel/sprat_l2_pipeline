@@ -1473,6 +1473,19 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     leg_title="OKE90",
                     save=False,
                     hold=True)
+            if OBJECT == "Hz44":
+                a_ps_execute(
+                    L2_STANDARDS_DIR + "/hz44_oke90_ergscm2A_9A_img.fits",
+                    0,
+                    "",
+                    "",
+                    "red",
+                    1,
+                    "",
+                    legend=True,
+                    leg_title="OKE90",
+                    save=False,
+                    hold=True)
 
             #a_ps_execute(in_target_filename, "FLUX", "", "", "blue", 1, r'Flux density ($\mathrm{10^{-16}\/Wm^{-2}\AA^{-1}}$)', telluric=True, legend=True, leg_title="FLUX", save=False, hold=True)
             a_ps_execute(
@@ -1572,6 +1585,19 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
             if OBJECT == "BDp75_325":
                 a_ps_execute(
                     L2_STANDARDS_DIR + "/bd75d325_oke90_flam_9A_img.fits",
+                    0,
+                    "",
+                    "",
+                    "red",
+                    1,
+                    "",
+                    legend=True,
+                    leg_title="OKE90",
+                    save=False,
+                    hold=True)
+            if OBJECT == "Hz44":
+                a_ps_execute(
+                    L2_STANDARDS_DIR + "/hz44_oke90_flam_9A_img.fits",
                     0,
                     "",
                     "",
