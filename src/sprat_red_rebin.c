@@ -538,7 +538,7 @@ int main (int argc, char *argv []) {
 		// 7.	Write these values to the [ADDITIONAL_KEYS_FILE] file
 
 		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "LSS_CALIBRATION", "CTYPE1", "Wavelength", "Type of co-ordinate on axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
-		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "LSS_CALIBRATION", "CUNIT1", "Angstroms", "Units for axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "LSS_CALIBRATION", "CUNIT1", "Angstrom", "Units for axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
 		write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "LSS_CALIBRATION", "CRVAL1", bin_wavelengths[0], "[pixel] Value at ref. pixel on axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
 		write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "LSS_CALIBRATION", "CDELT1", dispersion, "[pixel] Pixel scale on axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
 		write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "LSS_CALIBRATION", "CRPIX1", 1.0, "[pixel] Reference pixel on axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
@@ -549,7 +549,7 @@ int main (int argc, char *argv []) {
 		write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "LSS_CALIBRATION", "CRPIX2", 1, "[pixel] Reference pixel on axis 2", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
 
 		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "SPEC_CALIBRATION", "CTYPE1", "Wavelength", "Type of co-ordinate on axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
-		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "SPEC_CALIBRATION", "CUNIT1", "Angstroms", "Units for axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
+		write_additional_key_to_file_str(ADDITIONAL_KEYS_FILE, "SPEC_CALIBRATION", "CUNIT1", "Angstrom", "Units for axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
 		write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "SPEC_CALIBRATION", "CRVAL1", bin_wavelengths[0], "[pixel] Value at ref. pixel on axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
 		write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "SPEC_CALIBRATION", "CDELT1", dispersion, "[pixel] Pixel scale on axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
 		write_additional_key_to_file_dbl(ADDITIONAL_KEYS_FILE, "SPEC_CALIBRATION", "CRPIX1", 1.0, "[pixel] Reference pixel on axis 1", ADDITIONAL_KEYS_FILE_WRITE_ACCESS);
