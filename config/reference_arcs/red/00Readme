@@ -1,0 +1,4 @@
+# Date formats in the tab files are strictly dd/mm/yy and that is fixed by the 
+# parsing code.
+#
+# For consistency, the directory names are ddmmyy or ddmmyyyy even though I dislike that ordering.
