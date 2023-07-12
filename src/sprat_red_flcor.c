@@ -250,7 +250,7 @@ int main (int argc, char *argv []) {
 		// The flux calibration as read from flcor converts from 
 		//	ADU / sec on sprat
 		// to
-		//	flux density in W/m2/A
+		//	flux density in erg/s/cm2/A
 		// I.e., Simply multiplying a 1sec SPRAT SPEC_SS by the transformation curve will
 		// yield the full calibration.
 		//
