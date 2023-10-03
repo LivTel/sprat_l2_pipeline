@@ -1325,7 +1325,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="IRAF IRScal",
+                    leg_title="Stone, 1977, ApJ",
                     save=False,
                     hold=True)
             if OBJECT == "GD50":
@@ -1338,7 +1338,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "BD_28_4211":
@@ -1352,7 +1352,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "BDp33_2642_zpol":
@@ -1366,7 +1366,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "G191B2B":
@@ -1379,7 +1379,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "LB1240":
@@ -1392,7 +1392,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE74",
+                    leg_title="Oke, 1974, ApJ Supp",
                     save=False,
                     hold=True)
             if OBJECT == "HD19445" or OBJECT == "HD19445_m8":
@@ -1405,7 +1405,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE83",
+                    leg_title="Oke, Gunn, 1983, ApJ",
                     save=False,
                     hold=True)
             if OBJECT == "GD108":
@@ -1418,7 +1418,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "Feige34" or OBJECT == "feige34":
@@ -1431,7 +1431,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "G60_54":
@@ -1444,7 +1444,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "G193_74":
@@ -1457,7 +1457,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "BDp75_325":
@@ -1470,7 +1470,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "Hz44":
@@ -1483,7 +1483,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
 
@@ -1514,7 +1514,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE83",
+                    leg_title="Oke, Gunn, 1983, ApJ",
                     save=False,
                     hold=True)
             if OBJECT == "HD19445" or OBJECT == "HD19445_m8":
@@ -1527,7 +1527,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE83",
+                    leg_title="Oke, Gunn, 1983, ApJ",
                     save=False,
                     hold=True)
             if OBJECT == "BDp33_2642_zpol":
@@ -1540,7 +1540,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "G191B2B":
@@ -1553,7 +1553,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "G60_54":
@@ -1566,7 +1566,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "G193_74":
@@ -1579,7 +1579,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "BDp75_325":
@@ -1592,7 +1592,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
             if OBJECT == "Hz44":
@@ -1605,7 +1605,7 @@ def full_run(f_target, f_ref, f_cont, f_arc, f_flcor, work_dir, clobber):
                     1,
                     "",
                     legend=True,
-                    leg_title="OKE90",
+                    leg_title="Oke, 1990, AJ",
                     save=False,
                     hold=True)
 
